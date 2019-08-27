@@ -1,18 +1,18 @@
 import { ReactNode, useState } from "react";
 import { RouteComponentProps } from "@reach/router";
 import { UserAgentApplication, Configuration } from "msal";
-import { RoutedFC } from "./routing/RoutedFC";
+import { RoutedFC } from "../types/routing/RoutedFC";
 import { Typography } from "@material-ui/core";
-import * as AppSettings from "../appSettings.json";
 import React from "react";
+import { AppSettings } from "../types/AppSettings";
 
 export interface IAuthenticatedProps {
   useAuthentication?: boolean;
   children: ReactNode;
 }
 
-export const Authenticated: RoutedFC<IAuthenticatedProps & RouteComponentProps> = (
-  props: IAuthenticatedProps & RouteComponentProps
+export const Authenticated: RoutedFC<IAuthenticatedProps> = (
+  props: RouteComponentProps<IAuthenticatedProps> 
 ) => {
   const [authenticated, setAuthenticated] = useState(AppSettings.authentication.authenticated);
 

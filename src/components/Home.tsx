@@ -1,25 +1,13 @@
-import React, { useState, KeyboardEvent } from "react";
-import { Link, Router } from "@reach/router";
-import { RoutedFC } from "./routing/RoutedFC";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Drawer,
-  Divider,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  makeStyles
-} from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/Menu";
-import HomeIcon from "@material-ui/icons/Home";
-import MailIcon from "@material-ui/icons/Mail";
-import { Transfers } from "./Transfers";
+import React, { useState, KeyboardEvent } from 'react';
+import { Link } from '@reach/router';
+import { RoutedFC } from '../types/routing/RoutedFC';
+import { Drawer, Divider, List, ListItem, ListItemIcon, ListItemText, makeStyles } from '@material-ui/core';
+import HomeIcon from '@material-ui/icons/Home';
+import MailIcon from '@material-ui/icons/Mail';
+import { Header } from './Header';
+import { AppSettings } from '../types/AppSettings';
 
-export const Home: RoutedFC = () => {
+export const Home: RoutedFC = props => {
   const [menuIsOpen, setmenuIsOpen] = useState(false);
 
   const styles = makeStyles({
@@ -29,7 +17,7 @@ export const Home: RoutedFC = () => {
   })();
 
   const toggleDrawer = (open: boolean) => (event: React.MouseEvent | KeyboardEvent) => {
-    if (event.type === "keydown" && event instanceof KeyboardEvent && (event.key === "Tab" || event.key === "Shift")) {
+    if (event.type === 'keydown' && event instanceof KeyboardEvent && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
 
@@ -38,36 +26,27 @@ export const Home: RoutedFC = () => {
 
   return (
     <div>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" aria-label="menu">
-            <MenuIcon onClick={toggleDrawer(true)} />
-          </IconButton>
-          <Typography variant="h6">Consulting transfers</Typography>
-        </Toolbar>
-      </AppBar>
+      <Header iconClickHandler={toggleDrawer(true)} title={AppSettings.terms.header} />
       <Drawer open={menuIsOpen} onClose={toggleDrawer(false)}>
-        <div className={styles.list} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+        <div className={styles.list} role='presentation' onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
           <List>
-            <ListItem button component={Link} to="/">
+            <ListItem button component={Link} to='/'>
               <ListItemIcon>
                 <HomeIcon />
               </ListItemIcon>
-              <ListItemText primary="Home" />
+              <ListItemText primary='Home' />
             </ListItem>
-            <ListItem button component={Link} to="transfers">
+            <ListItem button component={Link} to='transfers'>
               <ListItemIcon>
                 <MailIcon />
               </ListItemIcon>
-              <ListItemText primary="Transfers" />
+              <ListItemText primary='Transfers' />
             </ListItem>
           </List>
           <Divider />
         </div>
       </Drawer>
-      <Router>
-        <Transfers path="transfers"></Transfers>
-      </Router>
+      {props.children}
     </div>
   );
 };

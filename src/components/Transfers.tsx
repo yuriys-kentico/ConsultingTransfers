@@ -1,6 +1,6 @@
-import React, { SyntheticEvent, useRef } from "react";
-import Button from "@material-ui/core/Button";
-import Snackbar from "@material-ui/core/Snackbar";
+import React, { SyntheticEvent, useRef, useState, useEffect, ReactNode } from 'react';
+import Button from '@material-ui/core/Button';
+import Snackbar from '@material-ui/core/Snackbar';
 import {
   ContainerURL,
   StorageURL,
@@ -9,10 +9,24 @@ import {
   BlobURL,
   uploadBrowserDataToBlockBlob,
   Aborter
-} from "@azure/storage-blob";
-import { RoutedFC } from "./routing/RoutedFC";
-import { Typography, Container, makeStyles, Theme, createStyles, Box } from "@material-ui/core";
-import * as AppSettings from "../appSettings.json";
+} from '@azure/storage-blob';
+import { RoutedFC } from '../types/routing/RoutedFC';
+import {
+  Typography,
+  makeStyles,
+  Theme,
+  createStyles,
+  Box,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton
+} from '@material-ui/core';
+import { AppSettings } from '../types/AppSettings';
+import EditIcon from '@material-ui/icons/Edit';
+import { DeliveryClient, ContentItem } from 'kentico-cloud-delivery';
+import { Link } from '@reach/router';
 
 interface SnackbarMessage {
   message: string;
@@ -20,6 +34,20 @@ interface SnackbarMessage {
 }
 
 export const Transfers: RoutedFC = () => {
+  const deliveryClient = new DeliveryClient({ ...AppSettings.kenticoCloud });
+
+  const [items, setItems] = useState<ContentItem[]>();
+
+  useEffect(() => {
+    deliveryClient
+      .items()
+      .type('consulting_request')
+      .toObservable()
+      .subscribe(response => {
+        setItems(response.items);
+      });
+  }, []);
+
   let fileInput: HTMLInputElement | null;
 
   const fileListRef = useRef<HTMLSelectElement>(null);
@@ -32,10 +60,10 @@ export const Transfers: RoutedFC = () => {
     })
   )();
 
-  const queueRef = React.useRef<SnackbarMessage[]>([]);
-  const [open, setOpen] = React.useState(false);
-  const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage>({
-    message: "",
+  const queueRef = useRef<SnackbarMessage[]>([]);
+  const [open, setOpen] = useState(false);
+  const [messageInfo, setMessageInfo] = useState<SnackbarMessage>({
+    message: '',
     key: 0
   });
 
@@ -64,7 +92,7 @@ export const Transfers: RoutedFC = () => {
   };
 
   const handleClose = (_event: SyntheticEvent | MouseEvent, reason?: string) => {
-    if (reason === "clickaway") {
+    if (reason === 'clickaway') {
       return;
     }
     setOpen(false);
@@ -103,9 +131,9 @@ export const Transfers: RoutedFC = () => {
     const fileList = fileListRef.current;
 
     if (fileList) {
-      fileList.innerHTML = "";
+      fileList.innerHTML = '';
       try {
-        reportStatus("Retrieving file list...");
+        reportStatus('Retrieving file list...');
 
         let marker: string | undefined;
 
@@ -120,7 +148,7 @@ export const Transfers: RoutedFC = () => {
             fileList.innerHTML += `<option>${blob.name}</option>`;
           }
         } while (marker);
-        reportStatus("Done.");
+        reportStatus('Done.');
       } catch (error) {
         reportStatus((error.body && error.body.message) || error.message);
       }
@@ -130,7 +158,7 @@ export const Transfers: RoutedFC = () => {
   const uploadFiles = async () => {
     if (fileInput) {
       try {
-        reportStatus("Uploading files...");
+        reportStatus('Uploading files...');
 
         const promises = [];
 
@@ -142,7 +170,7 @@ export const Transfers: RoutedFC = () => {
           }
         }
         await Promise.all(promises);
-        reportStatus("Done.");
+        reportStatus('Done.');
         listFiles();
       } catch (error) {
         reportStatus((error.body && error.body.message) || error.message);
@@ -156,17 +184,17 @@ export const Transfers: RoutedFC = () => {
     if (fileList) {
       try {
         if (fileList.selectedOptions.length > 0) {
-          reportStatus("Deleting files...");
+          reportStatus('Deleting files...');
 
           for (const option of fileList.selectedOptions) {
             const blobURL = BlobURL.fromContainerURL(containerURL, option.text);
             await blobURL.delete(Aborter.none);
           }
-          reportStatus("Done.");
+          reportStatus('Done.');
 
           listFiles();
         } else {
-          reportStatus("No files selected.");
+          reportStatus('No files selected.');
         }
       } catch (error) {
         reportStatus((error.body && error.body.message) || error.message);
@@ -174,48 +202,63 @@ export const Transfers: RoutedFC = () => {
     }
   };
 
+  function renderItems(): ReactNode {
+    if (items) {
+      return items.map((item, index) => (
+        <ListItem key={index} button>
+          <ListItemText primary={`${item.system.name}`} />
+          <ListItemSecondaryAction>
+            <IconButton component={Link} to={`${item.url.value}`}>
+              <EditIcon />
+            </IconButton>
+          </ListItemSecondaryAction>
+        </ListItem>
+      ));
+    }
+  }
+
   return (
-    <Box mt={3}>
-      <Container maxWidth="lg">
-        <Typography variant="h4" gutterBottom>
-          Upload to Azure storage:
-        </Typography>
-        <Button onClick={createContainer} variant="contained" className={styles.button}>
-          Create container
-        </Button>
-        <Button onClick={deleteContainer} variant="contained" color="secondary" className={styles.button}>
-          Delete container
-        </Button>
-        <Button onClick={() => fileInput && fileInput.click()} variant="contained" className={styles.button}>
-          Select and upload files
-        </Button>
-        <input type="file" ref={e => (fileInput = e)} onChange={uploadFiles} multiple style={{ display: "none" }} />
-        <Button onClick={listFiles} variant="contained" className={styles.button}>
-          List files
-        </Button>
-        <Button onClick={deleteFiles} variant="contained" color="secondary" className={styles.button}>
-          Delete selected files
-        </Button>
-        <Snackbar
-          key={messageInfo.key}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left"
-          }}
-          open={open}
-          autoHideDuration={6000}
-          onClose={handleClose}
-          onExited={() => processQueue()}
-          ContentProps={{
-            "aria-describedby": "message-id"
-          }}
-          message={<span id="message-id">{messageInfo.message}</span>}
-        />
-        <Typography variant="h6" gutterBottom>
-          Files:
-        </Typography>
-        <select ref={fileListRef} multiple style={{ height: "222px", width: "593px", overflowY: "scroll" }} />
-      </Container>
+    <Box m={3}>
+      <Typography variant='h4' gutterBottom>
+        Active transfers:
+      </Typography>
+      <List>{renderItems()}</List>
+
+      <Button onClick={createContainer} variant='contained' className={styles.button}>
+        Create container
+      </Button>
+      <Button onClick={deleteContainer} variant='contained' color='secondary' className={styles.button}>
+        Delete container
+      </Button>
+      <Button onClick={() => fileInput && fileInput.click()} variant='contained' className={styles.button}>
+        Select and upload files
+      </Button>
+      <input type='file' ref={e => (fileInput = e)} onChange={uploadFiles} multiple style={{ display: 'none' }} />
+      <Button onClick={listFiles} variant='contained' className={styles.button}>
+        List files
+      </Button>
+      <Button onClick={deleteFiles} variant='contained' color='secondary' className={styles.button}>
+        Delete selected files
+      </Button>
+      <Snackbar
+        key={messageInfo.key}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left'
+        }}
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        onExited={() => processQueue()}
+        ContentProps={{
+          'aria-describedby': 'message-id'
+        }}
+        message={<span id='message-id'>{messageInfo.message}</span>}
+      />
+      <Typography variant='h6' gutterBottom>
+        Files:
+      </Typography>
+      <select ref={fileListRef} multiple style={{ height: '222px', width: '593px', overflowY: 'scroll' }} />
     </Box>
   );
 };
