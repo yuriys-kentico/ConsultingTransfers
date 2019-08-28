@@ -1,28 +1,27 @@
-import { ReactNode, useState } from "react";
-import { RouteComponentProps } from "@reach/router";
-import { UserAgentApplication, Configuration } from "msal";
-import { RoutedFC } from "../types/routing/RoutedFC";
-import { Typography } from "@material-ui/core";
-import React from "react";
-import { AppSettings } from "../types/AppSettings";
+import { ReactNode, useState, useContext } from 'react';
+import { UserAgentApplication, Configuration } from 'msal';
+import { RoutedFC } from './RoutedFC';
+import { Typography } from '@material-ui/core';
+import React from 'react';
+import { AppContext } from '../app/AppContext';
 
 export interface IAuthenticatedProps {
   useAuthentication?: boolean;
   children: ReactNode;
 }
 
-export const Authenticated: RoutedFC<IAuthenticatedProps> = (
-  props: RouteComponentProps<IAuthenticatedProps> 
-) => {
-  const [authenticated, setAuthenticated] = useState(AppSettings.authentication.authenticated);
+export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {
+  const appContext = useContext(AppContext);
 
-  const config: Configuration = AppSettings.authentication.config as Configuration;
+  const [authenticated, setAuthenticated] = useState(appContext.authentication.authenticated);
+
+  const config = appContext.authentication.config as Configuration;
 
   // create UserAgentApplication instance
   const userAgentApplication = new UserAgentApplication(config);
 
   const accessTokenRequest = {
-    scopes: ["user.read"]
+    scopes: ['user.read']
   };
 
   if (!authenticated) {
@@ -38,10 +37,9 @@ export const Authenticated: RoutedFC<IAuthenticatedProps> = (
           });
         console.log(error);
       });
-  }
-
-  if (authenticated) {
+  } else {
     return props.children;
   }
+
   return <Typography>Waiting for login...</Typography> as any;
 };
