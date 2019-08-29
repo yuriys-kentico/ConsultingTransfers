@@ -1,9 +1,9 @@
 import { ReactNode, useState, useContext } from 'react';
 import { UserAgentApplication, Configuration } from 'msal';
 import { RoutedFC } from './RoutedFC';
-import { Typography } from '@material-ui/core';
 import React from 'react';
 import { AppContext } from '../app/AppContext';
+import { Container } from 'semantic-ui-react';
 
 export interface IAuthenticatedProps {
   useAuthentication?: boolean;
@@ -41,5 +41,5 @@ export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {
     return props.children;
   }
 
-  return <Typography>Waiting for login...</Typography> as any;
+  return <Container content='Waiting for login...' /> as any;
 };

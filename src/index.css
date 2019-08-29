@@ -1,13 +1,17 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+#root,
+#root > div,
+#root > div > div {
+  height: 100%;
 }
 
-code {
-  font-family: Monoid, source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.height100 {
+  height: 100% !important;
+}
+
+.noMinHeight {
+  min-height: auto !important;
+}
+
+.paddingTopBottom {
+  padding: 0.78571429em 0;
 }

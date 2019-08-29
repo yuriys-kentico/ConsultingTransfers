@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { RoutedFC } from '../routing/RoutedFC';
-import { Typography, Box } from '@material-ui/core';
 import { AppContext } from './AppContext';
 import { DeliveryClient, ContentItem } from 'kentico-cloud-delivery';
-import { Loading } from './Loading';
-import { useStyles } from './Styles';
-import Button from '@material-ui/core/Button';
+import { Loading } from '../utility/Loading';
 import {
   ContainerURL,
   StorageURL,
@@ -15,7 +12,8 @@ import {
   uploadBrowserDataToBlockBlob,
   Aborter
 } from '@azure/storage-blob';
-import { HeaderContext } from '../navigation/HeaderContext';
+import { Header, Segment, Button, Divider } from 'semantic-ui-react';
+import { HeaderContext } from '../header/HeaderContext';
 
 export interface ITransferProps {
   urlSlug: string;
@@ -157,11 +155,9 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
     } else {
       return (
         <div>
-          <Typography variant='h4' gutterBottom>
-            {`Transfer ${item !== undefined ? item.system.name : props.urlSlug}`}
-          </Typography>
-          {item.fields.itemCodenames.map((element: string) => (
-            <div>
+          <Header as='h2' content={`Transfer ${item !== undefined ? item.system.name : props.urlSlug}`} />
+          {item.fields.itemCodenames.map((element: string, index: number) => (
+            <div key={index}>
               <span>{element}</span>
             </div>
           ))}
@@ -170,32 +166,18 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
     }
   }
 
-  const styles = useStyles();
-
   return (
-    <Box m={3} className={styles.root}>
+    <Segment basic>
       {renderFields(item)}
-      <Button onClick={createContainer} variant='contained' className={styles.button}>
-        Create container
-      </Button>
-      <Button onClick={deleteContainer} variant='contained' color='secondary' className={styles.button}>
-        Delete container
-      </Button>
-      <Button onClick={() => fileInput && fileInput.click()} variant='contained' className={styles.button}>
-        Select and upload files
-      </Button>
+      <Divider />
+      <Button onClick={createContainer} content='Create container' />
+      <Button onClick={deleteContainer} secondary content='Delete container' />
+      <Button onClick={() => fileInput && fileInput.click()} content='Select and upload files' />
+      <Button onClick={listFiles} content='List files' />
+      <Button onClick={deleteFiles} secondary content='Delete selected files' />
+      <Header as='h2' content='Files:' />
       <input type='file' ref={e => (fileInput = e)} onChange={uploadFiles} multiple style={{ display: 'none' }} />
-      <Button onClick={listFiles} variant='contained' className={styles.button}>
-        List files
-      </Button>
-      <Button onClick={deleteFiles} variant='contained' color='secondary' className={styles.button}>
-        Delete selected files
-      </Button>
-
-      <Typography variant='h6' gutterBottom>
-        Files:
-      </Typography>
       <select ref={fileListRef} multiple style={{ height: '222px', width: '593px', overflowY: 'scroll' }} />
-    </Box>
+    </Segment>
   );
 };

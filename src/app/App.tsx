@@ -1,21 +1,23 @@
 import React, { FC } from 'react';
 import { Router } from '@reach/router';
-import { Home } from './Home';
+import { Admin } from './Admin';
 import { Authenticated } from '../routing/Authenticated';
 import { Transfer } from './Transfer';
-import { CustomerView } from './CustomerView';
+import { Public } from './Public';
 import { Transfers } from './Transfers';
+import { Home } from './Home';
 
 export const App: FC = () => (
   <Router>
     <Authenticated path='/'>
-      <Home path='/'>
+      <Admin path='/'>
+        <Home path='/' />
         <Transfers path='transfers' />
         <Transfer path='transfers/:urlSlug' />
-      </Home>
+      </Admin>
     </Authenticated>
-    <CustomerView path='/transfer'>
+    <Public path='/transfer'>
       <Transfer path=':urlSlug' />
-    </CustomerView>
+    </Public>
   </Router>
 );
