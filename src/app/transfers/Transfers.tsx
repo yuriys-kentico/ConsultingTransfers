@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 
-import { RoutedFC } from '../routing/RoutedFC';
-import { AppContext } from './AppContext';
+import { RoutedFC } from '../RoutedFC';
+import { AppContext } from '../AppContext';
 import { DeliveryClient, ContentItem } from 'kentico-cloud-delivery';
 import { Link } from '@reach/router';
 import { Header, List, Button, Segment } from 'semantic-ui-react';
@@ -32,7 +32,7 @@ export const Transfers: RoutedFC = () => {
             <List.Content floated='right'>
               <Button icon='edit' as={Link} to={`${item.url.value}`} />
             </List.Content>
-            <List.Content header={`${item.system.name}`} className='paddingTopBottom' />
+            <List.Content header={`${item.system.name}`} className='padding top and bottom' />
           </List.Item>
         ))}
       </List>

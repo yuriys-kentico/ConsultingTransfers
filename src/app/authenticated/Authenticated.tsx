@@ -1,8 +1,8 @@
 import { ReactNode, useState, useContext } from 'react';
 import { UserAgentApplication, Configuration } from 'msal';
-import { RoutedFC } from './RoutedFC';
+import { RoutedFC } from '../RoutedFC';
 import React from 'react';
-import { AppContext } from '../app/AppContext';
+import { AppContext } from '../AppContext';
 import { Container } from 'semantic-ui-react';
 
 export interface IAuthenticatedProps {

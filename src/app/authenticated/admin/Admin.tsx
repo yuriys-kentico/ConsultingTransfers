@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import { Link } from '@reach/router';
-import { RoutedFC } from '../routing/RoutedFC';
-import { HeaderBar } from '../header/HeaderBar';
-import { AppContext } from './AppContext';
+import { RoutedFC } from '../../RoutedFC';
+import { AppHeader } from '../../header/AppHeader';
+import { AppContext } from '../../AppContext';
 import { Sidebar, Icon, Menu } from 'semantic-ui-react';
 
 export const Admin: RoutedFC = props => {
@@ -22,8 +22,8 @@ export const Admin: RoutedFC = props => {
   );
 
   return (
-    <HeaderBar title={appContext.terms.header} sideBar={sideBar}>
+    <AppHeader title={appContext.terms.header} sideBar={sideBar}>
       {props.children}
-    </HeaderBar>
+    </AppHeader>
   );
 };

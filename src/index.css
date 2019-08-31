@@ -1,17 +1,52 @@
 #root,
-#root > div,
-#root > div > div {
+#root div[role='group'] {
   height: 100%;
 }
 
-.height100 {
+.full.height {
   height: 100% !important;
 }
 
-.noMinHeight {
+.no.min.height {
   min-height: auto !important;
 }
 
-.paddingTopBottom {
+.padding.top.and.bottom {
   padding: 0.78571429em 0;
+}
+
+.snack.bar {
+  position: fixed;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.snack.bar .segment {
+  margin: 0;
+}
+
+.top.sidebar {
+  background: orange !important;
+}
+
+.button {
+  background: orange !important;
+}
+
+.secondary.button {
+  background: salmon !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.secondary.button:hover {
+  color: white !important;
+}
+
+.button:hover {
+  color: white !important;
+}
+
+.top.sidebar .icon:hover {
+  background: none;
+  color: white;
 }

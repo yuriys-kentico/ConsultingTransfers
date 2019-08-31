@@ -1,11 +1,11 @@
 import React, { FC } from 'react';
 import { Router } from '@reach/router';
-import { Admin } from './Admin';
-import { Authenticated } from '../routing/Authenticated';
-import { Transfer } from './Transfer';
-import { Public } from './Public';
-import { Transfers } from './Transfers';
-import { Home } from './Home';
+import { Admin } from './authenticated/admin/Admin';
+import { Authenticated } from './authenticated/Authenticated';
+import { Transfer } from './transfers/Transfer';
+import { Public } from './public/Public';
+import { Transfers } from './transfers/Transfers';
+import { Home } from './authenticated/admin/Home';
 
 export const App: FC = () => (
   <Router>
