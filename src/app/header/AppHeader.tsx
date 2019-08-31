@@ -1,11 +1,13 @@
 import React, { FC, useState, ReactNode, useContext } from 'react';
 
 import { Button, Header, Segment, Sidebar } from 'semantic-ui-react';
-import { SnackBar, hideSnackAfter, hideSnackWhen, showSnack } from './SnackBar';
+import { SnackBar, hideSnackAfter, hideSnackWhen, showSnack, UpdateSnackHandler, SnackType } from './SnackBar';
 import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
 import { AppContext } from '../AppContext';
 
-export type ShowInfoHandler = (text: string, timeout?: number) => void;
+export type ShowInfoHandler = (text: string, timeout?: number, type?: SnackType) => void;
+
+export type ShowInfoUntilHandler = (message: string, executor: Promise<unknown>, update?: UpdateSnackHandler) => void;
 
 export interface IAppHeaderProps {
   title: string;
@@ -15,44 +17,44 @@ export interface IAppHeaderProps {
 export const AppHeader: FC<IAppHeaderProps> = props => {
   const appContext = useContext(AppContext);
 
-  const showInfo: ShowInfoHandler = (text, timeout) => {
-    timeout = timeout ? timeout : appContext.experience.snackBarTimeout;
+  const showInfo: ShowInfoHandler = (text, timeout, type = 'info') => {
+    timeout = timeout ? timeout : appContext.experience.snackTimeout;
 
-    showSnack(text, 'info', hideSnackAfter(timeout), setHeaderContext);
+    showSnack(setHeaderContext, text, type, hideSnackAfter(timeout));
   };
 
-  const showInfoUntil = (text: string, executor: Promise<unknown>) =>
-    showSnack(text, 'info', hideSnackWhen(executor), setHeaderContext);
+  const showInfoUntil: ShowInfoUntilHandler = (text, executor, update?) =>
+    showSnack(setHeaderContext, text, 'update', hideSnackWhen(executor), update);
 
-  const showError: ShowInfoHandler = (text, timeout) => {
-    timeout = timeout ? timeout : appContext.experience.snackBarTimeout;
-
-    showSnack(text, 'error', hideSnackAfter(timeout), setHeaderContext);
-  };
+  const showError: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'error');
+  const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');
+  const showWarning: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'warning');
 
   const [headerContext, setHeaderContext] = useState<IAppHeaderContext>({
     snacks: [],
-    showInfo: showInfo,
-    showInfoUntil: showInfoUntil,
-    showError: showError
+    showInfo,
+    showInfoUntil,
+    showError,
+    showSuccess,
+    showWarning
   });
 
-  const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleDrawer = (open: boolean) => (_event: React.MouseEvent<HTMLElement>) => {
-    setMenuIsOpen(open);
+  const toggleSidebar = (open: boolean) => (_event: React.MouseEvent<HTMLElement>) => {
+    setSidebarOpen(open);
   };
 
   return (
     <AppHeaderContext.Provider value={headerContext}>
       <SnackBar />
       <Sidebar.Pushable>
-        {props.sideBar && props.sideBar(menuIsOpen, toggleDrawer(false))}
+        {props.sideBar && props.sideBar(sidebarOpen, toggleSidebar(false))}
         <Sidebar.Pusher className='full height'>
           <Sidebar.Pushable>
             <Sidebar direction='top' visible as={Segment} basic>
               <Header as='h3'>
-                {props.sideBar && <Button icon='bars' onClick={toggleDrawer(true)} />}
+                {props.sideBar && <Button icon='bars' onClick={toggleSidebar(true)} />}
                 {props.title}
               </Header>
             </Sidebar>

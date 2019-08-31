@@ -1,11 +1,14 @@
 import { ISnack } from './SnackBar';
 import { createContext } from 'react';
+import { ShowInfoHandler, ShowInfoUntilHandler } from './AppHeader';
 
 export interface IAppHeaderContext {
   snacks: ISnack[];
-  showInfo: (message: string, timeout?: number) => void;
-  showInfoUntil: (message: string, executor: Promise<unknown>) => void;
-  showError: (message: string, timeout?: number) => void;
+  showInfo: ShowInfoHandler;
+  showInfoUntil: ShowInfoUntilHandler;
+  showError: ShowInfoHandler;
+  showSuccess: ShowInfoHandler;
+  showWarning: ShowInfoHandler;
 }
 
 export const AppHeaderContext = createContext<IAppHeaderContext>({} as any);

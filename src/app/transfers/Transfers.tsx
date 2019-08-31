@@ -30,6 +30,7 @@ export const Transfers: RoutedFC = () => {
         {items.map((item, index) => (
           <List.Item key={index}>
             <List.Content floated='right'>
+              <Button icon='share square' as={Link} to={`../transfer/${item.url.value}`} />
               <Button icon='edit' as={Link} to={`${item.url.value}`} />
             </List.Content>
             <List.Content header={`${item.system.name}`} className='padding top and bottom' />

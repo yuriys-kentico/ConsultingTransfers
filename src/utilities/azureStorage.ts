@@ -7,9 +7,11 @@ import {
   StorageURL,
   AnonymousCredential
 } from '@azure/storage-blob';
-import { ShowInfoHandler } from '../header/AppHeader';
 import { useContext } from 'react';
-import { AppContext } from '../AppContext';
+import { AppContext } from '../app/AppContext';
+import { Subject } from 'rxjs';
+import { toRounded } from './numbers';
+import { IAppHeaderContext } from '../app/header/AppHeaderContext';
 
 export const useContainer = () => {
   const appContext = useContext(AppContext);
@@ -29,13 +31,14 @@ export const useContainer = () => {
 export const createContainer = async (
   containerName: string,
   containerURL: ContainerURL,
-  showInfo: ShowInfoHandler,
-  showError: ShowInfoHandler
+  appHeaderContext: IAppHeaderContext
 ) => {
+  const { showInfo, showError, showSuccess } = appHeaderContext;
+
   try {
     showInfo(`Creating container "${containerName}"...`);
     await containerURL.create(Aborter.none);
-    showInfo(`Done.`);
+    showSuccess(`Done.`);
   } catch (error) {
     showError((error.body && error.body.message) || error.message);
   }
@@ -44,13 +47,16 @@ export const createContainer = async (
 export const deleteContainer = async (
   containerName: string,
   containerURL: ContainerURL,
-  showInfo: ShowInfoHandler,
-  showError: ShowInfoHandler
+  appHeaderContext: IAppHeaderContext
 ) => {
+  const { showInfo, showError, showSuccess } = appHeaderContext;
+
   try {
     showInfo(`Deleting container "${containerName}"...`);
+
     await containerURL.delete(Aborter.none);
-    showInfo(`Done.`);
+
+    showSuccess(`Done.`);
   } catch (error) {
     showError((error.body && error.body.message) || error.message);
   }
@@ -59,13 +65,13 @@ export const deleteContainer = async (
 export const listFiles = async (
   fileList: HTMLSelectElement,
   containerURL: ContainerURL,
-  showInfo: ShowInfoHandler,
-  showError: ShowInfoHandler
+  appHeaderContext: IAppHeaderContext
 ) => {
   fileList.innerHTML = '';
-  try {
-    showInfo('Retrieving file list...');
 
+  const { showError } = appHeaderContext;
+
+  try {
     let marker: string | undefined;
 
     do {
@@ -79,36 +85,54 @@ export const listFiles = async (
         fileList.innerHTML += `<option>${blob.name}</option>`;
       }
     } while (marker);
-    showInfo('Done.');
   } catch (error) {
     showError((error.body && error.body.message) || error.message);
   }
 };
 
 export const uploadFiles = async (
-  files: FileList | null,
+  fileInput: HTMLInputElement,
   fileList: HTMLSelectElement,
   containerURL: ContainerURL,
-  showInfo: ShowInfoHandler,
-  showError: ShowInfoHandler
+  appHeaderContext: IAppHeaderContext
 ) => {
+  const { showInfoUntil, showError, showSuccess } = appHeaderContext;
+
   try {
-    showInfo('Uploading files...');
+    if (fileInput.files) {
+      const fileNames = Array.from(fileInput.files)
+        .map(file => `${file.name}`)
+        .join(', ');
 
-    const promises = [];
+      const promises = [];
 
-    if (files) {
-      for (const file of files) {
+      for (const file of fileInput.files) {
         const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, file.name);
 
-        promises.push(uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobURL));
+        const subject = new Subject<{ progress: number; text: string }>();
+
+        const uploadPromise = uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobURL, {
+          blockSize: 100 * 1024 * 1024,
+          parallelism: 20,
+          progress: progress => {
+            subject.next({
+              progress: progress.loadedBytes / file.size,
+              text: `${toRounded(progress.loadedBytes / 1000 / 1000, 2)} MB uploaded`
+            });
+          }
+        }).then(() => new Promise(resolve => setTimeout(resolve, 1000)));
+
+        showInfoUntil(`Uploading file ${file.name}...`, uploadPromise, subject);
+
+        promises.push(uploadPromise);
       }
+      await Promise.all(promises);
+
+      showSuccess(`Finished uploading ${fileNames}.`);
+
+      fileInput.value = '';
     }
-    await Promise.all(promises);
-
-    showInfo('Done.');
-
-    listFiles(fileList, containerURL, showInfo, showError);
+    listFiles(fileList, containerURL, appHeaderContext);
   } catch (error) {
     showError((error.body && error.body.message) || error.message);
   }
@@ -117,9 +141,10 @@ export const uploadFiles = async (
 export const deleteFiles = async (
   fileList: HTMLSelectElement,
   containerURL: ContainerURL,
-  showInfo: ShowInfoHandler,
-  showError: ShowInfoHandler
+  appHeaderContext: IAppHeaderContext
 ) => {
+  const { showInfo, showError, showSuccess, showWarning } = appHeaderContext;
+
   try {
     if (fileList.selectedOptions.length > 0) {
       showInfo('Deleting files...');
@@ -128,11 +153,11 @@ export const deleteFiles = async (
         const blobURL = BlobURL.fromContainerURL(containerURL, option.text);
         await blobURL.delete(Aborter.none);
       }
-      showInfo('Done.');
+      showSuccess('Done.');
 
-      listFiles(fileList, containerURL, showInfo, showError);
+      listFiles(fileList, containerURL, appHeaderContext);
     } else {
-      showInfo('No files selected.');
+      showWarning('No files selected.');
     }
   } catch (error) {
     showError((error.body && error.body.message) || error.message);

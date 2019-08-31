@@ -1,21 +1,29 @@
 import { FC, useContext, Dispatch, SetStateAction } from 'react';
 import React from 'react';
-import { Segment, Message } from 'semantic-ui-react';
+import { Segment } from 'semantic-ui-react';
 import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
+import { Observable } from 'rxjs';
+import { Snack } from './Snack';
+
+export type SnackType = 'success' | 'info' | 'warning' | 'error' | 'update';
 
 export interface ISnack {
   text: string;
+  type: SnackType;
   hide: HideSnackHandler;
-  type: 'success' | 'info' | 'warning' | 'error';
+  update?: UpdateSnackHandler;
 }
 
 export type HideSnackHandler = (headerContext: Dispatch<SetStateAction<IAppHeaderContext>>) => Promise<void>;
 
+export type UpdateSnackHandler = Observable<{ progress: number; text: string }>;
+
 export type ShowSnackHandler = (
+  setHeaderContext: React.Dispatch<React.SetStateAction<IAppHeaderContext>>,
   text: string,
-  type: 'success' | 'info' | 'warning' | 'error',
+  type: SnackType,
   hideSnackHandler: HideSnackHandler,
-  setHeaderContext: React.Dispatch<React.SetStateAction<IAppHeaderContext>>
+  updateSnackHandler?: UpdateSnackHandler
 ) => void;
 
 export const SnackBar: FC = () => {
@@ -25,29 +33,19 @@ export const SnackBar: FC = () => {
     <div className='snack bar'>
       {snacks.map((snack, index) => (
         <Segment basic key={index}>
-          {(() => {
-            switch (snack.type) {
-              case 'success':
-                return <Message floating compact content={snack.text} success />;
-              case 'info':
-                return <Message floating compact content={snack.text} info />;
-              case 'warning':
-                return <Message floating compact content={snack.text} warning />;
-              case 'error':
-                return <Message floating compact content={snack.text} error />;
-            }
-          })()}
+          <Snack {...snack} />
         </Segment>
       ))}
     </div>
   );
 };
 
-export const showSnack: ShowSnackHandler = (text, type, hideSnackHandler, setHeaderContext) => {
+export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSnackHandler, updateSnackHandler) => {
   const newSnack: ISnack = {
     text: text,
+    type: type,
     hide: hideSnackHandler,
-    type: type
+    update: updateSnackHandler
   };
 
   setHeaderContext(headerContext => {
@@ -75,9 +73,4 @@ export const hideSnackWhen = (executor: Promise<unknown>) => async (
   });
 };
 
-export const hideSnackAfter = (timeout: number) =>
-  hideSnackWhen(
-    new Promise(resolve => {
-      setTimeout(resolve, timeout);
-    })
-  );
+export const hideSnackAfter = (timeout: number) => hideSnackWhen(new Promise(resolve => setTimeout(resolve, timeout)));

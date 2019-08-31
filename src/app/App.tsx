@@ -13,7 +13,7 @@ export const App: FC = () => (
       <Admin path='/'>
         <Home path='/' />
         <Transfers path='transfers' />
-        <Transfer path='transfers/:urlSlug' />
+        <Transfer path='transfers/:urlSlug' authenticated />
       </Admin>
     </Authenticated>
     <Public path='/transfer'>

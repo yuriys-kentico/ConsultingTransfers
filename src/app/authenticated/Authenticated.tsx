@@ -1,9 +1,9 @@
-import { ReactNode, useState, useContext } from 'react';
+import { ReactNode, useState, useContext, useEffect } from 'react';
 import { UserAgentApplication, Configuration } from 'msal';
 import { RoutedFC } from '../RoutedFC';
 import React from 'react';
 import { AppContext } from '../AppContext';
-import { Container } from 'semantic-ui-react';
+import { Loader } from 'semantic-ui-react';
 
 export interface IAuthenticatedProps {
   useAuthentication?: boolean;
@@ -24,22 +24,22 @@ export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {
     scopes: ['user.read']
   };
 
-  if (!authenticated) {
-    userAgentApplication
-      .acquireTokenSilent(accessTokenRequest)
-      .then(() => setAuthenticated(true))
-      .catch(function(error) {
-        userAgentApplication
-          .loginPopup(accessTokenRequest)
-          .then(() => setAuthenticated(true))
-          .catch(function(error) {
-            console.log(error);
-          });
-        console.log(error);
-      });
-  } else {
-    return props.children;
-  }
+  useEffect(() => {
+    if (!authenticated) {
+      userAgentApplication
+        .acquireTokenSilent(accessTokenRequest)
+        .then(() => setAuthenticated(true))
+        .catch(function(error) {
+          userAgentApplication
+            .loginPopup(accessTokenRequest)
+            .then(() => setAuthenticated(true))
+            .catch(function(error) {
+              console.log(error);
+            });
+          console.log(error);
+        });
+    }
+  }, [accessTokenRequest, userAgentApplication, authenticated]);
 
-  return <Container content='Waiting for login...' /> as any;
+  return authenticated ? <div className='full height'>{props.children}</div> : <Loader active size='massive' />;
 };
