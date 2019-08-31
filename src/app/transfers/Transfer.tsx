@@ -80,7 +80,7 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
         multiple
         style={{ display: 'none' }}
       />
-      <select ref={fileList} multiple style={{ height: '222px', width: '593px', overflowY: 'scroll' }} />
+      <select ref={fileList} multiple className='file list' />
       {props.authenticated && (
         <div>
           <Divider />

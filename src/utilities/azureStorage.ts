@@ -69,7 +69,7 @@ export const listFiles = async (
 ) => {
   fileList.innerHTML = '';
 
-  const { showError } = appHeaderContext;
+  const { showError, showWarning } = appHeaderContext;
 
   try {
     let marker: string | undefined;
@@ -80,6 +80,10 @@ export const listFiles = async (
       marker = listBlobsResponse.nextMarker;
 
       const items = listBlobsResponse.segment.blobItems;
+
+      if (items.length === 0) {
+        showWarning('There are no files to list.');
+      }
 
       for (const blob of items) {
         fileList.innerHTML += `<option>${blob.name}</option>`;

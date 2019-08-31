@@ -3,7 +3,7 @@ import { Link } from '@reach/router';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeader } from '../../header/AppHeader';
 import { AppContext } from '../../AppContext';
-import { Sidebar, Icon, Menu } from 'semantic-ui-react';
+import { Sidebar, Icon, Menu, Container } from 'semantic-ui-react';
 
 export const Admin: RoutedFC = props => {
   const appContext = useContext(AppContext);
@@ -23,7 +23,9 @@ export const Admin: RoutedFC = props => {
 
   return (
     <AppHeader title={appContext.terms.header} sideBar={sideBar}>
-      {props.children}
+      <Container text>
+        {props.children}
+      </Container>
     </AppHeader>
   );
 };

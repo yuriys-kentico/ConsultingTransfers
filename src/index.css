@@ -33,6 +33,11 @@
   background: orange !important;
 }
 
+.content .button {
+  margin: 0;
+  padding: 0.78571429rem !important;
+}
+
 .secondary.button {
   background: salmon !important;
   color: rgba(0, 0, 0, 0.6) !important;
@@ -49,4 +54,10 @@
 .top.sidebar .icon:hover {
   background: none;
   color: white;
+}
+
+.file.list {
+  height: 15em;
+  width: 100%;
+  overflow-y: scroll;
 }
