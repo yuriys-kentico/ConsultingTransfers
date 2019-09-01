@@ -20,7 +20,7 @@ export const UploadFile: FC<IFieldProps> = ({ field }) => {
 
   useEffect(() => {
     getFiles(containerURL, field.system.codename, appHeaderContext).then(files => setUploadedFiles(files));
-  });
+  }, [field.system.codename, appHeaderContext]);
 
   return (
     <List.Item>
@@ -53,7 +53,7 @@ export const UploadFile: FC<IFieldProps> = ({ field }) => {
                   size='tiny'
                 />
               </List.Description>
-                )}
+            )}
           </List.Content>
         ))
       )}
