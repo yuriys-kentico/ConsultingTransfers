@@ -41,7 +41,7 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleSidebar = (open: boolean) => (_event: React.MouseEvent<HTMLElement>) => {
+  const toggleSidebar = (open: boolean) => (event: React.MouseEvent<HTMLElement>) => {
     setSidebarOpen(open);
   };
 
@@ -50,7 +50,7 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
       <SnackBar />
       <Sidebar.Pushable>
         {props.sideBar && props.sideBar(sidebarOpen, toggleSidebar(false))}
-        <Sidebar.Pusher className='full height'>
+        <Sidebar.Pusher className='full height' dimmed={sidebarOpen}>
           <Sidebar.Pushable>
             <Sidebar direction='top' visible as={Segment} basic>
               <Header as='h3'>
@@ -58,7 +58,7 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
                 {props.title}
               </Header>
             </Sidebar>
-            <Sidebar.Pusher as={Segment} basic className='no min height'>
+            <Sidebar.Pusher as={Segment} basic>
               {props.children}
             </Sidebar.Pusher>
           </Sidebar.Pushable>

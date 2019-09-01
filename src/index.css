@@ -7,12 +7,12 @@
   height: 100% !important;
 }
 
-.no.min.height {
-  min-height: auto !important;
-}
-
 .padding.top.and.bottom {
   padding: 0.78571429em 0;
+}
+
+.padding.bottom {
+  padding: 0 0 0.78571429em 0;
 }
 
 .snack.bar {
@@ -60,4 +60,8 @@
   height: 15em;
   width: 100%;
   overflow-y: scroll;
+}
+
+.ui.visible.scale.down.sidebar ~ .pusher {
+  transform: scale(0.8) !important;
 }

@@ -8,24 +8,25 @@ import {
   AnonymousCredential
 } from '@azure/storage-blob';
 import { useContext } from 'react';
-import { AppContext } from '../app/AppContext';
+import { AppContext } from '../../AppContext';
 import { Subject } from 'rxjs';
-import { toRounded } from './numbers';
-import { IAppHeaderContext } from '../app/header/AppHeaderContext';
+import { toRounded } from '../../../utilities/numbers';
+import { IAppHeaderContext } from '../../header/AppHeaderContext';
 
-export const useContainer = () => {
+export const useContainer = (containerName: string) => {
   const appContext = useContext(AppContext);
 
   const accountName = appContext.azureStorage.accountName;
-  const containerName = appContext.azureStorage.containerName;
   const sasString = appContext.azureStorage.sasToken;
 
+  const safeContainerName = getSafeStorageName(containerName);
+
   const containerURL = new ContainerURL(
-    `https://${accountName}.blob.core.windows.net/${containerName}?${sasString}`,
+    `https://${accountName}.blob.core.windows.net/${safeContainerName}?${sasString}`,
     StorageURL.newPipeline(new AnonymousCredential())
   );
 
-  return { containerName, containerURL };
+  return { containerName: safeContainerName, containerURL };
 };
 
 export const createContainer = async (
@@ -33,11 +34,15 @@ export const createContainer = async (
   containerURL: ContainerURL,
   appHeaderContext: IAppHeaderContext
 ) => {
-  const { showInfo, showError, showSuccess } = appHeaderContext;
+  const { showInfoUntil, showError, showSuccess } = appHeaderContext;
 
   try {
-    showInfo(`Creating container "${containerName}"...`);
-    await containerURL.create(Aborter.none);
+    var createPromise = containerURL.create(Aborter.none);
+
+    showInfoUntil(`Creating container "${containerName}"...`, createPromise);
+
+    await createPromise;
+
     showSuccess(`Done.`);
   } catch (error) {
     showError((error.body && error.body.message) || error.message);
@@ -49,14 +54,44 @@ export const deleteContainer = async (
   containerURL: ContainerURL,
   appHeaderContext: IAppHeaderContext
 ) => {
-  const { showInfo, showError, showSuccess } = appHeaderContext;
+  const { showInfoUntil, showError, showSuccess } = appHeaderContext;
 
   try {
-    showInfo(`Deleting container "${containerName}"...`);
+    var deletePromise = containerURL.delete(Aborter.none);
 
-    await containerURL.delete(Aborter.none);
+    showInfoUntil(`Deleting container "${containerName}"...`, deletePromise);
+
+    await deletePromise;
 
     showSuccess(`Done.`);
+  } catch (error) {
+    showError((error.body && error.body.message) || error.message);
+  }
+};
+
+export const getFiles = async (containerURL: ContainerURL, fileName: string, appHeaderContext: IAppHeaderContext) => {
+  const { showError } = appHeaderContext;
+
+  try {
+    let marker: string | undefined;
+
+    const blobs = [];
+
+    do {
+      const listBlobsResponse = await containerURL.listBlobFlatSegment(Aborter.none, marker);
+
+      marker = listBlobsResponse.nextMarker;
+
+      const items = listBlobsResponse.segment.blobItems;
+
+      for (const blob of items) {
+        if (blob.name.startsWith(`${getSafeStorageName(fileName)}/`)) {
+          blobs.push(blob);
+        }
+      }
+    } while (marker);
+
+    return blobs;
   } catch (error) {
     showError((error.body && error.body.message) || error.message);
   }
@@ -96,8 +131,8 @@ export const listFiles = async (
 
 export const uploadFiles = async (
   fileInput: HTMLInputElement,
-  fileList: HTMLSelectElement,
   containerURL: ContainerURL,
+  directory: string,
   appHeaderContext: IAppHeaderContext
 ) => {
   const { showInfoUntil, showError, showSuccess } = appHeaderContext;
@@ -111,7 +146,10 @@ export const uploadFiles = async (
       const promises = [];
 
       for (const file of fileInput.files) {
-        const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, file.name);
+        const blockBlobURL = BlockBlobURL.fromContainerURL(
+          containerURL,
+          `${getSafeStorageName(directory)}/${file.name}`
+        );
 
         const subject = new Subject<{ progress: number; text: string }>();
 
@@ -121,7 +159,7 @@ export const uploadFiles = async (
           progress: progress => {
             subject.next({
               progress: progress.loadedBytes / file.size,
-              text: `${toRounded(progress.loadedBytes / 1000 / 1000, 2)} MB uploaded`
+              text: `${toRounded(progress.loadedBytes / 1024 / 1024, 2)} MB uploaded`
             });
           }
         }).then(() => new Promise(resolve => setTimeout(resolve, 1000)));
@@ -136,7 +174,6 @@ export const uploadFiles = async (
 
       fileInput.value = '';
     }
-    listFiles(fileList, containerURL, appHeaderContext);
   } catch (error) {
     showError((error.body && error.body.message) || error.message);
   }
@@ -166,4 +203,8 @@ export const deleteFiles = async (
   } catch (error) {
     showError((error.body && error.body.message) || error.message);
   }
+};
+
+export const getSafeStorageName = (containerName: string) => {
+  return containerName.replace(/_/g, '');
 };
