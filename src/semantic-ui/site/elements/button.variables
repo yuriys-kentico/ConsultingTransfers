@@ -1,0 +1,12 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+@backgroundImage: linear-gradient(rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.05));
+@borderBoxShadowColor: rgba(0, 0, 0, 0.13);
+
+@coloredBackgroundImage: linear-gradient(rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.2));
+@coloredBoxShadow: @boxShadow;
+
+@hoverBackgroundColor: #F0F0F0;
+@hoverBackgroundImage: linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1));
+@hoverBoxShadow: @boxShadow;

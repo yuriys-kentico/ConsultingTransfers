@@ -1,5 +1,4 @@
-import React, { FC, useState, useEffect, ReactElement } from 'react';
 import { RouteComponentProps } from '@reach/router';
-import { Loader } from 'semantic-ui-react';
+import { FC } from 'react';
 
 export type RoutedFC<P = {}> = FC<RouteComponentProps<P>>;

@@ -1,0 +1,8 @@
+/*******************************
+     User Global Variables
+*******************************/
+@primaryColor: red;
+@pageBackground: #eff0f1;
+
+@fontName : 'Source Sans Pro';
+@importGoogleFonts : false;

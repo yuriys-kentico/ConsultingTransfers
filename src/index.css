@@ -26,11 +26,12 @@
 }
 
 .top.sidebar {
-  background: orange !important;
+  background: #f05a22 !important;
 }
 
-.button {
-  background: orange !important;
+.top.sidebar .icon.button {
+  background: none;
+  box-shadow: none;
 }
 
 .content .button {
@@ -38,21 +39,7 @@
   padding: 0.78571429rem !important;
 }
 
-.secondary.button {
-  background: salmon !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-}
-
-.secondary.button:hover {
-  color: white !important;
-}
-
-.button:hover {
-  color: white !important;
-}
-
-.top.sidebar .icon:hover {
-  background: none;
+.top.sidebar .icon.button:hover {
   color: white;
 }
 
@@ -64,4 +51,13 @@
 
 .ui.visible.scale.down.sidebar ~ .pusher {
   transform: scale(0.8) !important;
+}
+
+.ui.negative.buttons .button:hover,
+.ui.negative.button:hover {
+  background-color: #f02020 !important;
+}
+
+.ui.placeholder, .ui.placeholder > :before, .ui.placeholder .image.header:after, .ui.placeholder .line, .ui.placeholder .line:after {
+    background-color: #eff0f1 !important;
 }

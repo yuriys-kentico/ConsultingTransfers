@@ -1,15 +1,15 @@
 import { FC, useRef, useContext } from 'react';
 import React from 'react';
-import { Divider, Header, Button } from 'semantic-ui-react';
+import { Divider, Header, Button, List } from 'semantic-ui-react';
+import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
+import { TransferContext } from '../../shared/transfers/TransferContext';
 import {
   useContainer,
   createContainer,
   deleteContainer,
   listFiles,
   deleteFiles
-} from '../../transfers/azure/azureStorage';
-import { AppHeaderContext } from '../../header/AppHeaderContext';
-import { TransferContext } from '../../transfers/TransferContext';
+} from '../../shared/transfers/azure/azureStorage';
 
 export const AdminControls: FC = () => {
   const appHeaderContext = useContext(AppHeaderContext);
@@ -22,6 +22,10 @@ export const AdminControls: FC = () => {
   return (
     <div>
       <Divider hidden />
+      <List>
+        <List.Item>Container name: {containerName}</List.Item>
+        <List.Item>Container URL: {containerURL.url}</List.Item>
+      </List>
       <Header as='h2' content='Files:' />
       <select ref={fileList} multiple className='file list' />
       <Divider />
@@ -31,7 +35,7 @@ export const AdminControls: FC = () => {
       />
       <Button
         onClick={() => deleteContainer(containerName, containerURL, appHeaderContext)}
-        secondary
+        negative
         content='Delete container'
       />
       <Button
@@ -40,7 +44,7 @@ export const AdminControls: FC = () => {
       />
       <Button
         onClick={() => fileList.current && deleteFiles(fileList.current, containerURL, appHeaderContext)}
-        secondary
+        negative
         content='Delete selected files'
       />
     </div>

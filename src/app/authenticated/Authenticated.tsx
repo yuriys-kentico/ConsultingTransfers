@@ -1,9 +1,12 @@
-import { ReactNode, useState, useContext, useEffect } from 'react';
+import { ReactNode, useState, useContext, useEffect, lazy, Suspense } from 'react';
 import { UserAgentApplication, Configuration } from 'msal';
 import { RoutedFC } from '../RoutedFC';
 import React from 'react';
 import { AppContext } from '../AppContext';
 import { Loader } from 'semantic-ui-react';
+import { Router } from '@reach/router';
+
+const Admin = lazy(() => import('./admin/Admin').then(module => ({ default: module.Admin })));
 
 export interface IAuthenticatedProps {
   useAuthentication?: boolean;
@@ -41,5 +44,15 @@ export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {
     }
   }, [accessTokenRequest, userAgentApplication, authenticated]);
 
-  return authenticated ? <div className='full height'>{props.children}</div> : <Loader active size='massive' />;
+  return authenticated ? (
+    <div className='full height'>
+      <Suspense fallback={<Loader active size='massive' />}>
+        <Router>
+          <Admin path='/*' />
+        </Router>
+      </Suspense>
+    </div>
+  ) : (
+    <Loader active size='massive' />
+  );
 };
