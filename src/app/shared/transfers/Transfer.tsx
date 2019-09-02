@@ -44,9 +44,8 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
       ) : (
         <TransferContext.Provider value={transferContext}>
           <div>
-            <Header as='h2' content={`Transfer ${transferContext.item.system.name}`} />
+            <Header as='h2' content={`Transfer: ${transferContext.item.system.name}`} />
             <Fields />
-            <Divider />
             {props.authenticated && <AdminControls />}
           </div>
         </TransferContext.Provider>

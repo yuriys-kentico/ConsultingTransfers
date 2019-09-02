@@ -25,13 +25,9 @@
   margin: 0;
 }
 
-.top.sidebar {
+.massive.menu {
   background: #f05a22 !important;
-}
-
-.top.sidebar .icon.button {
-  background: none;
-  box-shadow: none;
+  border-radius: 0 !important;
 }
 
 .content .button {
@@ -58,6 +54,10 @@
   background-color: #f02020 !important;
 }
 
-.ui.placeholder, .ui.placeholder > :before, .ui.placeholder .image.header:after, .ui.placeholder .line, .ui.placeholder .line:after {
-    background-color: #eff0f1 !important;
+.ui.placeholder,
+.ui.placeholder > :before,
+.ui.placeholder .image.header:after,
+.ui.placeholder .line,
+.ui.placeholder .line:after {
+  background-color: #eff0f1 !important;
 }

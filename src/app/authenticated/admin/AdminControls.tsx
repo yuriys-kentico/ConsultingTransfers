@@ -1,34 +1,90 @@
-import { FC, useRef, useContext } from 'react';
-import React from 'react';
-import { Divider, Header, Button, List } from 'semantic-ui-react';
+import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
+import { Link } from '@reach/router';
+import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import { Button, Divider, Header, List, Placeholder, Segment } from 'semantic-ui-react';
 import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
-import { TransferContext } from '../../shared/transfers/TransferContext';
 import {
-  useContainer,
   createContainer,
   deleteContainer,
-  listFiles,
-  deleteFiles
+  deleteFile,
+  deleteFiles,
+  downloadFile,
+  getFiles,
+  useContainer
 } from '../../shared/transfers/azure/azureStorage';
+import { BlobDetails } from '../../shared/transfers/BlobDetails';
+import { TransferContext } from '../../shared/transfers/TransferContext';
 
 export const AdminControls: FC = () => {
   const appHeaderContext = useContext(AppHeaderContext);
-  const transferContext = useContext(TransferContext);
+  const { item } = useContext(TransferContext);
 
-  const fileList = useRef<HTMLSelectElement>(null);
+  const { containerName, containerURL } = useContainer(item.system.codename);
 
-  const { containerName, containerURL } = useContainer(transferContext.item.system.codename);
+  const [files, setFiles] = useState<BlobItem[]>();
+  const [selectedFiles, setSelectedFiles] = useState<BlobItem[]>([]);
+
+  useEffect(() => {
+    getFiles(containerURL, appHeaderContext).then(files => setFiles(files));
+  }, []);
 
   return (
     <div>
-      <Divider hidden />
-      <List>
-        <List.Item>Container name: {containerName}</List.Item>
-        <List.Item>Container URL: {containerURL.url}</List.Item>
-      </List>
-      <Header as='h2' content='Files:' />
-      <select ref={fileList} multiple className='file list' />
       <Divider />
+      <Segment>
+        <Header as='h2' content='Details:' />
+        <List>
+          <Header as='h4' content='Container name:' subheader={containerName} />
+          <Header as='h4'>
+            Container URL:
+            <Header.Subheader>
+              <Link to={containerURL.url}>{containerURL.url}</Link>
+            </Header.Subheader>
+          </Header>
+        </List>
+      </Segment>
+      {!files ? (
+        <Placeholder>
+          <Placeholder.Header>
+            <Placeholder.Line />
+            <Placeholder.Line />
+          </Placeholder.Header>
+        </Placeholder>
+      ) : (
+        <Segment>
+          <Header as='h2' content='Files:' />
+          <List>
+            {files.map((file, index) => (
+              <List.Item key={index} className='padding bottom'>
+                <List.Content floated='right'>
+                  <Button
+                    circular
+                    icon={selectedFiles.indexOf(file) > -1 ? 'check square outline' : 'square outline'}
+                    onClick={() => setSelectedFiles([...selectedFiles, file])}
+                  />
+                  <Button circular icon='download' onClick={() => downloadFile(file, containerURL, appHeaderContext)} />
+                  <Button
+                    circular
+                    icon='trash'
+                    onClick={() =>
+                      deleteFile(file, containerURL, appHeaderContext).then(() =>
+                        setFiles(files => {
+                          files && delete files[files.indexOf(file)];
+                          return files;
+                        })
+                      )
+                    }
+                  />
+                </List.Content>
+                <List.Content>
+                  <BlobDetails file={file} />
+                </List.Content>
+              </List.Item>
+            ))}
+          </List>
+        </Segment>
+      )}
+      <Divider hidden />
       <Button
         onClick={() => createContainer(containerName, containerURL, appHeaderContext)}
         content='Create container'
@@ -39,11 +95,7 @@ export const AdminControls: FC = () => {
         content='Delete container'
       />
       <Button
-        onClick={() => fileList.current && listFiles(fileList.current, containerURL, appHeaderContext)}
-        content='List files'
-      />
-      <Button
-        onClick={() => fileList.current && deleteFiles(fileList.current, containerURL, appHeaderContext)}
+        onClick={() => deleteFiles(selectedFiles, containerURL, appHeaderContext)}
         negative
         content='Delete selected files'
       />

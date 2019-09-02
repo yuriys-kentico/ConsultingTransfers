@@ -10,7 +10,6 @@ const Admin = lazy(() => import('./admin/Admin').then(module => ({ default: modu
 
 export interface IAuthenticatedProps {
   useAuthentication?: boolean;
-  children: ReactNode;
 }
 
 export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {

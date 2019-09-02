@@ -25,12 +25,10 @@ export const Snack: FC<ISnack> = props => {
       return <Message floating compact content={props.text} error />;
     case 'update':
       return (
-        <Message
-          floating
-          compact
-          content={`${props.text} ${progress.text} (${toRounded(progress.progress * 100)}%)`}
-          info
-        />
+        <Message floating compact info>
+          {props.text}
+          {props.update && `${progress.text} (${toRounded(progress.progress * 100)}%)`}
+        </Message>
       );
   }
 };

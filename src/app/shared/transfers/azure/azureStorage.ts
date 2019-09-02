@@ -12,6 +12,8 @@ import { Subject } from 'rxjs';
 import { AppContext } from '../../../AppContext';
 import { IAppHeaderContext } from '../../header/AppHeaderContext';
 import { toRounded } from '../../../../utilities/numbers';
+import { createWriteStream } from 'streamsaver';
+import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 
 export const useContainer = (containerName: string) => {
   const appContext = useContext(AppContext);
@@ -70,8 +72,52 @@ export const deleteContainer = async (
   }
 };
 
-export const getFiles = async (containerURL: ContainerURL, fileName: string, appHeaderContext: IAppHeaderContext) => {
-  const { showError } = appHeaderContext;
+export const downloadFile = async (blob: BlobItem, containerURL: ContainerURL, appHeaderContext: IAppHeaderContext) => {
+  const { showInfoUntil, showError, showSuccess } = appHeaderContext;
+
+  try {
+    const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, blob.name);
+
+    const subject = new Subject<{ progress: number; text: string }>();
+
+    const downloadPromise = blockBlobURL.download(Aborter.none, 0, undefined, {
+      progress: progress => {
+        subject.next({
+          progress: blob.properties.contentLength ? progress.loadedBytes / blob.properties.contentLength : 0,
+          text: `${toRounded(progress.loadedBytes / 1024 / 1024, 2)} MB downloaded`
+        });
+      }
+    });
+
+    const response = await downloadPromise;
+
+    if (response.blobBody) {
+      showInfoUntil(`Downloading ${blob.name}...`, response.blobBody, subject);
+
+      const body = await response.blobBody;
+
+      const fileStream = createWriteStream(blob.name, {
+        highWaterMark: 16
+      });
+
+      const readableStream = new Response(body).body;
+
+      if (readableStream) {
+        const downloadStream = readableStream.pipeTo(fileStream);
+
+        await downloadStream;
+      }
+
+      showSuccess(`Finished downloading ${blob.name}.`);
+    }
+  } catch (error) {
+    console.log(error);
+    showError((error.body && error.body.message) || error.message);
+  }
+};
+
+export const getFiles = async (containerURL: ContainerURL, appHeaderContext: IAppHeaderContext, fieldName?: string) => {
+  const { showError, showWarning } = appHeaderContext;
 
   try {
     let marker: string | undefined;
@@ -85,47 +131,19 @@ export const getFiles = async (containerURL: ContainerURL, fileName: string, app
 
       const items = listBlobsResponse.segment.blobItems;
 
-      for (const blob of items) {
-        if (blob.name.startsWith(`${getSafeStorageName(fileName)}/`)) {
-          blobs.push(blob);
-        }
-      }
-    } while (marker);
-
-    return blobs;
-  } catch (error) {
-    console.log(error);
-    showError((error.body && error.body.message) || error.message);
-  }
-};
-
-export const listFiles = async (
-  fileList: HTMLSelectElement,
-  containerURL: ContainerURL,
-  appHeaderContext: IAppHeaderContext
-) => {
-  fileList.innerHTML = '';
-
-  const { showError, showWarning } = appHeaderContext;
-
-  try {
-    let marker: string | undefined;
-
-    do {
-      const listBlobsResponse = await containerURL.listBlobFlatSegment(Aborter.none, marker);
-
-      marker = listBlobsResponse.nextMarker;
-
-      const items = listBlobsResponse.segment.blobItems;
-
       if (items.length === 0) {
         showWarning('There are no files to list.');
       }
 
       for (const blob of items) {
-        fileList.innerHTML += `<option>${blob.name}</option>`;
+        if (fieldName && !blob.name.startsWith(`${getSafeStorageName(fieldName)}/`)) {
+          continue;
+        }
+        blobs.push(blob);
       }
     } while (marker);
+
+    return blobs;
   } catch (error) {
     console.log(error);
     showError((error.body && error.body.message) || error.message);
@@ -184,26 +202,44 @@ export const uploadFiles = async (
 };
 
 export const deleteFiles = async (
-  fileList: HTMLSelectElement,
+  blobs: BlobItem[],
   containerURL: ContainerURL,
   appHeaderContext: IAppHeaderContext
 ) => {
   const { showInfo, showError, showSuccess, showWarning } = appHeaderContext;
 
-  try {
-    if (fileList.selectedOptions.length > 0) {
-      showInfo('Deleting files...');
+  const blobNames = Array.from(blobs)
+    .map(blob => `${blob.name}`)
+    .join(', ');
 
-      for (const option of fileList.selectedOptions) {
-        const blobURL = BlobURL.fromContainerURL(containerURL, option.text);
+  try {
+    if (blobs.length > 0) {
+      showInfo(`Deleting ${blobNames}...`);
+
+      for (const blob of blobs) {
+        const blobURL = BlobURL.fromContainerURL(containerURL, blob.name);
         await blobURL.delete(Aborter.none);
       }
       showSuccess('Done.');
-
-      listFiles(fileList, containerURL, appHeaderContext);
     } else {
       showWarning('No files selected.');
     }
+  } catch (error) {
+    console.log(error);
+    showError((error.body && error.body.message) || error.message);
+  }
+};
+
+export const deleteFile = async (blob: BlobItem, containerURL: ContainerURL, appHeaderContext: IAppHeaderContext) => {
+  const { showInfo, showError, showSuccess } = appHeaderContext;
+
+  try {
+    showInfo(`Deleting file ${blob.name}...`);
+
+    const blobURL = BlobURL.fromContainerURL(containerURL, blob.name);
+    await blobURL.delete(Aborter.none, { deleteSnapshots: 'include' });
+
+    showSuccess('Done.');
   } catch (error) {
     console.log(error);
     showError((error.body && error.body.message) || error.message);

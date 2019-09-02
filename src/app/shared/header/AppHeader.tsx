@@ -1,6 +1,6 @@
 import React, { FC, useState, ReactNode, useContext } from 'react';
 
-import { Button, Header, Segment, Sidebar } from 'semantic-ui-react';
+import { Button, Header, Segment, Sidebar, Menu } from 'semantic-ui-react';
 import { SnackBar, hideSnackAfter, hideSnackWhen, showSnack, UpdateSnackHandler, SnackType } from './SnackBar';
 import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
 import { AppContext } from '../../AppContext';
@@ -52,7 +52,7 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
         {props.sideBar && props.sideBar(sidebarOpen, toggleSidebar(false))}
         <Sidebar.Pusher className='full height' dimmed={sidebarOpen}>
           <Sidebar.Pushable>
-            <Sidebar direction='top' visible as={Segment} basic>
+            {/* <Sidebar direction='top' visible as={Segment} basic>
               <Header as='h2'>
                 {props.sideBar && <Button icon='bars' onClick={toggleSidebar(true)} />}
                 {props.title.toUpperCase()}
@@ -60,7 +60,12 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
             </Sidebar>
             <Sidebar.Pusher as={Segment} basic>
               {props.children}
-            </Sidebar.Pusher>
+            </Sidebar.Pusher> */}
+            <Menu borderless size='massive'>
+              {props.sideBar && <Menu.Item icon='bars' onClick={toggleSidebar(true)} />}
+              <Menu.Item header fitted='horizontally' content={props.title} />
+            </Menu>
+            {props.children}
           </Sidebar.Pushable>
         </Sidebar.Pusher>
       </Sidebar.Pushable>

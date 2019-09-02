@@ -17,8 +17,10 @@
     "react-scripts": "3.1.1",
     "rxjs": "^6.5.2",
     "semantic-ui-react": "0.88.0",
+    "streamsaver": "^2.0.3",
     "typeface-source-sans-pro": "0.0.75",
-    "typescript": "3.5.3"
+    "typescript": "3.5.3",
+    "web-streams-polyfill": "^2.0.4"
   },
   "scripts": {
     "start": "craco start",
