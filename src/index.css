@@ -25,9 +25,16 @@
   margin: 0;
 }
 
+.pushable:not(body) {
+  transform: initial !important;
+}
+
 .massive.menu {
   background: #f05a22 !important;
   border-radius: 0 !important;
+  position: sticky;
+  top: 0;
+  z-index: 900;
 }
 
 .content .button {

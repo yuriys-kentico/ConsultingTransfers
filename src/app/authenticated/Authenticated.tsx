@@ -1,10 +1,9 @@
-import { ReactNode, useState, useContext, useEffect, lazy, Suspense } from 'react';
-import { UserAgentApplication, Configuration } from 'msal';
-import { RoutedFC } from '../RoutedFC';
-import React from 'react';
-import { AppContext } from '../AppContext';
-import { Loader } from 'semantic-ui-react';
 import { Router } from '@reach/router';
+import { Configuration, UserAgentApplication } from 'msal';
+import React, { lazy, Suspense, useContext, useEffect, useState } from 'react';
+import { Loader } from 'semantic-ui-react';
+import { AppContext } from '../AppContext';
+import { RoutedFC } from '../RoutedFC';
 
 const Admin = lazy(() => import('./admin/Admin').then(module => ({ default: module.Admin })));
 

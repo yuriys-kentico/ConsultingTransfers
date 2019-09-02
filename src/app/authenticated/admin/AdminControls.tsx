@@ -1,6 +1,5 @@
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
-import { Link } from '@reach/router';
-import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { Button, Divider, Header, List, Placeholder, Segment } from 'semantic-ui-react';
 import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
 import {
@@ -38,7 +37,7 @@ export const AdminControls: FC = () => {
           <Header as='h4'>
             Container URL:
             <Header.Subheader>
-              <Link to={containerURL.url}>{containerURL.url}</Link>
+              <a href={containerURL.url}>{containerURL.url}</a>
             </Header.Subheader>
           </Header>
         </List>

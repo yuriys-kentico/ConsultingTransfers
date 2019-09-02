@@ -2,7 +2,7 @@ import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import { Button, List, Placeholder, Segment } from 'semantic-ui-react';
 import { AppHeaderContext } from '../../header/AppHeaderContext';
-import { getFiles, uploadFiles, useContainer } from '../azure/azureStorage';
+import { getFiles, getSafeStorageName, uploadFiles, useContainer } from '../azure/azureStorage';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldProps } from '../Fields';
 import { TransferContext } from '../TransferContext';
@@ -37,7 +37,7 @@ export const UploadFile: FC<IFieldProps> = ({ field }) => {
         ) : (
           files.map((file, index) => (
             <List.Content key={index} className='padding bottom'>
-              <BlobDetails file={file} />
+              <BlobDetails file={file} fileName={file.name.split(`${getSafeStorageName(field.system.codename)}/`)[1]} />
             </List.Content>
           ))
         )}

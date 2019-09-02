@@ -5,12 +5,13 @@ import { toRounded } from '../../../utilities/numbers';
 
 interface IBlobDetailsProps {
   file: BlobItem;
+  fileName?: string;
 }
 
-export const BlobDetails: FC<IBlobDetailsProps> = ({ file }) => {
+export const BlobDetails: FC<IBlobDetailsProps> = ({ file, fileName }) => {
   return (
     <div>
-      <List.Header>{file.name}</List.Header>
+      <List.Header>{fileName ? fileName : file.name}</List.Header>
       {file.properties.contentLength && (
         <List.Description>
           {file.properties.contentLength > 0 && (

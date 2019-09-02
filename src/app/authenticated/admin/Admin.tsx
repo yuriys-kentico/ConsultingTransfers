@@ -19,7 +19,7 @@ export const Admin: RoutedFC = () => {
   });
 
   const sideBar = (visible: boolean, onHide: (event: React.MouseEvent<HTMLElement>) => void) => (
-    <Sidebar as={Menu} animation='push' icon='labeled' onHide={onHide} vertical visible={visible} width='thin'>
+    <Sidebar as={Menu} animation='push' icon='labeled' onHide={onHide} vertical visible={visible} width='very thin'>
       <Menu.Item onClick={onHide} as={Link} to='/' getProps={setActiveWhenCurrent(link => link.isCurrent)}>
         <Icon name='home' />
         Home

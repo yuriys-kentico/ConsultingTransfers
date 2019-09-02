@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Header, Segment, Divider, Placeholder } from 'semantic-ui-react';
-import { getDeliveryClient } from './kenticoCloud/kenticoCloud';
-import { ConsultingRequest } from './kenticoCloud/ConsultingRequest';
-import { Fields } from './Fields';
-import { ITransferContext, TransferContext } from './TransferContext';
-import { RoutedFC } from '../../RoutedFC';
+import React, { useContext, useEffect, useState } from 'react';
+import { Header, Placeholder, Segment } from 'semantic-ui-react';
 import { AppContext } from '../../AppContext';
 import { AdminControls } from '../../authenticated/admin/AdminControls';
+import { RoutedFC } from '../../RoutedFC';
+import { Fields } from './Fields';
+import { ConsultingRequest } from './kenticoCloud/ConsultingRequest';
+import { getDeliveryClient } from './kenticoCloud/kenticoCloud';
+import { ITransferContext, TransferContext } from './TransferContext';
 
 export interface ITransferProps {
   urlSlug: string;
