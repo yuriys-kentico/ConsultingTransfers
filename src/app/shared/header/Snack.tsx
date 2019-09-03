@@ -1,33 +1,48 @@
-import { FC, useState } from 'react';
-import React from 'react';
-import { Message } from 'semantic-ui-react';
-import { ISnack } from './SnackBar';
-import { toRounded } from '../../../utilities/numbers';
+import React, { FC, useState } from 'react';
+import { Message, Progress } from 'semantic-ui-react';
 
-export const Snack: FC<ISnack> = props => {
+import { toRounded } from '../../../utilities/numbers';
+import { HideSnackHandler, UpdateSnackHandler } from './SnackBar';
+
+export type SnackType = 'success' | 'info' | 'warning' | 'error' | 'update';
+
+export interface ISnack {
+  text: string;
+  type: SnackType;
+  hide: HideSnackHandler;
+  update?: UpdateSnackHandler;
+}
+
+export interface IUpdateMessage {
+  progress: number;
+  text: string;
+}
+
+export const Snack: FC<ISnack> = ({ type, text, update }) => {
   const [progress, setProgress] = useState({ progress: 0, text: '' });
 
-  if (props.update) {
-    props.update.subscribe(update => {
-      console.log(update);
+  if (update) {
+    update.subscribe(update => {
       setProgress(update);
     });
   }
 
-  switch (props.type) {
+  switch (type) {
     case 'success':
-      return <Message floating compact content={props.text} success />;
+      return <Message floating compact content={text} success />;
     case 'info':
-      return <Message floating compact content={props.text} info />;
+      return <Message floating compact content={text} info />;
     case 'warning':
-      return <Message floating compact content={props.text} warning />;
+      return <Message floating compact content={text} warning />;
     case 'error':
-      return <Message floating compact content={props.text} error />;
+      return <Message floating compact content={text} error />;
     case 'update':
       return (
         <Message floating compact info>
-          {props.text}
-          {props.update && `${progress.text} (${toRounded(progress.progress * 100)}%)`}
+          {text}
+          {update && (
+            <Progress percent={toRounded(progress.progress * 100)} content={progress.text} progress indicating />
+          )}
         </Message>
       );
   }

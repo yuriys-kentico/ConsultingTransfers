@@ -1,9 +1,17 @@
-import { ISnack } from './SnackBar';
 import { createContext } from 'react';
-import { ShowInfoHandler, ShowInfoUntilHandler } from './AppHeader';
 
-export interface IAppHeaderContext {
+import { ISnack, SnackType } from './Snack';
+import { UpdateSnackHandler } from './SnackBar';
+
+export type ShowInfoHandler = (text: string, timeout?: number, type?: SnackType) => void;
+
+export type ShowInfoUntilHandler = (message: string, executor: Promise<unknown>, update?: UpdateSnackHandler) => void;
+
+export interface IAppHeaderContext extends IShowMessageHandlers {
   snacks: ISnack[];
+}
+
+export interface IShowMessageHandlers {
   showInfo: ShowInfoHandler;
   showInfoUntil: ShowInfoUntilHandler;
   showError: ShowInfoHandler;

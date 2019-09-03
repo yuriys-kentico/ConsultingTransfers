@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
-
-import { DeliveryClient, ContentItem } from 'kentico-cloud-delivery';
 import { Link } from '@reach/router';
-import { Header, List, Button, Segment, Placeholder } from 'semantic-ui-react';
-import { RoutedFC } from '../../RoutedFC';
-import { AppContext } from '../../AppContext';
+import { ContentItem, DeliveryClient } from 'kentico-cloud-delivery';
+import React, { useContext, useEffect, useState } from 'react';
+import { Button, Header, List, Segment } from 'semantic-ui-react';
 
-export const Transfers: RoutedFC = () => {
+import { AppContext } from '../AppContext';
+import { RoutedFC } from '../RoutedFC';
+import { Loading } from './transfers/Loading';
+
+export const TransferList: RoutedFC = () => {
   const appContext = useContext(AppContext);
 
   const [items, setItems] = useState<ContentItem[]>([]);
@@ -21,18 +22,14 @@ export const Transfers: RoutedFC = () => {
       .subscribe(response => {
         setItems(response.items);
       });
-  }, [appContext.kenticoCloud]);
+  }, []);
 
   return (
     <Segment basic>
-      <Header as='h2'> Active transfers:</Header>
+      <Header as='h2'>{appContext.terms.transferList}</Header>
       <List divided verticalAlign='middle'>
         {items.length === 0 ? (
-          <Placeholder>
-            <Placeholder.Header>
-              <Placeholder.Line />
-            </Placeholder.Header>
-          </Placeholder>
+          <Loading />
         ) : (
           items.map((item, index) => (
             <List.Item key={index}>

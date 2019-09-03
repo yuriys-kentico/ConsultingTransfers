@@ -1,13 +1,14 @@
-import React, { useContext, lazy, Suspense } from 'react';
 import { Link, LinkGetProps, Router } from '@reach/router';
+import React, { lazy, Suspense, useContext } from 'react';
+import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
+
+import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeader } from '../../shared/header/AppHeader';
-import { AppContext } from '../../AppContext';
-import { Sidebar, Icon, Menu, Container, Loader } from 'semantic-ui-react';
 
 const Home = lazy(() => import('./Home').then(module => ({ default: module.Home })));
 const Transfers = lazy(() =>
-  import('../../shared/transfers/Transfers').then(module => ({ default: module.Transfers }))
+  import('../../shared/TransferList').then(module => ({ default: module.TransferList }))
 );
 const Transfer = lazy(() => import('../../shared//transfers/Transfer').then(module => ({ default: module.Transfer })));
 
@@ -18,7 +19,7 @@ export const Admin: RoutedFC = () => {
     className: linkIsCurrent(link) ? 'active item' : 'item'
   });
 
-  const sideBar = (visible: boolean, onHide: (event: React.MouseEvent<HTMLElement>) => void) => (
+  const sideBar = (visible: boolean, onHide: () => void) => (
     <Sidebar as={Menu} animation='push' icon='labeled' onHide={onHide} vertical visible={visible} width='very thin'>
       <Menu.Item onClick={onHide} as={Link} to='/' getProps={setActiveWhenCurrent(link => link.isCurrent)}>
         <Icon name='home' />

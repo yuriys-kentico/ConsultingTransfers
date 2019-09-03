@@ -1,22 +1,14 @@
-import { FC, useContext, Dispatch, SetStateAction } from 'react';
+import { Dispatch, FC, SetStateAction, useContext } from 'react';
 import React from 'react';
-import { Segment } from 'semantic-ui-react';
-import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
 import { Observable } from 'rxjs';
-import { Snack } from './Snack';
+import { Segment } from 'semantic-ui-react';
 
-export type SnackType = 'success' | 'info' | 'warning' | 'error' | 'update';
-
-export interface ISnack {
-  text: string;
-  type: SnackType;
-  hide: HideSnackHandler;
-  update?: UpdateSnackHandler;
-}
+import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
+import { ISnack, IUpdateMessage, Snack, SnackType } from './Snack';
 
 export type HideSnackHandler = (headerContext: Dispatch<SetStateAction<IAppHeaderContext>>) => Promise<void>;
 
-export type UpdateSnackHandler = Observable<{ progress: number; text: string }>;
+export type UpdateSnackHandler = Observable<IUpdateMessage>;
 
 export type ShowSnackHandler = (
   setHeaderContext: React.Dispatch<React.SetStateAction<IAppHeaderContext>>,

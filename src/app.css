@@ -1,0 +1,66 @@
+#root,
+#root div[role='group'] {
+  height: 100%;
+}
+
+.full.height {
+  height: 100% !important;
+}
+
+.padding.bottom {
+  padding: 0 0 0.78571429em 0;
+}
+
+.snack.bar {
+  position: fixed;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.snack.bar .segment {
+  margin: 0;
+  padding: 0 0 1em 1em;
+}
+
+.massive.menu {
+  background: #6c6c6f !important;
+  border-radius: 0 !important;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.icon.button {
+  background: none !important;
+}
+.drop.zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border-width: 2px;
+  border-radius: 2px;
+  border-color: #eeeeee;
+  border-style: dashed;
+  background-color: #fafafa;
+  color: #bdbdbd;
+  cursor: pointer;
+}
+
+.drop.zone.active {
+  border-color: #cacbcd;
+}
+
+.drop.zone:hover {
+  border-color: #cacbcd;
+}
+
+.ui.negative.buttons .button:hover,
+.ui.negative.button:hover {
+  background-color: #b11a1a !important;
+}
+
+.ui.list .list > .item [class*='left floated'],
+.ui.list > .item [class*='left floated'] {
+  margin: 0em !important;
+}

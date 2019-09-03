@@ -1,8 +1,9 @@
 import { FC, useContext } from 'react';
 import React from 'react';
-import { Field, FieldType } from './kenticoCloud/Field';
-import { UploadFile } from './fields/UploadFile';
 import { List } from 'semantic-ui-react';
+
+import { UploadFile } from './fields/UploadFile';
+import { Field, FieldType } from './kenticoCloud/Field';
 import { TransferContext } from './TransferContext';
 
 export interface IFieldProps {
@@ -21,7 +22,7 @@ export const Fields: FC = () => {
 
   return (
     <List relaxed>
-      {transferContext.item.fields.value.map((element, index: number) => (
+      {transferContext.request.fields.value.map((element, index: number) => (
         <List.Item as={getFieldType(element)} key={index} field={element} />
       ))}
     </List>

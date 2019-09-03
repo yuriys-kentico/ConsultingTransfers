@@ -1,10 +1,12 @@
+import './app.css';
+import 'semantic-ui-less/semantic.less';
+import 'typeface-source-sans-pro';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+
 import { App } from './app/App';
 import * as serviceWorker from './serviceWorker';
-import 'typeface-source-sans-pro';
-import 'semantic-ui-less/semantic.less';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

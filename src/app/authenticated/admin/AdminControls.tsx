@@ -1,31 +1,29 @@
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
-import React, { FC, useContext, useEffect, useState } from 'react';
-import { Button, Divider, Header, List, Placeholder, Segment } from 'semantic-ui-react';
-import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
-import {
-  createContainer,
-  deleteContainer,
-  deleteFile,
-  deleteFiles,
-  downloadFile,
-  getFiles,
-  useContainer
-} from '../../shared/transfers/azure/azureStorage';
+import React, { FC, useContext, useState } from 'react';
+import { Button, Divider, Header, List, Segment } from 'semantic-ui-react';
+
+import { deleteFrom } from '../../../utilities/arrays';
+import { useContainer } from '../../shared/transfers/azure/azureStorage';
 import { BlobDetails } from '../../shared/transfers/BlobDetails';
 import { TransferContext } from '../../shared/transfers/TransferContext';
 
 export const AdminControls: FC = () => {
-  const appHeaderContext = useContext(AppHeaderContext);
-  const { item } = useContext(TransferContext);
+  const { request, blobs, downloadBlob, deleteBlobs, createContainer, deleteContainer } = useContext(TransferContext);
+  const { containerName, containerURL } = useContainer(request.system.codename);
+  const [selectedBlobs, setSelectedBlobs] = useState<BlobItem[]>([]);
 
-  const { containerName, containerURL } = useContainer(item.system.codename);
+  const toggleSelectedBlob = (blob: BlobItem) => {
+    selectedBlobs.indexOf(blob) > -1
+      ? setSelectedBlobs(selectedBlobs => [...deleteFrom(blob, selectedBlobs)])
+      : setSelectedBlobs(selectedBlobs => [...selectedBlobs, blob]);
+  };
 
-  const [files, setFiles] = useState<BlobItem[]>();
-  const [selectedFiles, setSelectedFiles] = useState<BlobItem[]>([]);
-
-  useEffect(() => {
-    getFiles(containerURL, appHeaderContext).then(files => setFiles(files));
-  }, []);
+  for (const blob of selectedBlobs) {
+    const blobIndex = blobs.indexOf(blob);
+    if (blobIndex === -1) {
+      toggleSelectedBlob(blob);
+    }
+  }
 
   return (
     <div>
@@ -42,62 +40,45 @@ export const AdminControls: FC = () => {
           </Header>
         </List>
       </Segment>
-      {!files ? (
-        <Placeholder>
-          <Placeholder.Header>
-            <Placeholder.Line />
-            <Placeholder.Line />
-          </Placeholder.Header>
-        </Placeholder>
-      ) : (
-        <Segment>
-          <Header as='h2' content='Files:' />
-          <List>
-            {files.map((file, index) => (
-              <List.Item key={index} className='padding bottom'>
-                <List.Content floated='right'>
-                  <Button
-                    circular
-                    icon={selectedFiles.indexOf(file) > -1 ? 'check square outline' : 'square outline'}
-                    onClick={() => setSelectedFiles([...selectedFiles, file])}
-                  />
-                  <Button circular icon='download' onClick={() => downloadFile(file, containerURL, appHeaderContext)} />
-                  <Button
-                    circular
-                    icon='trash'
-                    onClick={() =>
-                      deleteFile(file, containerURL, appHeaderContext).then(() =>
-                        setFiles(files => {
-                          files && delete files[files.indexOf(file)];
-                          return files;
-                        })
-                      )
-                    }
-                  />
-                </List.Content>
-                <List.Content>
-                  <BlobDetails file={file} />
-                </List.Content>
-              </List.Item>
-            ))}
-          </List>
-        </Segment>
-      )}
+
+      <Segment>
+        <Header as='h2' content='Files:' />
+        <List>
+          {blobs.map((file, index) => (
+            <List.Item key={index} className='padding bottom'>
+              <List.Content floated='left'>
+                <Button
+                  circular
+                  icon={selectedBlobs.indexOf(file) > -1 ? 'check circle outline' : 'circle outline'}
+                  compact
+                  onClick={() => toggleSelectedBlob(file)}
+                />
+              </List.Content>
+              <List.Content floated='right'>
+                <Button circular icon='download' onClick={() => downloadBlob(file, containerURL)} />
+                <Button circular icon='trash' onClick={() => deleteBlobs(file, containerURL)} />
+              </List.Content>
+              <List.Content>
+                <BlobDetails file={file} />
+              </List.Content>
+            </List.Item>
+          ))}
+        </List>
+      </Segment>
       <Divider hidden />
       <Button
-        onClick={() => createContainer(containerName, containerURL, appHeaderContext)}
-        content='Create container'
-      />
-      <Button
-        onClick={() => deleteContainer(containerName, containerURL, appHeaderContext)}
-        negative
-        content='Delete container'
-      />
-      <Button
-        onClick={() => deleteFiles(selectedFiles, containerURL, appHeaderContext)}
+        onClick={() => deleteBlobs(selectedBlobs, containerURL)}
+        disabled={selectedBlobs.length === 0}
         negative
         content='Delete selected files'
       />
+      <Button
+        onClick={() => deleteContainer(containerName, containerURL)}
+        negative
+        floated='right'
+        content='Delete container'
+      />
+      <Button onClick={() => createContainer(containerName, containerURL)} floated='right' content='Create container' />
     </div>
   );
 };

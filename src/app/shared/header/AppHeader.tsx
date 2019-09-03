@@ -1,16 +1,13 @@
 import React, { FC, ReactNode, useContext, useState } from 'react';
 import { Menu, Sidebar } from 'semantic-ui-react';
+
 import { AppContext } from '../../AppContext';
-import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
-import { hideSnackAfter, hideSnackWhen, showSnack, SnackBar, SnackType, UpdateSnackHandler } from './SnackBar';
-
-export type ShowInfoHandler = (text: string, timeout?: number, type?: SnackType) => void;
-
-export type ShowInfoUntilHandler = (message: string, executor: Promise<unknown>, update?: UpdateSnackHandler) => void;
+import { AppHeaderContext, IAppHeaderContext, ShowInfoHandler, ShowInfoUntilHandler } from './AppHeaderContext';
+import { hideSnackAfter, hideSnackWhen, showSnack, SnackBar } from './SnackBar';
 
 export interface IAppHeaderProps {
   title: string;
-  sideBar?: (visible: boolean, onHide: (event: React.MouseEvent<HTMLElement>) => void) => ReactNode;
+  sideBar?: (visible: boolean, onHide: () => void) => ReactNode;
 }
 
 export const AppHeader: FC<IAppHeaderProps> = props => {
@@ -40,7 +37,7 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleSidebar = (open: boolean) => (event: React.MouseEvent<HTMLElement>) => {
+  const toggleSidebar = (open: boolean) => {
     setSidebarOpen(open);
   };
 
@@ -48,12 +45,12 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
     <AppHeaderContext.Provider value={headerContext}>
       <SnackBar />
       <Sidebar.Pushable>
-        {props.sideBar && props.sideBar(sidebarOpen, toggleSidebar(false))}
+        {props.sideBar && props.sideBar(sidebarOpen, () => toggleSidebar(false))}
         <Sidebar.Pusher className='full height' dimmed={sidebarOpen}>
           <Sidebar.Pushable>
-            <Menu borderless size='massive'>
-              {props.sideBar && <Menu.Item icon='bars' onClick={toggleSidebar(true)} />}
-              <Menu.Item header fitted='horizontally' content={props.title} />
+            <Menu borderless size='massive' inverted>
+              {props.sideBar && <Menu.Item icon='bars' onClick={() => toggleSidebar(true)} />}
+              <Menu.Item header fitted={props.sideBar && 'horizontally'} content={props.title} />
             </Menu>
             {props.children}
           </Sidebar.Pushable>
