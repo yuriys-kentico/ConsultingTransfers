@@ -46,10 +46,8 @@
   color: white;
 }
 
-.file.list {
-  height: 15em;
-  width: 100%;
-  overflow-y: scroll;
+.content .header {
+  padding-bottom: 0.2em;
 }
 
 .ui.visible.scale.down.sidebar ~ .pusher {
@@ -62,9 +60,6 @@
 }
 
 .ui.placeholder,
-.ui.placeholder > :before,
-.ui.placeholder .image.header:after,
-.ui.placeholder .line,
-.ui.placeholder .line:after {
-  background-color: #eff0f1 !important;
+.ui.placeholder .line {
+  background-color: inherit !important;
 }
