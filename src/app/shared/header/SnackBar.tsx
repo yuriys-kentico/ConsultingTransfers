@@ -1,12 +1,12 @@
-import { Dispatch, FC, SetStateAction, useContext } from 'react';
-import React from 'react';
+import React, { Dispatch, FC, SetStateAction, useContext } from 'react';
 import { Observable } from 'rxjs';
 import { Segment } from 'semantic-ui-react';
-
+import { deleteFrom } from '../../../utilities/arrays';
 import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
 import { ISnack, IUpdateMessage, Snack, SnackType } from './Snack';
 
-export type HideSnackHandler = (headerContext: Dispatch<SetStateAction<IAppHeaderContext>>) => Promise<void>;
+
+export type HideSnackHandler = (snack: ISnack, headerContext: Dispatch<SetStateAction<IAppHeaderContext>>) => void;
 
 export type UpdateSnackHandler = Observable<IUpdateMessage>;
 
@@ -36,12 +36,11 @@ export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSn
   const newSnack: ISnack = {
     text: text,
     type: type,
-    hide: hideSnackHandler,
     update: updateSnackHandler
   };
 
   setHeaderContext(headerContext => {
-    newSnack.hide(setHeaderContext);
+    hideSnackHandler(newSnack, setHeaderContext);
 
     return {
       ...headerContext,
@@ -50,18 +49,15 @@ export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSn
   });
 };
 
-export const hideSnackWhen = (executor: Promise<unknown>) => async (
-  setHeaderContext: Dispatch<SetStateAction<IAppHeaderContext>>
+export const hideSnackWhen = (executor: Promise<unknown>) => (snack: ISnack, setHeaderContext: Dispatch<SetStateAction<IAppHeaderContext>>
 ) => {
-  await executor;
-
-  setHeaderContext(headerContext => {
-    headerContext.snacks.shift();
-
-    return {
-      ...headerContext,
-      snacks: headerContext.snacks
-    };
+  executor.then(() => {
+    setHeaderContext(headerContext => {
+      return {
+        ...headerContext,
+        snacks: deleteFrom(snack, headerContext.snacks)
+      };
+    });
   });
 };
 

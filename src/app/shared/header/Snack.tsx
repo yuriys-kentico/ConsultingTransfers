@@ -1,15 +1,14 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useEffect } from 'react';
 import { Message, Progress } from 'semantic-ui-react';
 
 import { toRounded } from '../../../utilities/numbers';
-import { HideSnackHandler, UpdateSnackHandler } from './SnackBar';
+import { UpdateSnackHandler } from './SnackBar';
 
 export type SnackType = 'success' | 'info' | 'warning' | 'error' | 'update';
 
 export interface ISnack {
   text: string;
   type: SnackType;
-  hide: HideSnackHandler;
   update?: UpdateSnackHandler;
 }
 
@@ -21,11 +20,15 @@ export interface IUpdateMessage {
 export const Snack: FC<ISnack> = ({ type, text, update }) => {
   const [progress, setProgress] = useState({ progress: 0, text: '' });
 
-  if (update) {
-    update.subscribe(update => {
-      setProgress(update);
-    });
-  }
+  useEffect(() => {
+    if (update) {
+      const subscription = update.subscribe({next: update => {
+        setProgress(update);
+      }});
+
+      return () => subscription.unsubscribe();
+    }
+  });
 
   switch (type) {
     case 'success':
