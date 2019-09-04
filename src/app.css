@@ -7,6 +7,10 @@
   height: 100% !important;
 }
 
+.padding.top.and.bottom {
+  padding: 0.78571429em 0;
+}
+
 .padding.bottom {
   padding: 0 0 0.78571429em 0;
 }
@@ -63,4 +67,19 @@
 .ui.list .list > .item [class*='left floated'],
 .ui.list > .item [class*='left floated'] {
   margin: 0em !important;
+}
+
+.ui.link.inverted.menu .item:hover,
+.ui.inverted.menu .dropdown.item:hover,
+.ui.inverted.menu .link.item:hover,
+.ui.inverted.menu a.item:hover,
+.ui.inverted.menu a.item:active,
+.ui.inverted.menu .link.item:active {
+  background: none !important;
+  color: #cacbcd !important;
+}
+
+.ui.list .list > .item .description,
+.ui.list > .item .description {
+  margin-top: 0.2em;
 }

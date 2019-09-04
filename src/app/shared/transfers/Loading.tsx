@@ -1,5 +1,5 @@
 import { FC } from 'react';
 import React from 'react';
-import { Loader, Segment } from 'semantic-ui-react';
+import { Loader } from 'semantic-ui-react';
 
-export const Loading: FC = () => <Loader as={Segment} active basic size='large' />;
+export const Loading: FC = () => <Loader active basic size='large' />;

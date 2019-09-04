@@ -1,4 +1,5 @@
-import { IDeliveryClientConfig, DeliveryClient, TypeResolver } from 'kentico-cloud-delivery';
+import { DeliveryClient, IDeliveryClientConfig, TypeResolver } from 'kentico-cloud-delivery';
+
 import { ConsultingRequest } from './ConsultingRequest';
 import { Field } from './Field';
 

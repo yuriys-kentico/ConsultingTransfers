@@ -198,7 +198,7 @@ const uploadFiles = async (
     const promises = [];
 
     for (const file of files) {
-      const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, `${getSafeStorageName(directory)}/${file.name}`);
+      const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, `${directory}/${file.name}`);
 
       const progressSubject = new Subject<IUpdateMessage>();
 

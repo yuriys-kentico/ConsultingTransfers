@@ -3,18 +3,40 @@ import React from 'react';
 import { List } from 'semantic-ui-react';
 
 import { UploadFile } from './fields/UploadFile';
-import { Field, FieldType } from './kenticoCloud/Field';
+import { WriteParagraph } from './fields/WriteParagraph';
 import { TransferContext } from './TransferContext';
 
+type FieldType = 'upload_file' | 'write_paragraph';
+
 export interface IFieldProps {
-  field: Field;
+  name: string;
+  comment: string;
+  type: FieldType;
 }
 
 export const Fields: FC = () => {
   const transferContext = useContext(TransferContext);
 
-  const getFieldType = (field: Field) => {
-    switch (field.type.value[0].codename as FieldType) {
+  let fields: IFieldProps[] = [];
+
+  const strippedJson = transferContext.request.fields
+    .resolveHtml()
+    .replace(/<.*?>/g, '')
+    .replace(/\n/g, '')
+    .replace(/}{/g, '},{');
+
+  const maybeJson = `[${strippedJson}]`;
+
+  try {
+    fields = JSON.parse(maybeJson);
+  } catch (error) {
+    console.log(maybeJson, error);
+  }
+
+  const getFieldType = (fieldType: FieldType) => {
+    switch (fieldType) {
+      case 'write_paragraph':
+        return WriteParagraph;
       case 'upload_file':
         return UploadFile;
     }
@@ -22,8 +44,8 @@ export const Fields: FC = () => {
 
   return (
     <List relaxed>
-      {transferContext.request.fields.value.map((element, index: number) => (
-        <List.Item as={getFieldType(element)} key={index} field={element} />
+      {fields.map((element, index: number) => (
+        <List.Item as={getFieldType(element.type)} key={index} {...element}/>
       ))}
     </List>
   );

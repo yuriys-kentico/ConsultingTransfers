@@ -14,7 +14,6 @@ import { IAzureStorageOptions } from './azure/IAzureStorageOptions';
 import { Fields } from './Fields';
 import { ConsultingRequest } from './kenticoCloud/ConsultingRequest';
 import { getDeliveryClient } from './kenticoCloud/kenticoCloud';
-import { Loading } from './Loading';
 import { ITransferContext, TransferContext } from './TransferContext';
 
 export interface ITransferProps {
@@ -94,21 +93,17 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
     const containerURL = getContainerURL(accountName, safeContainerName, sasString);
 
     AzureStorage.listBlobs(containerURL, azureStorageOptions).then(blobs => {
-      blobs && setTransferContext(transferContext => ({ ...transferContext, request: item, blobs }));
+      setTransferContext(transferContext => ({ ...transferContext, request: item, blobs: blobs || [] }));
     });
   };
 
   return (
     <Segment basic>
-      {!transferContext.request.system ? (
-        <Loading />
-      ) : (
+      {!transferContext.request.system ? null : (
         <TransferContext.Provider value={transferContext}>
-          <div>
-            <Header as='h2' content={`${appContext.terms.transferLabel} ${transferContext.request.system.name}`} />
-            <Fields />
-            {props.authenticated && <AdminControls />}
-          </div>
+          <Header as='h2' content={`${appContext.terms.transferLabel} ${transferContext.request.system.name}`} />
+          <Fields />
+          {props.authenticated && <AdminControls />}
         </TransferContext.Provider>
       )}
     </Segment>

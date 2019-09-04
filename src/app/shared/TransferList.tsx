@@ -5,7 +5,6 @@ import { Button, Header, List, Segment } from 'semantic-ui-react';
 
 import { AppContext } from '../AppContext';
 import { RoutedFC } from '../RoutedFC';
-import { Loading } from './transfers/Loading';
 
 export const TransferList: RoutedFC = () => {
   const appContext = useContext(AppContext);
@@ -28,19 +27,17 @@ export const TransferList: RoutedFC = () => {
     <Segment basic>
       <Header as='h2'>{appContext.terms.transferList}</Header>
       <List divided verticalAlign='middle'>
-        {items.length === 0 ? (
-          <Loading />
-        ) : (
-          items.map((item, index) => (
-            <List.Item key={index}>
-              <List.Content floated='right'>
-                <Button circular icon='edit' as={Link} to={`${item.url.value}`} />
-                <Button circular icon='share square' as={Link} to={`../transfer/${item.url.value}`} />
-              </List.Content>
-              <List.Content header={`${item.system.name}`} className='padding top and bottom' />
-            </List.Item>
-          ))
-        )}
+        {items.map((item, index) => (
+          <List.Item key={index}>
+            <List.Content floated='right'>
+              <Button circular icon='edit' as={Link} to={`${item.url.value}`} />
+              <Button circular icon='share square' as={Link} to={`../transfer/${item.url.value}`} />
+            </List.Content>
+            <List.Content>
+              <List.Header content={item.system.name} className='padding top and bottom' />
+            </List.Content>
+          </List.Item>
+        ))}
       </List>
     </Segment>
   );
