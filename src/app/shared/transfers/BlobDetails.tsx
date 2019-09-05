@@ -1,6 +1,6 @@
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC } from 'react';
-import { Label, List } from 'semantic-ui-react';
+import { Header, Label } from 'semantic-ui-react';
 
 import { toRounded } from '../../../utilities/numbers';
 
@@ -14,11 +14,9 @@ export const BlobDetails: FC<IBlobDetailsProps> = ({ file, fileName }) => {
 
   return (
     <div>
-      <List.Header>{fileName ? fileName : file.name}</List.Header>
-      <List.Description>
-        {contentLength && <Label content={`${toRounded(contentLength / 1024 / 1024, 2)} MB`} icon='save' size='tiny' />}
-        <Label content={`${lastModified.toLocaleString()}`} icon='calendar check outline' size='tiny' />
-      </List.Description>
+      <Header as='h5' sub content={fileName ? fileName : file.name} />
+      {contentLength && <Label content={`${toRounded(contentLength / 1024 / 1024, 2)} MB`} icon='save' size='tiny' />}
+      <Label content={`${lastModified.toLocaleString()}`} icon='calendar check outline' size='tiny' />
     </div>
   );
 };

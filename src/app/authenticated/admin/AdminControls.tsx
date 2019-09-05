@@ -1,13 +1,19 @@
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useContext, useState } from 'react';
-import { Button, Divider, Header, List, Segment, Table } from 'semantic-ui-react';
+import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-ui-react';
 
+import { useContainer } from '../../../connectors/azure/azureStorage';
 import { deleteFrom } from '../../../utilities/arrays';
-import { useContainer } from '../../shared/transfers/azure/azureStorage';
+import { AppContext } from '../../AppContext';
 import { BlobDetails } from '../../shared/transfers/BlobDetails';
 import { TransferContext } from '../../shared/transfers/TransferContext';
 
 export const AdminControls: FC = () => {
+  const {
+    terms: {
+      admin: { controls }
+    }
+  } = useContext(AppContext);
   const { request, blobs, downloadBlob, deleteBlobs, createContainer, deleteContainer } = useContext(TransferContext);
   const { containerName, containerURL } = useContainer(request.system.codename);
   const [selectedBlobs, setSelectedBlobs] = useState<BlobItem[]>([]);
@@ -29,15 +35,12 @@ export const AdminControls: FC = () => {
     <div>
       <Divider />
       <Segment>
-        <Header as='h2' content='Details:' />
+        <Header as='h2' content={controls.details} />
         <List>
-          <Header as='h4' content='Container name:' subheader={containerName} />
-          <Header as='h4'>
-            Container URL:
-            <Header.Subheader>
-              <a href={containerURL.url}>{containerURL.url}</a>
-            </Header.Subheader>
-          </Header>
+          <List.Item>
+            <Label horizontal>{controls.containerName}</Label>
+            {containerName}
+          </List.Item>
         </List>
       </Segment>
       <Segment>
@@ -46,16 +49,22 @@ export const AdminControls: FC = () => {
           <Table.Body>
             {blobs.map((file, index) => (
               <Table.Row key={index}>
-                <Table.Cell collapsing><Button
-                  circular
-                  icon={selectedBlobs.indexOf(file) > -1 ? 'check circle outline' : 'circle outline'}
-                  compact
-                  onClick={() => toggleSelectedBlob(file)}
-                /></Table.Cell>
+                <Table.Cell collapsing>
+                  <Button
+                    circular
+                    icon={selectedBlobs.indexOf(file) > -1 ? 'check circle outline' : 'circle outline'}
+                    compact
+                    onClick={() => toggleSelectedBlob(file)}
+                  />
+                </Table.Cell>
 
-                <Table.Cell><BlobDetails file={file} /></Table.Cell>
-                <Table.Cell textAlign='right'><Button circular icon='download' onClick={() => downloadBlob(file, containerURL)} />
-                  <Button circular icon='trash' onClick={() => deleteBlobs(file, containerURL)} /></Table.Cell>
+                <Table.Cell>
+                  <BlobDetails file={file} />
+                </Table.Cell>
+                <Table.Cell textAlign='right'>
+                  <Button circular icon='download' onClick={() => downloadBlob(file, containerURL)} />
+                  <Button circular icon='trash' onClick={() => deleteBlobs(file, containerURL)} />
+                </Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
@@ -66,15 +75,19 @@ export const AdminControls: FC = () => {
         onClick={() => deleteBlobs(selectedBlobs, containerURL)}
         disabled={selectedBlobs.length === 0}
         negative
-        content='Delete selected files'
+        content={controls.deleteSelected}
       />
       <Button
         onClick={() => deleteContainer(containerName, containerURL)}
         negative
         floated='right'
-        content='Delete container'
+        content={controls.deleteContainer}
       />
-      <Button onClick={() => createContainer(containerName, containerURL)} floated='right' content='Create container' />
+      <Button
+        onClick={() => createContainer(containerName, containerURL)}
+        floated='right'
+        content={controls.createContainer}
+      />
     </div>
   );
 };

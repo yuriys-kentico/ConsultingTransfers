@@ -12,10 +12,48 @@ import { useContext } from 'react';
 import { Subject } from 'rxjs';
 import { createWriteStream } from 'streamsaver';
 
-import { toRounded } from '../../../../utilities/numbers';
-import { AppContext } from '../../../AppContext';
-import { IUpdateMessage } from '../../header/Snack';
-import { IAzureStorageOptions } from './IAzureStorageOptions';
+import { AppContext } from '../../app/AppContext';
+import { IShowMessageHandlers } from '../../app/shared/header/AppHeaderContext';
+import { IUpdateMessage } from '../../app/shared/header/Snack';
+import { toRounded } from '../../utilities/numbers';
+
+interface IAzureStorageAppOptions {
+  uploadBlockMb: number;
+}
+
+export interface IAzureStorageOptions {
+  appOptions: IAzureStorageAppOptions;
+  messageHandlers: IShowMessageHandlers;
+}
+
+const getUploadPromise = (
+  file: File,
+  blockBlobURL: BlockBlobURL,
+  azureStorageOptions: IAzureStorageOptions,
+  progressSubject: Subject<IUpdateMessage>
+) => {
+  return uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobURL, {
+    blockSize: azureStorageOptions.appOptions.uploadBlockMb * 1024 * 1024,
+    parallelism: 20,
+    progress: progress => {
+      progressSubject.next({
+        progress: progress.loadedBytes / file.size,
+        text: `${toRounded(progress.loadedBytes / 1024 / 1024, 2)} MB uploaded`
+      });
+    }
+  }).then(() => new Promise(resolve => setTimeout(resolve, 1000)));
+};
+
+const getDownloadPromise = (blockBlobURL: BlockBlobURL, progressSubject: Subject<IUpdateMessage>, blob: BlobItem) => {
+  return blockBlobURL.download(Aborter.none, 0, undefined, {
+    progress: progress => {
+      progressSubject.next({
+        progress: blob.properties.contentLength ? progress.loadedBytes / blob.properties.contentLength : 0,
+        text: `${toRounded(progress.loadedBytes / 1024 / 1024, 2)} MB downloaded`
+      });
+    }
+  });
+};
 
 export const getContainerURL = (accountName: string, containerName: string, sasString: string) => {
   return new ContainerURL(
@@ -140,9 +178,7 @@ const deleteBlobs = async (
   }
 };
 
-const downloadBlob = async (blob: BlobItem, containerURL: ContainerURL,
-  azureStorageOptions: IAzureStorageOptions
-     ) => {
+const downloadBlob = async (blob: BlobItem, containerURL: ContainerURL, azureStorageOptions: IAzureStorageOptions) => {
   const { showInfoUntil, showError, showSuccess } = azureStorageOptions.messageHandlers;
 
   try {
@@ -150,14 +186,7 @@ const downloadBlob = async (blob: BlobItem, containerURL: ContainerURL,
 
     const progressSubject = new Subject<IUpdateMessage>();
 
-    const downloadPromise = blockBlobURL.download(Aborter.none, 0, undefined, {
-      progress: progress => {
-        progressSubject.next({
-          progress: blob.properties.contentLength ? progress.loadedBytes / blob.properties.contentLength : 0,
-          text: `${toRounded(progress.loadedBytes / 1024 / 1024, 2)} MB downloaded`
-        });
-      }
-    });
+    const downloadPromise = getDownloadPromise(blockBlobURL, progressSubject, blob);
 
     const response = await downloadPromise;
 
@@ -186,32 +215,60 @@ const downloadBlob = async (blob: BlobItem, containerURL: ContainerURL,
   }
 };
 
+const readBlobString = async (
+  blob: BlobItem,
+  containerURL: ContainerURL,
+  azureStorageOptions: IAzureStorageOptions
+) => {
+  const { showError } = azureStorageOptions.messageHandlers;
+
+  try {
+    const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, blob.name);
+
+    const progressSubject = new Subject<IUpdateMessage>();
+
+    const downloadPromise = getDownloadPromise(blockBlobURL, progressSubject, blob);
+
+    const response = await downloadPromise;
+
+    if (response.blobBody) {
+      const body = await response.blobBody;
+
+      const text = await new Response(body).text();
+
+      return text;
+    }
+  } catch (error) {
+    console.log(error);
+    showError((error.body && error.body.message) || error.message);
+  }
+};
+
 const uploadFiles = async (
-  files: FileList,
+  files: File[] | File,
   directory: string,
   containerURL: ContainerURL,
   azureStorageOptions: IAzureStorageOptions
 ) => {
   const { showInfoUntil, showError, showSuccess } = azureStorageOptions.messageHandlers;
 
+  let filesToUpload = [];
+
+  if (Array.isArray(files)) {
+    filesToUpload = files;
+  } else {
+    filesToUpload = [files];
+  }
+
   try {
     const promises = [];
 
-    for (const file of files) {
+    for (const file of filesToUpload) {
       const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, `${directory}/${file.name}`);
 
       const progressSubject = new Subject<IUpdateMessage>();
 
-      const uploadPromise = uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobURL, {
-        blockSize: azureStorageOptions.appOptions.uploadBlockMb * 1024 * 1024,
-        parallelism: 20,
-        progress: progress => {
-          progressSubject.next({
-            progress: progress.loadedBytes / file.size,
-            text: `${toRounded(progress.loadedBytes / 1024 / 1024, 2)} MB uploaded`
-          });
-        }
-      }).then(() => new Promise(resolve => setTimeout(resolve, 1000)));
+      const uploadPromise = getUploadPromise(file, blockBlobURL, azureStorageOptions, progressSubject);
 
       showInfoUntil(`Uploading file ${file.name}...`, uploadPromise, progressSubject);
 
@@ -220,9 +277,7 @@ const uploadFiles = async (
 
     await Promise.all(promises);
 
-    const fileNames = Array.from(files)
-      .map(file => `${file.name}`)
-      .join(', ');
+    const fileNames = filesToUpload.map(file => `${file.name}`).join(', ');
 
     showSuccess(`Finished uploading ${fileNames}.`);
   } catch (error) {
@@ -237,6 +292,7 @@ export const AzureStorage = {
   listBlobs,
   deleteBlobs,
   downloadBlob,
+  readBlobString,
   uploadFiles
 };
 

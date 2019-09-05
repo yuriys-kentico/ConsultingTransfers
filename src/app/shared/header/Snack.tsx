@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Message, Progress } from 'semantic-ui-react';
 
 import { toRounded } from '../../../utilities/numbers';
@@ -28,7 +28,7 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
 
       return () => subscription.unsubscribe();
     }
-  });
+  }, []);
 
   switch (type) {
     case 'success':

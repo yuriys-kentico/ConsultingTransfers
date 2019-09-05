@@ -2,6 +2,7 @@ import { Router } from '@reach/router';
 import { Configuration, UserAgentApplication } from 'msal';
 import React, { lazy, Suspense, useContext, useEffect, useState } from 'react';
 import { Loader } from 'semantic-ui-react';
+
 import { AppContext } from '../AppContext';
 import { RoutedFC } from '../RoutedFC';
 
@@ -18,7 +19,6 @@ export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {
 
   const config = appContext.authentication.config as Configuration;
 
-  // create UserAgentApplication instance
   const userAgentApplication = new UserAgentApplication(config);
 
   const accessTokenRequest = {
@@ -30,14 +30,13 @@ export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {
       userAgentApplication
         .acquireTokenSilent(accessTokenRequest)
         .then(() => setAuthenticated(true))
-        .catch(function(error) {
+        .catch(() => {
           userAgentApplication
             .loginPopup(accessTokenRequest)
             .then(() => setAuthenticated(true))
             .catch(function(error) {
               console.log(error);
             });
-          console.log(error);
         });
     }
   }, [accessTokenRequest, userAgentApplication, authenticated]);

@@ -7,13 +7,13 @@ import { RoutedFC } from '../../RoutedFC';
 import { AppHeader } from '../../shared/header/AppHeader';
 
 const Home = lazy(() => import('./Home').then(module => ({ default: module.Home })));
-const Transfers = lazy(() =>
-  import('../../shared/TransferList').then(module => ({ default: module.TransferList }))
-);
-const Transfer = lazy(() => import('../../shared//transfers/Transfer').then(module => ({ default: module.Transfer })));
+const Transfers = lazy(() => import('./Transfers').then(module => ({ default: module.Transfers })));
+const Transfer = lazy(() => import('../../shared/transfers/Transfer').then(module => ({ default: module.Transfer })));
 
 export const Admin: RoutedFC = () => {
-  const appContext = useContext(AppContext);
+  const {
+    terms: { admin, shared }
+  } = useContext(AppContext);
 
   const setActiveWhenCurrent = (linkIsCurrent: (link: LinkGetProps) => boolean) => (link: LinkGetProps) => ({
     className: linkIsCurrent(link) ? 'active item' : 'item'
@@ -23,7 +23,7 @@ export const Admin: RoutedFC = () => {
     <Sidebar as={Menu} animation='push' icon='labeled' onHide={onHide} vertical visible={visible} width='very thin'>
       <Menu.Item onClick={onHide} as={Link} to='/' getProps={setActiveWhenCurrent(link => link.isCurrent)}>
         <Icon name='home' />
-        Home
+        {admin.sideBar.home}
       </Menu.Item>
       <Menu.Item
         onClick={onHide}
@@ -32,13 +32,13 @@ export const Admin: RoutedFC = () => {
         getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
       >
         <Icon name='sync' />
-        Transfers
+        {admin.sideBar.transfers}
       </Menu.Item>
     </Sidebar>
   );
 
   return (
-    <AppHeader title={appContext.terms.header} sideBar={sideBar}>
+    <AppHeader title={shared.header.header} sideBar={sideBar}>
       <Container text>
         <Suspense fallback={<Loader active size='massive' />}>
           <Router>

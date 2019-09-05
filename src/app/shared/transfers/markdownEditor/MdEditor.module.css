@@ -1,0 +1,36 @@
+
+
+
+
+.ProseMirrorView {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  outline: none;
+  font-family: Roboto, sans-serif;
+  font-size: 16px;
+}
+
+.MarkdownContainer {
+  flex: 1;
+  overflow: hidden;
+  padding: 16px 8px 8px;
+}
+
+.MarkdownTextarea {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  outline: none;
+  font-family: Roboto, sans-serif;
+  font-size: 16px;
+  border: none;
+
+  margin-bottom: 8px;
+}
+
+.hidden {
+  display: none;
+}

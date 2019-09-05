@@ -4,16 +4,20 @@ import { ItemResponses } from 'kentico-cloud-delivery';
 import React, { useContext, useEffect, useState } from 'react';
 import { Header, Segment } from 'semantic-ui-react';
 
+import {
+    AzureStorage,
+    getContainerURL,
+    getSafeStorageName,
+    IAzureStorageOptions,
+} from '../../../connectors/azure/azureStorage';
+import { ConsultingRequest } from '../../../connectors/kenticoCloud/ConsultingRequest';
+import { getDeliveryClient } from '../../../connectors/kenticoCloud/kenticoCloud';
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppContext } from '../../AppContext';
 import { AdminControls } from '../../authenticated/admin/AdminControls';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeaderContext } from '../header/AppHeaderContext';
-import { AzureStorage, getContainerURL, getSafeStorageName } from './azure/azureStorage';
-import { IAzureStorageOptions } from './azure/IAzureStorageOptions';
 import { Fields } from './Fields';
-import { ConsultingRequest } from './kenticoCloud/ConsultingRequest';
-import { getDeliveryClient } from './kenticoCloud/kenticoCloud';
 import { ITransferContext, TransferContext } from './TransferContext';
 
 export interface ITransferProps {
@@ -40,7 +44,10 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
   const downloadBlob = (blob: BlobItem, containerURL: ContainerURL) =>
     AzureStorage.downloadBlob(blob, containerURL, azureStorageOptions);
 
-  const uploadFiles = (files: FileList, directory: string, containerURL: ContainerURL) =>
+  const readBlobString = (blob: BlobItem, containerURL: ContainerURL) =>
+    AzureStorage.readBlobString(blob, containerURL, azureStorageOptions);
+
+  const uploadFiles = (files: File[] | File, directory: string, containerURL: ContainerURL) =>
     AzureStorage.uploadFiles(files, directory, containerURL, azureStorageOptions)
       .then(() => AzureStorage.listBlobs(containerURL, azureStorageOptions))
       .then(blobs => {
@@ -64,6 +71,7 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
     blobs: [],
     deleteBlobs,
     downloadBlob,
+    readBlobString,
     uploadFiles,
     createContainer,
     deleteContainer
@@ -101,7 +109,10 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
     <Segment basic>
       {!transferContext.request.system ? null : (
         <TransferContext.Provider value={transferContext}>
-          <Header as='h2' content={`${appContext.terms.transferLabel} ${transferContext.request.system.name}`} />
+          <Header
+            as='h2'
+            content={`${appContext.terms.shared.transfer.header} ${transferContext.request.system.name}`}
+          />
           <Fields />
           {props.authenticated && <AdminControls />}
         </TransferContext.Provider>

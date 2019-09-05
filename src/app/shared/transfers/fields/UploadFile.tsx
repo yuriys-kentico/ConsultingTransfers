@@ -2,14 +2,22 @@ import React, { FC, useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Container, Header, List, Segment } from 'semantic-ui-react';
 
+import { useContainer } from '../../../../connectors/azure/azureStorage';
 import { AppContext } from '../../../AppContext';
-import { useContainer } from '../azure/azureStorage';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldProps } from '../Fields';
 import { TransferContext } from '../TransferContext';
 
-export const UploadFile: FC<IFieldProps> = ({ name, comment: description }) => {
-  const { terms } = useContext(AppContext);
+export const UploadFile: FC<IFieldProps> = ({ name, comment }) => {
+  const {
+    terms: {
+      shared: {
+        transfer: {
+          fields: { uploadFile }
+        }
+      }
+    }
+  } = useContext(AppContext);
   const { request, blobs, uploadFiles } = useContext(TransferContext);
   const { containerURL } = useContainer(request.system.codename);
 
@@ -25,7 +33,7 @@ export const UploadFile: FC<IFieldProps> = ({ name, comment: description }) => {
     <List.Item>
       <Segment>
         <Header as='h4' content={`${name}`} />
-        {description}
+        {comment}
         <div {...getRootProps({ className: isDragActive ? 'drop zone active' : 'drop zone' })}>
           <Container>
             {fieldBlobs.map((file, index) => (
@@ -35,7 +43,7 @@ export const UploadFile: FC<IFieldProps> = ({ name, comment: description }) => {
             ))}
           </Container>
           <input {...getInputProps()} />
-          {isDragActive ? terms.dropZoneActive : terms.dropZonePassive}
+          {isDragActive ? uploadFile.active : uploadFile.passive}
         </div>
       </Segment>
     </List.Item>
