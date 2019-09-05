@@ -1,6 +1,6 @@
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useContext, useState } from 'react';
-import { Button, Divider, Header, List, Segment } from 'semantic-ui-react';
+import { Button, Divider, Header, List, Segment, Table } from 'semantic-ui-react';
 
 import { deleteFrom } from '../../../utilities/arrays';
 import { useContainer } from '../../shared/transfers/azure/azureStorage';
@@ -40,30 +40,26 @@ export const AdminControls: FC = () => {
           </Header>
         </List>
       </Segment>
-
       <Segment>
         <Header as='h2' content='Files:' />
-        <List>
-          {blobs.map((file, index) => (
-            <List.Item key={index} className='padding bottom'>
-              <List.Content floated='left'>
-                <Button
+        <Table stackable singleLine basic='very' compact>
+          <Table.Body>
+            {blobs.map((file, index) => (
+              <Table.Row key={index}>
+                <Table.Cell collapsing><Button
                   circular
                   icon={selectedBlobs.indexOf(file) > -1 ? 'check circle outline' : 'circle outline'}
                   compact
                   onClick={() => toggleSelectedBlob(file)}
-                />
-              </List.Content>
-              <List.Content floated='right'>
-                <Button circular icon='download' onClick={() => downloadBlob(file, containerURL)} />
-                <Button circular icon='trash' onClick={() => deleteBlobs(file, containerURL)} />
-              </List.Content>
-              <List.Content>
-                <BlobDetails file={file} />
-              </List.Content>
-            </List.Item>
-          ))}
-        </List>
+                /></Table.Cell>
+
+                <Table.Cell><BlobDetails file={file} /></Table.Cell>
+                <Table.Cell textAlign='right'><Button circular icon='download' onClick={() => downloadBlob(file, containerURL)} />
+                  <Button circular icon='trash' onClick={() => deleteBlobs(file, containerURL)} /></Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
       </Segment>
       <Divider hidden />
       <Button

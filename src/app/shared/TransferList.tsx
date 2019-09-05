@@ -1,7 +1,7 @@
 import { Link } from '@reach/router';
 import { ContentItem, DeliveryClient } from 'kentico-cloud-delivery';
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, Header, List, Segment } from 'semantic-ui-react';
+import { Button, Header, List, Segment, Table } from 'semantic-ui-react';
 
 import { AppContext } from '../AppContext';
 import { RoutedFC } from '../RoutedFC';
@@ -26,19 +26,17 @@ export const TransferList: RoutedFC = () => {
   return (
     <Segment basic>
       <Header as='h2'>{appContext.terms.transferList}</Header>
-      <List divided verticalAlign='middle'>
-        {items.map((item, index) => (
-          <List.Item key={index}>
-            <List.Content floated='right'>
-              <Button circular icon='edit' as={Link} to={`${item.url.value}`} />
-              <Button circular icon='share square' as={Link} to={`../transfer/${item.url.value}`} />
-            </List.Content>
-            <List.Content>
-              <List.Header content={item.system.name} className='padding top and bottom' />
-            </List.Content>
-          </List.Item>
-        ))}
-      </List>
+      <Table stackable singleLine basic='very' >
+        <Table.Body>
+          {items.map((item, index) => (
+            <Table.Row key={index}>
+              <Table.Cell>{item.system.name}</Table.Cell>
+              <Table.Cell textAlign='right'><Button circular icon='edit' as={Link} to={`${item.url.value}`} />
+                <Button circular icon='share square' as={Link} to={`../transfer/${item.url.value}`} /></Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table>
     </Segment>
   );
 };
