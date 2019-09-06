@@ -9,13 +9,36 @@ interface IBlobDetailsProps {
   fileName?: string;
 }
 
+const getSizeText = (sizeInBytes: number): string => {
+  let finalSize = sizeInBytes;
+  let unit = 'B';
+
+  // Gigabytes
+  if (sizeInBytes > 1024 * 1024 * 1024) {
+    finalSize = sizeInBytes / 1024 / 1024 / 1024;
+    unit = 'GB';
+  }
+  // Megabytes
+  else if (sizeInBytes > 1024 * 1024) {
+    finalSize = sizeInBytes / 1024 / 1024;
+    unit = 'MB';
+  }
+  // Kilobytes
+  else if (sizeInBytes > 1024) {
+    finalSize = sizeInBytes / 1024;
+    unit = 'KB';
+  }
+
+  return `${toRounded(finalSize)} ${unit}`;
+};
+
 export const BlobDetails: FC<IBlobDetailsProps> = ({ file, fileName }) => {
   const { contentLength, lastModified } = file.properties;
 
   return (
     <div>
       <Header as='h5' sub content={fileName ? fileName : file.name} />
-      {contentLength && <Label content={`${toRounded(contentLength / 1024 / 1024, 2)} MB`} icon='save' size='tiny' />}
+      {<Label content={contentLength !== undefined && getSizeText(contentLength)} icon='save' size='tiny' />}
       <Label content={`${lastModified.toLocaleString()}`} icon='calendar check outline' size='tiny' />
     </div>
   );

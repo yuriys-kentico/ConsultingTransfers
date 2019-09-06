@@ -9,7 +9,7 @@ export const Home: RoutedFC = () => {
 
   return (
     <Segment basic>
-      <Header as='h2'>{appContext.terms.admin.home}</Header>
+      <Header as='h2'>{appContext.terms.admin.home.header}</Header>
       This is home
     </Segment>
   );

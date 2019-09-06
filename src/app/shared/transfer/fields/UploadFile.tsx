@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Container, Header, List, Segment } from 'semantic-ui-react';
+import { Container, List } from 'semantic-ui-react';
 
 import { useContainer } from '../../../../connectors/azure/azureStorage';
 import { AppContext } from '../../../AppContext';
@@ -30,22 +30,16 @@ export const UploadFile: FC<IFieldProps> = ({ name, comment }) => {
   const fieldBlobs = blobs.filter(blob => blob.name.startsWith(`${name}/`));
 
   return (
-    <List.Item>
-      <Segment>
-        <Header as='h4' content={`${name}`} />
-        {comment}
-        <div {...getRootProps({ className: isDragActive ? 'drop zone active' : 'drop zone' })}>
-          <Container>
-            {fieldBlobs.map((file, index) => (
-              <List.Content key={index} className='padding bottom'>
-                <BlobDetails file={file} fileName={file.name.split(`${name}/`)[1]} />
-              </List.Content>
-            ))}
-          </Container>
-          <input {...getInputProps()} />
-          {isDragActive ? uploadFile.active : uploadFile.passive}
-        </div>
-      </Segment>
-    </List.Item>
+    <div {...getRootProps({ className: isDragActive ? 'drop zone active' : 'drop zone' })}>
+      <Container>
+        {fieldBlobs.map((file, index) => (
+          <List.Content key={index} className='padding bottom'>
+            <BlobDetails file={file} fileName={file.name.split(`${name}/`)[1]} />
+          </List.Content>
+        ))}
+      </Container>
+      <input {...getInputProps()} />
+      {isDragActive ? uploadFile.active : uploadFile.passive}
+    </div>
   );
 };

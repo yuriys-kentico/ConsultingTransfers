@@ -5,8 +5,8 @@ import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-u
 import { useContainer } from '../../../connectors/azure/azureStorage';
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppContext } from '../../AppContext';
-import { BlobDetails } from '../../shared/transfers/BlobDetails';
-import { TransferContext } from '../../shared/transfers/TransferContext';
+import { BlobDetails } from '../../shared/transfer/BlobDetails';
+import { TransferContext } from '../../shared/transfer/TransferContext';
 
 export const AdminControls: FC = () => {
   const {

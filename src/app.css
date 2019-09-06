@@ -1,3 +1,11 @@
+.error.boundary {
+  margin: 1em;
+}
+
+.error.boundary span {
+  white-space: pre;
+}
+
 #root,
 #root div[role='group'] {
   height: 100%;
@@ -56,28 +64,28 @@
   cursor: pointer;
 }
 
-.drop.zone.active {
-  border-color: #cacbcd;
-}
-
+.drop.zone.active,
 .drop.zone:hover {
   border-color: #cacbcd;
 }
 
-.write.paragraph {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+.prose.mirror.view {
+  font-family: Roboto, sans-serif;
+  outline: none;
+  border-color: #eeeeee;
+  border-width: 2px;
+  border-style: solid;
 }
 
-.prose.mirror.container {
-  padding: 8px;
-  outline: none;
-  border: none;
-  flex: 1;
-  overflow: hidden;
+.prose.mirror.view:focus,
+.prose.mirror.view:hover {
+  border-color: #cacbcd;
+}
+
+.prose.mirror .placeholder::before {
+  position: absolute;
+  color: #aaa;
+  cursor: text;
 }
 
 .ui.negative.buttons .button:hover,
@@ -107,4 +115,19 @@
 
 .ui.table td {
   padding: 0.3em 0 !important;
+}
+
+ul.ui.list ul,
+ol.ui.list ol,
+.ui.list .list {
+  padding: 0 !important;
+}
+
+.ui.checkbox input.hidden + label {
+  font-weight: 400;
+}
+
+.ui.toggle.checkbox .box:hover:before,
+.ui.toggle.checkbox label:hover:before {
+  background-color: rgba(0, 0, 0, 0.15) !important;
 }

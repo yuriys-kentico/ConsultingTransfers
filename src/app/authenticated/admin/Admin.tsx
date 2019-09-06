@@ -8,7 +8,7 @@ import { AppHeader } from '../../shared/header/AppHeader';
 
 const Home = lazy(() => import('./Home').then(module => ({ default: module.Home })));
 const Transfers = lazy(() => import('./Transfers').then(module => ({ default: module.Transfers })));
-const Transfer = lazy(() => import('../../shared/transfers/Transfer').then(module => ({ default: module.Transfer })));
+const Transfer = lazy(() => import('../../shared/transfer/Transfer').then(module => ({ default: module.Transfer })));
 
 export const Admin: RoutedFC = () => {
   const {

@@ -32,10 +32,12 @@ export const Transfers: RoutedFC = () => {
       <Header as='h2'>{admin.transfers.header}</Header>
       <Table stackable singleLine basic='very'>
         <Table.Header>
-          <Table.HeaderCell>{admin.transfers.table.request}</Table.HeaderCell>
-          <Table.HeaderCell>{admin.transfers.table.account}</Table.HeaderCell>
-          <Table.HeaderCell>{admin.transfers.table.requester}</Table.HeaderCell>
-          <Table.HeaderCell></Table.HeaderCell>
+          <Table.Row>
+            <Table.HeaderCell>{admin.transfers.table.request}</Table.HeaderCell>
+            <Table.HeaderCell>{admin.transfers.table.account}</Table.HeaderCell>
+            <Table.HeaderCell>{admin.transfers.table.requester}</Table.HeaderCell>
+            <Table.HeaderCell></Table.HeaderCell>
+          </Table.Row>
         </Table.Header>
         <Table.Body>
           {items.map((item, index) => (
