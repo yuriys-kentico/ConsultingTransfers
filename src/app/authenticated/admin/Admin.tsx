@@ -1,6 +1,6 @@
 import { Link, LinkGetProps, Router } from '@reach/router';
 import React, { lazy, Suspense, useContext } from 'react';
-import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
+import { Container, Icon, Menu, Sidebar } from 'semantic-ui-react';
 
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
@@ -40,13 +40,11 @@ export const Admin: RoutedFC = () => {
   return (
     <AppHeader title={shared.header.header} sideBar={sideBar}>
       <Container text>
-        <Suspense fallback={<Loader active size='massive' />}>
-          <Router>
-            <Home path='/' />
-            <Transfers path='transfers' />
-            <Transfer path='transfers/:urlSlug' authenticated />
-          </Router>
-        </Suspense>
+        <Router>
+          <Home path='/' />
+          <Transfers path='transfers' />
+          <Transfer path='transfers/:urlSlug' authenticated />
+        </Router>
       </Container>
     </AppHeader>
   );

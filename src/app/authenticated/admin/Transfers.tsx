@@ -2,8 +2,8 @@ import { Link } from '@reach/router';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Header, Segment, Table } from 'semantic-ui-react';
 
-import { ConsultingRequest } from '../../../connectors/kenticoCloud/ConsultingRequest';
-import { getDeliveryClient } from '../../../connectors/kenticoCloud/kenticoCloud';
+import { Request } from '../../../connectors/kenticoCloud/contentTypes/Request';
+import { KenticoCloud } from '../../../connectors/kenticoCloud/kenticoCloud';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 
@@ -13,14 +13,14 @@ export const Transfers: RoutedFC = () => {
     kenticoCloud
   } = useContext(AppContext);
 
-  const [items, setItems] = useState<ConsultingRequest[]>([]);
+  const [items, setItems] = useState<Request[]>([]);
 
   useEffect(() => {
-    const deliveryClient = getDeliveryClient({ ...kenticoCloud });
+    const deliveryClient = KenticoCloud.deliveryClient({ ...kenticoCloud.deliveryClient });
 
     deliveryClient
-      .items<ConsultingRequest>()
-      .type('consulting_request')
+      .items<Request>()
+      .type(Request.codename)
       .toObservable()
       .subscribe(response => {
         setItems(response.items);

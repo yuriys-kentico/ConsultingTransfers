@@ -2,13 +2,15 @@ import React, { FC, useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Container, List } from 'semantic-ui-react';
 
-import { useContainer } from '../../../../connectors/azure/azureStorage';
+import { getFieldBlobs, useContainer } from '../../../../connectors/azure/azureStorage';
 import { AppContext } from '../../../AppContext';
 import { BlobDetails } from '../BlobDetails';
-import { IFieldProps } from '../Fields';
+import { IFieldHolderProps } from '../FieldHolder';
 import { TransferContext } from '../TransferContext';
 
-export const UploadFile: FC<IFieldProps> = ({ name, comment }) => {
+export const UploadFile: FC<IFieldHolderProps> = ({ field, completed }) => {
+  const name = field.name.value;
+
   const {
     terms: {
       shared: {
@@ -25,12 +27,14 @@ export const UploadFile: FC<IFieldProps> = ({ name, comment }) => {
     uploadFiles(files, name, containerURL);
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, disabled: completed });
 
-  const fieldBlobs = blobs.filter(blob => blob.name.startsWith(`${name}/`));
+  const fieldBlobs = getFieldBlobs(blobs, name);
+
+  const getClassName = ['drop zone', isDragActive ? 'active' : '', completed ? 'disabled' : ''].join(' ');
 
   return (
-    <div {...getRootProps({ className: isDragActive ? 'drop zone active' : 'drop zone' })}>
+    <div {...getRootProps({ className: getClassName })}>
       <Container>
         {fieldBlobs.map((file, index) => (
           <List.Content key={index} className='padding bottom'>
@@ -39,7 +43,7 @@ export const UploadFile: FC<IFieldProps> = ({ name, comment }) => {
         ))}
       </Container>
       <input {...getInputProps()} />
-      {isDragActive ? uploadFile.active : uploadFile.passive}
+      {!completed && (isDragActive ? uploadFile.active : uploadFile.passive)}
     </div>
   );
 };

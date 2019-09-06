@@ -4,11 +4,12 @@ import { schema } from 'prosemirror-markdown';
 import { MarkType, NodeType } from 'prosemirror-model';
 import { wrapInList } from 'prosemirror-schema-list';
 import { EditorState, NodeSelection, Transaction } from 'prosemirror-state';
-import React from 'react';
+import React, { useContext } from 'react';
 import { Button, Icon } from 'semantic-ui-react';
 
 import { Dispatch } from './keymap';
 import { MarkdownEditorButton } from './MarkdownEditorButton';
+import { MarkdownEditorContext } from './MarkdownEditorContext';
 
 export type MenuConfig = { [key: string]: MenuGroup };
 
@@ -18,7 +19,7 @@ export interface MenuItem {
   title: string;
   icon: React.ReactNode;
   active?: (state: EditorState) => boolean;
-  enable?: (state: EditorState, dispatch?: Dispatch) => boolean;
+  enabled?: (state: EditorState, dispatch?: Dispatch) => boolean;
   onClick: (state: EditorState, dispatch: Dispatch) => boolean;
 }
 
@@ -70,7 +71,7 @@ const menu: MenuConfig = {
       title: 'Add or remove link',
       icon: <Icon name='linkify' />,
       active: markActive(schema.marks.link),
-      enable: (state: EditorState) => !state.selection.empty,
+      enabled: (state: EditorState) => !state.selection.empty,
       onClick: (state: EditorState, dispatch: any) => {
         if (markActive(schema.marks.link)(state)) {
           toggleMark(schema.marks.link)(state, dispatch);
@@ -92,28 +93,28 @@ const menu: MenuConfig = {
       title: 'Change to paragraph',
       icon: <Icon name='paragraph' />,
       active: blockActive(schema.nodes.paragraph),
-      enable: setBlockType(schema.nodes.paragraph),
+      enabled: setBlockType(schema.nodes.paragraph),
       onClick: setBlockType(schema.nodes.paragraph)
     },
     h1: {
       title: 'Change to heading',
       icon: <Icon name='heading' />,
       active: blockActive(schema.nodes.heading, { level: 1 }),
-      enable: setBlockType(schema.nodes.heading, { level: 1 }),
+      enabled: setBlockType(schema.nodes.heading, { level: 1 }),
       onClick: setBlockType(schema.nodes.heading, { level: 1 })
     },
     bullet_list: {
       title: 'Change to bullet list',
       icon: <Icon name='list ul' />,
       active: blockActive(schema.nodes.bullet_list),
-      enable: wrapInList(schema.nodes.bullet_list),
+      enabled: wrapInList(schema.nodes.bullet_list),
       onClick: wrapInList(schema.nodes.bullet_list)
     },
     ordered_list: {
       title: 'Change to numbered list',
       icon: <Icon name='list ol' />,
       active: blockActive(schema.nodes.ordered_list),
-      enable: wrapInList(schema.nodes.ordered_list),
+      enabled: wrapInList(schema.nodes.ordered_list),
       onClick: wrapInList(schema.nodes.ordered_list)
     }
   },
@@ -121,13 +122,13 @@ const menu: MenuConfig = {
     undo: {
       title: 'Undo',
       icon: <Icon name='undo' />,
-      enable: undo,
+      enabled: undo,
       onClick: undo
     },
     redo: {
       title: 'Redo',
       icon: <Icon name='redo' />,
-      enable: redo,
+      enabled: redo,
       onClick: redo
     }
   }
@@ -138,7 +139,9 @@ interface MenuBarProps {
 }
 
 export const MarkdownEditorHeader: React.FC<MenuBarProps> = ({ children, dispatch }) => {
-  return (
+  const { disabled } = useContext(MarkdownEditorContext);
+
+  return disabled ? null : (
     <div>
       {Object.entries(menu).map(([key, group]) => (
         <Button.Group key={key}>

@@ -12,7 +12,7 @@ interface MenuButtonProps {
 
 export const MarkdownEditorButton: React.FC<MenuButtonProps> = ({
   dispatch,
-  button: { icon, active, enable, onClick, title }
+  button: { icon, active, enabled: enable, onClick, title }
 }) => {
   const { editorState } = useContext(MarkdownEditorContext);
 

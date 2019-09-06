@@ -4,6 +4,7 @@ import { defaultMarkdownParser, defaultMarkdownSerializer, schema } from 'prosem
 import { EditorState, Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import ProseMirrorDocument from 'react-prosemirror-document';
 
 import { AppContext } from '../../../AppContext';
 import { keys } from './keymap';
@@ -14,9 +15,10 @@ import { placeholder } from './placeholder';
 interface MarkdownEditorProps {
   markdown: string;
   onChange: (value: string) => void;
+  disabled: boolean;
 }
 
-export const MarkdownEditor: FC<MarkdownEditorProps> = ({ markdown, onChange }) => {
+export const MarkdownEditor: FC<MarkdownEditorProps> = ({ markdown, onChange, disabled }) => {
   const {
     terms: {
       shared: {
@@ -29,10 +31,12 @@ export const MarkdownEditor: FC<MarkdownEditorProps> = ({ markdown, onChange }) 
   const editorRef = useRef<HTMLDivElement>(null);
   const editorView = useRef<EditorView | null>(null);
 
+  const prosemirrorDocument = defaultMarkdownParser.parse(markdown);
+
   const editorState = EditorState.create({
     schema,
     plugins: [keymap(keys), history(), placeholder()],
-    doc: defaultMarkdownParser.parse(markdown)
+    doc: prosemirrorDocument
   });
 
   useEffect(() => {
@@ -41,32 +45,36 @@ export const MarkdownEditor: FC<MarkdownEditorProps> = ({ markdown, onChange }) 
         state: editorState,
         dispatchTransaction,
         attributes: {
-          class: 'prose mirror view'
+          class: disabled ? 'prose mirror view disabled' : 'prose mirror view'
         }
       });
     }
-  }, [editorRef]);
+  }, [editorRef, disabled]);
 
   const dispatchTransaction = (transaction: Transaction<any>) => {
     if (editorView.current) {
       const updatedEditorState = editorView.current.state.apply(transaction);
 
       editorView.current.updateState(updatedEditorState);
-      setMarkdownEditorContext({ editorState: updatedEditorState });
+      setMarkdownEditorContext(markdownEditorContext => ({
+        ...markdownEditorContext,
+        editorState: updatedEditorState
+      }));
 
       onChange(defaultMarkdownSerializer.serialize(updatedEditorState.doc));
     }
   };
 
   const [markdownEditorContext, setMarkdownEditorContext] = useState<IMarkdownEditorContext>({
-    editorState
+    editorState,
+    disabled
   });
 
   return (
     <MarkdownEditorContext.Provider value={markdownEditorContext}>
       <style>{`.prose.mirror .placeholder::before {content: "${writeParagraph.placeholder}"}`}</style>
       <MarkdownEditorHeader dispatch={dispatchTransaction} />
-      <div ref={editorRef} spellCheck />
+      {disabled ? <ProseMirrorDocument document={prosemirrorDocument.toJSON()} /> : <div ref={editorRef} spellCheck />}
     </MarkdownEditorContext.Provider>
   );
 };

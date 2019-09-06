@@ -9,7 +9,7 @@ export const placeholder = () =>
         const decorations: Decoration[] = [];
 
         const decorate = (node: Node, pos: number) => {
-          if (node.type.isBlock && node.childCount === 0) {
+          if (node.type.isBlock && node.childCount === 0 && state.doc.content.size < 3) {
             decorations.push(
               Decoration.node(pos, pos + node.nodeSize, {
                 class: 'placeholder'

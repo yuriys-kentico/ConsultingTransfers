@@ -58,10 +58,13 @@
   border-width: 2px;
   border-radius: 2px;
   border-color: #eeeeee;
-  border-style: dashed;
   background-color: #fafafa;
   color: #bdbdbd;
+}
+
+.drop.zone:not(.disabled) {
   cursor: pointer;
+  border-style: dashed;
 }
 
 .drop.zone.active,
@@ -74,6 +77,14 @@
   outline: none;
   border-color: #eeeeee;
   border-width: 2px;
+  min-height: 5em;
+}
+
+.ProseMirror.prose.mirror.view * {
+  white-space: normal;
+}
+
+.prose.mirror.view:not(.disabled) {
   border-style: solid;
 }
 

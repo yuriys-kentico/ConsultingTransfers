@@ -1,14 +1,24 @@
+import { ContentManagementClient, IContentManagementClientConfig } from 'kentico-cloud-content-management';
 import { DeliveryClient, IDeliveryClientConfig, TypeResolver } from 'kentico-cloud-delivery';
 
-import { ConsultingRequest } from './ConsultingRequest';
-import { Field } from './Field';
+import { Field } from './contentTypes/Field';
+import { Request } from './contentTypes/Request';
 
-export const getDeliveryClient = (config: IDeliveryClientConfig) => {
+const deliveryClient = (config: IDeliveryClientConfig) => {
   return new DeliveryClient({
     ...config,
     typeResolvers: [
-      new TypeResolver('consulting_request', () => new ConsultingRequest()),
-      new TypeResolver('field', () => new Field())
+      new TypeResolver(Request.codename, () => new Request()),
+      new TypeResolver(Field.codename, () => new Field())
     ]
   });
+};
+
+const contentManagementClient = (config: IContentManagementClientConfig) => {
+  return new ContentManagementClient({ ...config });
+};
+
+export const KenticoCloud = {
+  deliveryClient,
+  contentManagementClient
 };

@@ -55,6 +55,9 @@ const getDownloadPromise = (blockBlobURL: BlockBlobURL, progressSubject: Subject
   });
 };
 
+export const getFieldBlobs = (blobs: BlobItem[], fieldName: string) =>
+  blobs.filter(blob => blob.name.startsWith(`${fieldName}/`) && !blob.name.endsWith('completed'));
+
 export const getContainerURL = (accountName: string, containerName: string, sasString: string) => {
   return new ContainerURL(
     `https://${accountName}.blob.core.windows.net/${containerName}?${sasString}`,
@@ -248,7 +251,8 @@ const uploadFiles = async (
   files: File[] | File,
   directory: string,
   containerURL: ContainerURL,
-  azureStorageOptions: IAzureStorageOptions
+  azureStorageOptions: IAzureStorageOptions,
+  silent?: boolean
 ) => {
   const { showInfoUntil, showError, showSuccess } = azureStorageOptions.messageHandlers;
 
@@ -270,7 +274,7 @@ const uploadFiles = async (
 
       const uploadPromise = getUploadPromise(file, blockBlobURL, azureStorageOptions, progressSubject);
 
-      showInfoUntil(`Uploading file ${file.name}...`, uploadPromise, progressSubject);
+      !silent && showInfoUntil(`Uploading file ${file.name}...`, uploadPromise, progressSubject);
 
       promises.push(uploadPromise);
     }
@@ -279,7 +283,7 @@ const uploadFiles = async (
 
     const fileNames = filesToUpload.map(file => `${file.name}`).join(', ');
 
-    showSuccess(`Finished uploading ${fileNames}.`);
+    !silent && showSuccess(`Finished uploading ${fileNames}.`);
   } catch (error) {
     console.log(error);
     showError((error.body && error.body.message) || error.message);

@@ -10,8 +10,9 @@ import {
     getSafeStorageName,
     IAzureStorageOptions,
 } from '../../../connectors/azure/azureStorage';
-import { ConsultingRequest } from '../../../connectors/kenticoCloud/ConsultingRequest';
-import { getDeliveryClient } from '../../../connectors/kenticoCloud/kenticoCloud';
+import { Field } from '../../../connectors/kenticoCloud/contentTypes/Field';
+import { Request } from '../../../connectors/kenticoCloud/contentTypes/Request';
+import { KenticoCloud } from '../../../connectors/kenticoCloud/kenticoCloud';
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppContext } from '../../AppContext';
 import { AdminControls } from '../../authenticated/admin/AdminControls';
@@ -26,11 +27,11 @@ export interface ITransferProps {
 }
 
 export const Transfer: RoutedFC<ITransferProps> = props => {
-  const appContext = useContext(AppContext);
+  const { azureStorage, kenticoCloud, terms } = useContext(AppContext);
   const appHeaderContext = useContext(AppHeaderContext);
 
   const azureStorageOptions: IAzureStorageOptions = {
-    appOptions: appContext.azureStorage,
+    appOptions: azureStorage,
     messageHandlers: appHeaderContext
   };
 
@@ -47,8 +48,8 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
   const readBlobString = (blob: BlobItem, containerURL: ContainerURL) =>
     AzureStorage.readBlobString(blob, containerURL, azureStorageOptions);
 
-  const uploadFiles = (files: File[] | File, directory: string, containerURL: ContainerURL) =>
-    AzureStorage.uploadFiles(files, directory, containerURL, azureStorageOptions)
+  const uploadFiles = (files: File[] | File, directory: string, containerURL: ContainerURL, silent?: boolean) =>
+    AzureStorage.uploadFiles(files, directory, containerURL, azureStorageOptions, silent)
       .then(() => AzureStorage.listBlobs(containerURL, azureStorageOptions))
       .then(blobs => {
         blobs && setTransferContext(transferContext => ({ ...transferContext, blobs }));
@@ -66,37 +67,49 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
       setTransferContext(transferContext => ({ ...transferContext, blobs: [] }))
     );
 
+  const updateCompletedField = (request: Request, field: Field) => {
+    const contentManagementClient = KenticoCloud.contentManagementClient({ ...kenticoCloud.contentManagementClient });
+
+    return contentManagementClient
+      .upsertLanguageVariant()
+      .byItemCodename(field.system.codename)
+      .byLanguageCodename(field.system.language)
+      .withElementCodenames([{ codename: 'completed', value: [{ codename: 'true' }] }])
+      .toPromise();
+  };
+
   const [transferContext, setTransferContext] = useState<ITransferContext>({
-    request: new ConsultingRequest(),
+    request: new Request(),
     blobs: [],
     deleteBlobs,
     downloadBlob,
     readBlobString,
     uploadFiles,
     createContainer,
-    deleteContainer
+    deleteContainer,
+    updateCompletedField
   });
 
   useEffect(() => {
     if (props.urlSlug) {
-      const deliveryClient = getDeliveryClient({ ...appContext.kenticoCloud });
+      const deliveryClient = KenticoCloud.deliveryClient({ ...kenticoCloud.deliveryClient });
 
       deliveryClient
-        .items<ConsultingRequest>()
-        .type('consulting_request')
+        .items<Request>()
+        .type(Request.codename)
         .equalsFilter('elements.url', props.urlSlug)
         .toObservable()
         .subscribe(setItemFromResponse);
     }
   }, [props.urlSlug]);
 
-  const setItemFromResponse = (response: ItemResponses.ListContentItemsResponse<ConsultingRequest>) => {
+  const setItemFromResponse = (response: ItemResponses.ListContentItemsResponse<Request>) => {
     const item = response.items[0];
 
     const safeContainerName = getSafeStorageName(item.system.codename);
 
-    const accountName = appContext.azureStorage.accountName;
-    const sasString = appContext.azureStorage.sasToken;
+    const accountName = azureStorage.accountName;
+    const sasString = azureStorage.sasToken;
 
     const containerURL = getContainerURL(accountName, safeContainerName, sasString);
 
@@ -109,10 +122,7 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
     <Segment basic>
       {!transferContext.request.system ? null : (
         <TransferContext.Provider value={transferContext}>
-          <Header
-            as='h2'
-            content={`${appContext.terms.shared.transfer.header} ${transferContext.request.system.name}`}
-          />
+          <Header as='h2' content={`${terms.shared.transfer.header} ${transferContext.request.system.name}`} />
           <Fields />
           {props.authenticated && <AdminControls />}
         </TransferContext.Provider>

@@ -43,11 +43,9 @@ export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {
 
   return authenticated ? (
     <div className='full height'>
-      <Suspense fallback={<Loader active size='massive' />}>
-        <Router>
-          <Admin path='/*' />
-        </Router>
-      </Suspense>
+      <Router>
+        <Admin path='/*' />
+      </Router>
     </div>
   ) : (
     <Loader active size='massive' />
