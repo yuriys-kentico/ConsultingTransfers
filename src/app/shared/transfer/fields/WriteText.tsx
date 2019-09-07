@@ -8,7 +8,7 @@ import { IFieldHolderProps } from '../FieldHolder';
 import { MarkdownEditor } from '../markdownEditor/MarkdownEditor';
 import { TransferContext } from '../TransferContext';
 
-export const WriteText: FC<IFieldHolderProps> = ({ field, completed }) => {
+export const WriteText: FC<IFieldHolderProps> = ({ field, completed, setFieldLoading }) => {
   const name = field.name.value;
 
   const { request, blobs, uploadFiles, readBlobString } = useContext(TransferContext);
@@ -37,6 +37,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ field, completed }) => {
         const file = new File([update], `${name}.md`, { type: 'text/plain' });
 
         uploadFiles(file, name, containerURL, true);
+        setFieldLoading(false);
       }
     });
 
@@ -45,6 +46,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ field, completed }) => {
 
   const updateStorage = (value: string) => {
     textStream.current.next(value);
+    setFieldLoading(true);
   };
 
   return (

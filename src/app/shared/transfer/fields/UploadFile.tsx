@@ -8,7 +8,7 @@ import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';
 import { TransferContext } from '../TransferContext';
 
-export const UploadFile: FC<IFieldHolderProps> = ({ field, completed }) => {
+export const UploadFile: FC<IFieldHolderProps> = ({ field, completed, setFieldLoading }) => {
   const name = field.name.value;
 
   const {
@@ -24,7 +24,8 @@ export const UploadFile: FC<IFieldHolderProps> = ({ field, completed }) => {
   const { containerURL } = useContainer(request.system.codename);
 
   const onDrop = useCallback(files => {
-    uploadFiles(files, name, containerURL);
+    uploadFiles(files, name, containerURL).then(() => setFieldLoading(false));
+    setFieldLoading(true);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, disabled: completed });

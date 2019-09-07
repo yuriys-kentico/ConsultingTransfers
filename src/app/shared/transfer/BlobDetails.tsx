@@ -2,11 +2,12 @@ import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC } from 'react';
 import { Header, Label } from 'semantic-ui-react';
 
+import { AzureStorage } from '../../../connectors/azure/azureStorage';
 import { toRounded } from '../../../utilities/numbers';
 
 interface IBlobDetailsProps {
   file: BlobItem;
-  fileName?: string;
+  fileName: string;
 }
 
 const getSizeText = (sizeInBytes: number): string => {
@@ -37,8 +38,13 @@ export const BlobDetails: FC<IBlobDetailsProps> = ({ file, fileName }) => {
 
   return (
     <div>
-      <Header as='h5' sub content={fileName ? fileName : file.name} />
-      {<Label content={contentLength !== undefined && getSizeText(contentLength)} icon='save' size='tiny' />}
+      <Header
+        as='h5'
+        sub
+        content={fileName}
+        color={fileName ? (fileName.endsWith(AzureStorage.completed) ? 'green' : 'black') : 'black'}
+      />
+      <Label content={contentLength !== undefined && getSizeText(contentLength)} icon='save' size='tiny' />
       <Label content={`${lastModified.toLocaleString()}`} icon='calendar check outline' size='tiny' />
     </div>
   );

@@ -56,7 +56,9 @@ const getDownloadPromise = (blockBlobURL: BlockBlobURL, progressSubject: Subject
 };
 
 export const getFieldBlobs = (blobs: BlobItem[], fieldName: string) =>
-  blobs.filter(blob => blob.name.startsWith(`${fieldName}/`) && !blob.name.endsWith('completed'));
+  blobs.filter(blob => blob.name.startsWith(`${fieldName}/`) && !blob.name.endsWith(completed));
+
+export const completed = 'completed';
 
 export const getContainerURL = (accountName: string, containerName: string, sasString: string) => {
   return new ContainerURL(
@@ -297,7 +299,8 @@ export const AzureStorage = {
   deleteBlobs,
   downloadBlob,
   readBlobString,
-  uploadFiles
+  uploadFiles,
+  completed
 };
 
 export const getSafeStorageName = (containerName: string) => {

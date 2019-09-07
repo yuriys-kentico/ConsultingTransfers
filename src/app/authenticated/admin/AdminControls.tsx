@@ -59,7 +59,7 @@ export const AdminControls: FC = () => {
                 </Table.Cell>
 
                 <Table.Cell>
-                  <BlobDetails file={file} />
+                  <BlobDetails file={file} fileName={file.name} />
                 </Table.Cell>
                 <Table.Cell textAlign='right'>
                   <Button circular icon='download' onClick={() => downloadBlob(file, containerURL)} />
