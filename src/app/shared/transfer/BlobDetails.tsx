@@ -3,38 +3,17 @@ import React, { FC } from 'react';
 import { Header, Label } from 'semantic-ui-react';
 
 import { AzureStorage } from '../../../connectors/azure/azureStorage';
-import { toRounded } from '../../../utilities/numbers';
+import { getSizeText } from '../../../utilities/numbers';
 
 interface IBlobDetailsProps {
   file: BlobItem;
   fileName: string;
 }
 
-const getSizeText = (sizeInBytes: number): string => {
-  let finalSize = sizeInBytes;
-  let unit = 'B';
-
-  // Gigabytes
-  if (sizeInBytes > 1024 * 1024 * 1024) {
-    finalSize = sizeInBytes / 1024 / 1024 / 1024;
-    unit = 'GB';
-  }
-  // Megabytes
-  else if (sizeInBytes > 1024 * 1024) {
-    finalSize = sizeInBytes / 1024 / 1024;
-    unit = 'MB';
-  }
-  // Kilobytes
-  else if (sizeInBytes > 1024) {
-    finalSize = sizeInBytes / 1024;
-    unit = 'KB';
-  }
-
-  return `${toRounded(finalSize)} ${unit}`;
-};
-
 export const BlobDetails: FC<IBlobDetailsProps> = ({ file, fileName }) => {
   const { contentLength, lastModified } = file.properties;
+
+  const [size, unit] = getSizeText(contentLength);
 
   return (
     <div>
@@ -44,7 +23,7 @@ export const BlobDetails: FC<IBlobDetailsProps> = ({ file, fileName }) => {
         content={fileName}
         color={fileName ? (fileName.endsWith(AzureStorage.completed) ? 'green' : 'black') : 'black'}
       />
-      <Label content={contentLength !== undefined && getSizeText(contentLength)} icon='save' size='tiny' />
+      <Label content={`${size} ${unit}`} icon='save' size='tiny' />
       <Label content={`${lastModified.toLocaleString()}`} icon='calendar check outline' size='tiny' />
     </div>
   );

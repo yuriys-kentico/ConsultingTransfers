@@ -1,5 +1,5 @@
 import { Router } from '@reach/router';
-import React, { lazy, Suspense, useContext } from 'react';
+import React, { lazy, useContext } from 'react';
 import { Container } from 'semantic-ui-react';
 
 import { AppContext } from '../AppContext';
@@ -15,9 +15,9 @@ export const Public: RoutedFC<ITransferProps> = () => {
   return (
     <AppHeader title={appContext.terms.shared.header.header}>
       <Container text>
-          <Router>
-            <Transfer path=':urlSlug' />
-          </Router>
+        <Router>
+          <Transfer path=':urlSlug' />
+        </Router>
       </Container>
     </AppHeader>
   );

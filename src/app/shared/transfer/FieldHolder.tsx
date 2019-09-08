@@ -52,7 +52,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   };
 
   return (
-    <Segment loading={loading} disabled={completed}>
+    <Segment loading={loading} disabled={completed} className='inherit color'>
       <Header floated='right'>
         <Checkbox
           toggle

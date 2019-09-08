@@ -1,6 +1,6 @@
 import { Router } from '@reach/router';
 import { Configuration, UserAgentApplication } from 'msal';
-import React, { lazy, Suspense, useContext, useEffect, useState } from 'react';
+import React, { lazy, useContext, useEffect, useState } from 'react';
 import { Loader } from 'semantic-ui-react';
 
 import { AppContext } from '../AppContext';

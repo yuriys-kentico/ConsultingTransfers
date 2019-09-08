@@ -142,3 +142,7 @@ ol.ui.list ol,
 .ui.toggle.checkbox label:hover:before {
   background-color: rgba(0, 0, 0, 0.15) !important;
 }
+
+.ui.loading.segment.inherit.color {
+  color: inherit !important;
+}
