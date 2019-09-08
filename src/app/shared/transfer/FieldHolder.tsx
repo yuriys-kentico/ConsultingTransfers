@@ -1,4 +1,4 @@
-import { FC, useContext, useState } from 'react';
+import { FC, lazy, Suspense, useContext, useState } from 'react';
 import React from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
@@ -6,9 +6,10 @@ import { AzureStorage, useContainer } from '../../../connectors/azure/azureStora
 import { Field } from '../../../connectors/kenticoCloud/contentTypes/Field';
 import { AppContext } from '../../AppContext';
 import { AppHeaderContext } from '../header/AppHeaderContext';
-import { UploadFile } from './fields/UploadFile';
-import { WriteText } from './fields/WriteText';
 import { TransferContext } from './TransferContext';
+
+const WriteText = lazy(() => import('./fields/WriteText').then(module => ({ default: module.WriteText })));
+const UploadFile = lazy(() => import('./fields/UploadFile').then(module => ({ default: module.UploadFile })));
 
 export type FieldType = 'upload_file' | 'write_text';
 
@@ -52,23 +53,25 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   };
 
   return (
-    <Segment loading={loading} disabled={completed} className='inherit color'>
-      <Header floated='right'>
-        <Checkbox
-          toggle
-          label={terms.shared.transfer.fields.markCompleted}
-          checked={completed}
-          disabled={completed}
-          onChange={updateCompleted}
-        />
-      </Header>
-      <Header floated='right' content={<Loader active={fieldLoading} inline size='tiny' />} />
-      <Header as='h3' content={props.field.name.value} />
-      <Divider fitted hidden />
-      {props.field.comment.value}
-      <Divider fitted hidden />
-      <Divider fitted hidden />
-      <Segment as={getFieldType(props.type)} {...props} completed={completed} setFieldLoading={setFieldLoading} />
-    </Segment>
+    <Suspense fallback={<Loader active size='massive' />}>
+      <Segment loading={loading} disabled={completed} className='inherit color'>
+        <Header floated='right'>
+          <Checkbox
+            toggle
+            label={terms.shared.transfer.fields.markCompleted}
+            checked={completed}
+            disabled={completed}
+            onChange={updateCompleted}
+          />
+        </Header>
+        <Header floated='right' content={<Loader active={fieldLoading} inline size='tiny' />} />
+        <Header as='h3' content={props.field.name.value} />
+        <Divider fitted hidden />
+        {props.field.comment.value}
+        <Divider fitted hidden />
+        <Divider fitted hidden />
+        <Segment as={getFieldType(props.type)} {...props} completed={completed} setFieldLoading={setFieldLoading} />
+      </Segment>
+    </Suspense>
   );
 };

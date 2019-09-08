@@ -2,7 +2,7 @@ import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useContext, useState } from 'react';
 import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-ui-react';
 
-import { useContainer } from '../../../connectors/azure/azureStorage';
+import { AzureStorage, useContainer } from '../../../connectors/azure/azureStorage';
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppContext } from '../../AppContext';
 import { BlobDetails } from '../../shared/transfer/BlobDetails';
@@ -59,7 +59,11 @@ export const AdminControls: FC = () => {
                 </Table.Cell>
 
                 <Table.Cell>
-                  <BlobDetails file={file} fileName={file.name} />
+                  <BlobDetails
+                    file={file}
+                    fileName={file.name}
+                    color={file.name.endsWith(AzureStorage.completed) ? 'green' : 'black'}
+                  />
                 </Table.Cell>
                 <Table.Cell textAlign='right'>
                   <Button circular icon='download' onClick={() => downloadBlob(file, containerURL)} />
