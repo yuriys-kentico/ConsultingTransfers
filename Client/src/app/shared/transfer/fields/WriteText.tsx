@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { Form } from 'semantic-ui-react';
 
-import { getFieldBlobs, useContainer } from '../../../../connectors/azure/azureStorage';
+import { getFieldBlobs } from '../../../../connectors/azure/azureStorage';
 import { IFieldHolderProps } from '../FieldHolder';
 import { MarkdownEditor } from '../markdownEditor/MarkdownEditor';
 import { TransferContext } from '../TransferContext';
@@ -11,8 +11,7 @@ import { TransferContext } from '../TransferContext';
 export const WriteText: FC<IFieldHolderProps> = ({ field, completed, setFieldLoading }) => {
   const name = field.name.value;
 
-  const { request, blobs, uploadFiles, readBlobString } = useContext(TransferContext);
-  const { containerURL } = useContainer(request.system.codename);
+  const { containerURL, request, blobs, uploadFiles, readBlobString } = useContext(TransferContext);
   const [text, setText] = useState<string>('');
   const [loaded, setLoaded] = useState<boolean>();
 

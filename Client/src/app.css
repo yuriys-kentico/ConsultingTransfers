@@ -146,3 +146,12 @@ ol.ui.list ol,
 .ui.loading.segment.inherit.color {
   color: inherit !important;
 }
+
+.ui.active.indicating.progress {
+  margin: 0;
+  background: none;
+}
+
+.ui.progress > .label {
+  position: relative !important;
+}

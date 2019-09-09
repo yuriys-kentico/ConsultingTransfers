@@ -8,11 +8,7 @@ import { RoutedFC } from '../RoutedFC';
 
 const Admin = lazy(() => import('./admin/Admin').then(module => ({ default: module.Admin })));
 
-export interface IAuthenticatedProps {
-  useAuthentication?: boolean;
-}
-
-export const Authenticated: RoutedFC<IAuthenticatedProps> = props => {
+export const Authenticated: RoutedFC = () => {
   const appContext = useContext(AppContext);
 
   const [authenticated, setAuthenticated] = useState(appContext.authentication.authenticated);

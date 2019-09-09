@@ -1,5 +1,6 @@
 import { ContainerURL } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
+import Axios from 'axios';
 import { ItemResponses } from 'kentico-cloud-delivery';
 import React, { useContext, useEffect, useState } from 'react';
 import { Header, Segment } from 'semantic-ui-react';
@@ -8,6 +9,7 @@ import {
     AzureStorage,
     getContainerURL,
     getSafeStorageName,
+    IAzureSasTokenRequest,
     IAzureStorageOptions,
 } from '../../../connectors/azure/azureStorage';
 import { Field } from '../../../connectors/kenticoCloud/contentTypes/Field';
@@ -26,9 +28,59 @@ export interface ITransferProps {
   authenticated: boolean;
 }
 
-export const Transfer: RoutedFC<ITransferProps> = props => {
+export const Transfer: RoutedFC<ITransferProps> = ({ urlSlug, authenticated }) => {
   const { azureStorage, kenticoCloud, terms } = useContext(AppContext);
   const appHeaderContext = useContext(AppHeaderContext);
+
+  useEffect(() => {
+    if (urlSlug) {
+      const deliveryClient = KenticoCloud.deliveryClient({ ...kenticoCloud.deliveryClient });
+
+      deliveryClient
+        .items<Request>()
+        .type(Request.codename)
+        .equalsFilter('elements.url', urlSlug)
+        .toObservable()
+        .subscribe(setContextFromResponse);
+    }
+  }, [urlSlug]);
+
+  const setContextFromResponse = (response: ItemResponses.ListContentItemsResponse<Request>) => {
+    const item = response.items[0];
+
+    const containerName = getSafeStorageName(item.system.codename);
+    const { accountName, sasTokenGeneratorEndpoint, accountPermissions, containerPermissions } = azureStorage;
+
+    let request: IAzureSasTokenRequest;
+
+    if (authenticated) {
+      request = {
+        accountName,
+        accountPermissions
+      };
+    } else {
+      request = {
+        accountName,
+        containerName,
+        containerPermissions
+      };
+    }
+
+    Axios.post<string>(sasTokenGeneratorEndpoint, request).then(response => {
+      const sasToken = response.data;
+      const containerURL = getContainerURL(accountName, containerName, sasToken);
+
+      AzureStorage.listBlobs(containerURL, azureStorageOptions).then(blobs => {
+        setTransferContext(transferContext => ({
+          ...transferContext,
+          request: item,
+          blobs: blobs || [],
+          containerName,
+          containerURL
+        }));
+      });
+    });
+  };
 
   const azureStorageOptions: IAzureStorageOptions = {
     appOptions: azureStorage,
@@ -79,6 +131,8 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
   };
 
   const [transferContext, setTransferContext] = useState<ITransferContext>({
+    containerName: '',
+    containerURL: null as any,
     request: new Request(),
     blobs: [],
     deleteBlobs,
@@ -90,41 +144,13 @@ export const Transfer: RoutedFC<ITransferProps> = props => {
     updateCompletedField
   });
 
-  useEffect(() => {
-    if (props.urlSlug) {
-      const deliveryClient = KenticoCloud.deliveryClient({ ...kenticoCloud.deliveryClient });
-
-      deliveryClient
-        .items<Request>()
-        .type(Request.codename)
-        .equalsFilter('elements.url', props.urlSlug)
-        .toObservable()
-        .subscribe(setItemFromResponse);
-    }
-  }, [props.urlSlug]);
-
-  const setItemFromResponse = (response: ItemResponses.ListContentItemsResponse<Request>) => {
-    const item = response.items[0];
-
-    const safeContainerName = getSafeStorageName(item.system.codename);
-
-    const accountName = azureStorage.accountName;
-    const sasString = azureStorage.sasToken;
-
-    const containerURL = getContainerURL(accountName, safeContainerName, sasString);
-
-    AzureStorage.listBlobs(containerURL, azureStorageOptions).then(blobs => {
-      setTransferContext(transferContext => ({ ...transferContext, request: item, blobs: blobs || [] }));
-    });
-  };
-
   return (
     <Segment basic>
       {!transferContext.request.system ? null : (
         <TransferContext.Provider value={transferContext}>
           <Header as='h2' content={`${terms.shared.transfer.header} ${transferContext.request.system.name}`} />
           <Fields />
-          {props.authenticated && <AdminControls />}
+          {authenticated && <AdminControls />}
         </TransferContext.Provider>
       )}
     </Segment>

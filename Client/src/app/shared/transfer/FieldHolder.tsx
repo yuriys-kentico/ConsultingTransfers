@@ -2,7 +2,7 @@ import { FC, lazy, Suspense, useContext, useState } from 'react';
 import React from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
-import { AzureStorage, useContainer } from '../../../connectors/azure/azureStorage';
+import { AzureStorage } from '../../../connectors/azure/azureStorage';
 import { Field } from '../../../connectors/kenticoCloud/contentTypes/Field';
 import { AppContext } from '../../AppContext';
 import { AppHeaderContext } from '../header/AppHeaderContext';
@@ -25,8 +25,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
 
   const { terms } = useContext(AppContext);
   const { showInfo } = useContext(AppHeaderContext);
-  const { uploadFiles, request, blobs } = useContext(TransferContext);
-  const { containerURL } = useContainer(request.system.codename);
+  const { containerURL, uploadFiles, blobs } = useContext(TransferContext);
   const [loading, setLoading] = useState(false);
   const [fieldLoading, setFieldLoading] = useState(false);
 

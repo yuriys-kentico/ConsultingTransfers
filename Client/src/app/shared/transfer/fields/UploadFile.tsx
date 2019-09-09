@@ -2,7 +2,7 @@ import React, { FC, useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Container, List } from 'semantic-ui-react';
 
-import { getFieldBlobs, useContainer } from '../../../../connectors/azure/azureStorage';
+import { getFieldBlobs } from '../../../../connectors/azure/azureStorage';
 import { AppContext } from '../../../AppContext';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';
@@ -20,8 +20,7 @@ export const UploadFile: FC<IFieldHolderProps> = ({ field, completed, setFieldLo
       }
     }
   } = useContext(AppContext);
-  const { request, blobs, uploadFiles } = useContext(TransferContext);
-  const { containerURL } = useContainer(request.system.codename);
+  const { containerURL, request, blobs, uploadFiles } = useContext(TransferContext);
 
   const onDrop = useCallback(files => {
     uploadFiles(files, name, containerURL).then(() => setFieldLoading(false));

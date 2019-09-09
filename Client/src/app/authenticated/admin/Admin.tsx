@@ -1,5 +1,5 @@
 import { Link, LinkGetProps, Router } from '@reach/router';
-import React, { lazy, Suspense, useContext } from 'react';
+import React, { lazy, Suspense, useContext, useEffect, useState } from 'react';
 import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
 import { AppContext } from '../../AppContext';

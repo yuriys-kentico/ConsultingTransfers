@@ -2,7 +2,7 @@ import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useContext, useState } from 'react';
 import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-ui-react';
 
-import { AzureStorage, useContainer } from '../../../connectors/azure/azureStorage';
+import { AzureStorage } from '../../../connectors/azure/azureStorage';
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppContext } from '../../AppContext';
 import { BlobDetails } from '../../shared/transfer/BlobDetails';
@@ -14,8 +14,16 @@ export const AdminControls: FC = () => {
       admin: { controls }
     }
   } = useContext(AppContext);
-  const { request, blobs, downloadBlob, deleteBlobs, createContainer, deleteContainer } = useContext(TransferContext);
-  const { containerName, containerURL } = useContainer(request.system.codename);
+  const {
+    containerName,
+    containerURL,
+    request,
+    blobs,
+    downloadBlob,
+    deleteBlobs,
+    createContainer,
+    deleteContainer
+  } = useContext(TransferContext);
   const [selectedBlobs, setSelectedBlobs] = useState<BlobItem[]>([]);
 
   const toggleSelectedBlob = (blob: BlobItem) => {
@@ -35,11 +43,19 @@ export const AdminControls: FC = () => {
     <div>
       <Divider />
       <Segment>
-        <Header as='h2' content={controls.details} />
+        <Header as='h2' content={controls.details.header} />
         <List>
           <List.Item>
-            <Label horizontal>{controls.containerName}</Label>
+            <Label horizontal>{controls.details.containerName}</Label>
             {containerName}
+          </List.Item>
+          <List.Item>
+            <Label horizontal>{controls.details.accountName}</Label>
+            {request.account_name.value}
+          </List.Item>
+          <List.Item>
+            <Label horizontal>{controls.details.requester}</Label>
+            {request.requester.value}
           </List.Item>
         </List>
       </Segment>
@@ -57,7 +73,6 @@ export const AdminControls: FC = () => {
                     onClick={() => toggleSelectedBlob(file)}
                   />
                 </Table.Cell>
-
                 <Table.Cell>
                   <BlobDetails
                     file={file}

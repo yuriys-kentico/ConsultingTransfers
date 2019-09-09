@@ -7,6 +7,8 @@ import { Field } from '../../../connectors/kenticoCloud/contentTypes/Field';
 import { Request } from '../../../connectors/kenticoCloud/contentTypes/Request';
 
 export interface ITransferContext {
+  containerName: string;
+  containerURL: ContainerURL;
   request: Request;
   blobs: BlobItem[];
   deleteBlobs: (blobs: BlobItem[] | BlobItem, containerURL: ContainerURL) => void;

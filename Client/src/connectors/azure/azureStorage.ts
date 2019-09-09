@@ -9,11 +9,9 @@ import {
     uploadBrowserDataToBlockBlob,
 } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
-import { useContext } from 'react';
 import { Subject } from 'rxjs';
 import { createWriteStream } from 'streamsaver';
 
-import { AppContext } from '../../app/AppContext';
 import { IShowMessageHandlers } from '../../app/shared/header/AppHeaderContext';
 import { IUpdateMessage } from '../../app/shared/header/Snack';
 
@@ -26,7 +24,14 @@ export interface IAzureStorageOptions {
   messageHandlers: IShowMessageHandlers;
 }
 
-const getProgress = (progressSubject: Subject<IUpdateMessage>, total: number | undefined) => ({
+export interface IAzureSasTokenRequest {
+  accountName: string;
+  accountPermissions?: string;
+  containerName?: string;
+  containerPermissions?: string;
+}
+
+const updateProgress = (progressSubject: Subject<IUpdateMessage>, total: number | undefined) => ({
   loadedBytes
 }: TransferProgressEvent) => {
   progressSubject.next({
@@ -44,13 +49,13 @@ const getUploadPromise = (
   return uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobURL, {
     blockSize: azureStorageOptions.appOptions.uploadBlockMb * 1024 * 1024,
     parallelism: 20,
-    progress: getProgress(progressSubject, file.size)
+    progress: updateProgress(progressSubject, file.size)
   }).then(() => new Promise(resolve => setTimeout(resolve, 1000)));
 };
 
 const getDownloadPromise = (blockBlobURL: BlockBlobURL, progressSubject: Subject<IUpdateMessage>, blob: BlobItem) => {
   return blockBlobURL.download(Aborter.none, 0, undefined, {
-    progress: getProgress(progressSubject, blob.properties.contentLength)
+    progress: updateProgress(progressSubject, blob.properties.contentLength)
   });
 };
 
@@ -59,23 +64,11 @@ export const getFieldBlobs = (blobs: BlobItem[], fieldName: string) =>
 
 export const completed = 'completed';
 
-export const getContainerURL = (accountName: string, containerName: string, sasString: string) => {
+export const getContainerURL = (accountName: string, containerName: string, sasToken: string) => {
   return new ContainerURL(
-    `https://${accountName}.blob.core.windows.net/${containerName}?${sasString}`,
+    `https://${accountName}.blob.core.windows.net/${containerName}${sasToken}`,
     StorageURL.newPipeline(new AnonymousCredential())
   );
-};
-
-export const useContainer = (containerName: string) => {
-  const {
-    azureStorage: { accountName, sasToken }
-  } = useContext(AppContext);
-
-  const safeContainerName = getSafeStorageName(containerName);
-
-  const containerURL = getContainerURL(accountName, safeContainerName, sasToken);
-
-  return { containerName: safeContainerName, containerURL };
 };
 
 const createContainer = async (
@@ -298,6 +291,6 @@ export const AzureStorage = {
   completed
 };
 
-export const getSafeStorageName = (containerName: string) => {
-  return containerName.replace(/_/g, '');
+export const getSafeStorageName = (itemCodeName: string) => {
+  return itemCodeName.replace(/_/g, '');
 };
