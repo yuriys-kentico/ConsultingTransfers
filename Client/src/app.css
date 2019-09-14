@@ -155,3 +155,7 @@ ol.ui.list ol,
 .ui.progress > .label {
   position: relative !important;
 }
+
+.ui.loader {
+  position: fixed !important;
+}

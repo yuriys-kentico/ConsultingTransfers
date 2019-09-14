@@ -1,5 +1,5 @@
 import { Link, LinkGetProps, Router } from '@reach/router';
-import React, { lazy, Suspense, useContext, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useContext } from 'react';
 import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
 import { AppContext } from '../../AppContext';
@@ -44,7 +44,7 @@ export const Admin: RoutedFC = () => {
           <Router>
             <Home path='/' />
             <Transfers path='transfers' />
-            <Transfer path='transfers/:urlSlug' authenticated />
+            <Transfer path='transfers/:containerToken' />
           </Router>
         </Container>
       </Suspense>

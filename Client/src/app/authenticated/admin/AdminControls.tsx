@@ -17,7 +17,7 @@ export const AdminControls: FC = () => {
   const {
     containerName,
     containerURL,
-    request,
+    requestItem,
     blobs,
     downloadBlob,
     deleteBlobs,
@@ -51,11 +51,11 @@ export const AdminControls: FC = () => {
           </List.Item>
           <List.Item>
             <Label horizontal>{controls.details.accountName}</Label>
-            {request.account_name.value}
+            {requestItem.accountName}
           </List.Item>
           <List.Item>
             <Label horizontal>{controls.details.requester}</Label>
-            {request.requester.value}
+            {requestItem.requester}
           </List.Item>
         </List>
       </Segment>

@@ -3,10 +3,11 @@ import React, { lazy, Suspense } from 'react';
 import { boundary, useError } from 'react-boundary';
 import { Loader } from 'semantic-ui-react';
 
-const Public = lazy(() => import('./public/Public').then(module => ({ default: module.Public })));
 const Authenticated = lazy(() =>
   import('./authenticated/Authenticated').then(module => ({ default: module.Authenticated }))
 );
+const Public = lazy(() => import('./public/Public').then(module => ({ default: module.Public })));
+const Details = lazy(() => import('./authenticated/details/Details').then(module => ({ default: module.Details })));
 
 export const App = boundary(() => {
   const [error, info] = useError();
@@ -22,6 +23,7 @@ export const App = boundary(() => {
       <Router>
         <Authenticated path='/*' />
         <Public path='/transfer/*' />
+        <Details path='/details/*' />
       </Router>
     </Suspense>
   );

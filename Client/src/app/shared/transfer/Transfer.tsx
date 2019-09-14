@@ -1,86 +1,69 @@
 import { ContainerURL } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
-import Axios from 'axios';
-import { ItemResponses } from 'kentico-cloud-delivery';
+import Axios, { AxiosResponse } from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
-import { Header, Segment } from 'semantic-ui-react';
+import { AuthenticationState } from 'react-aad-msal';
+import { Header, Loader, Segment } from 'semantic-ui-react';
 
-import {
-    AzureStorage,
-    getContainerURL,
-    getSafeStorageName,
-    IAzureSasTokenRequest,
-    IAzureStorageOptions,
-} from '../../../connectors/azure/azureStorage';
-import { Field } from '../../../connectors/kenticoCloud/contentTypes/Field';
-import { Request } from '../../../connectors/kenticoCloud/contentTypes/Request';
-import { KenticoCloud } from '../../../connectors/kenticoCloud/kenticoCloud';
+import { AzureStorage, getContainerURL, IAzureStorageOptions } from '../../../connectors/azure/azureStorage';
+import { IRequestRetrieverResponse } from '../../../connectors/azureFunctions/RequestRetriever';
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppContext } from '../../AppContext';
 import { AdminControls } from '../../authenticated/admin/AdminControls';
+import { AuthenticatedContext } from '../../authenticated/AuthenticatedContext';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeaderContext } from '../header/AppHeaderContext';
 import { Fields } from './Fields';
 import { ITransferContext, TransferContext } from './TransferContext';
 
 export interface ITransferProps {
-  urlSlug: string;
-  authenticated: boolean;
+  containerToken: string;
 }
 
-export const Transfer: RoutedFC<ITransferProps> = ({ urlSlug, authenticated }) => {
-  const { azureStorage, kenticoCloud, terms } = useContext(AppContext);
+export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
+  const { azureStorage, terms } = useContext(AppContext);
   const appHeaderContext = useContext(AppHeaderContext);
+  const { authProvider } = useContext(AuthenticatedContext);
 
-  useEffect(() => {
-    if (urlSlug) {
-      const deliveryClient = KenticoCloud.deliveryClient({ ...kenticoCloud.deliveryClient });
+  const { accountName, requestRetrieverEndpoint, accountPermissions, containerPermissions } = azureStorage;
 
-      deliveryClient
-        .items<Request>()
-        .type(Request.codename)
-        .equalsFilter('elements.url', urlSlug)
-        .toObservable()
-        .subscribe(setContextFromResponse);
-    }
-  }, [urlSlug]);
+  const setTransferContextFromRetriever = (response: AxiosResponse<IRequestRetrieverResponse>) => {
+    const { sasToken, containerName, requestItem } = response.data;
+    const containerURL = getContainerURL(accountName, containerName, sasToken);
 
-  const setContextFromResponse = (response: ItemResponses.ListContentItemsResponse<Request>) => {
-    const item = response.items[0];
-
-    const containerName = getSafeStorageName(item.system.codename);
-    const { accountName, sasTokenGeneratorEndpoint, accountPermissions, containerPermissions } = azureStorage;
-
-    let request: IAzureSasTokenRequest;
-
-    if (authenticated) {
-      request = {
-        accountName,
-        accountPermissions
-      };
-    } else {
-      request = {
-        accountName,
+    AzureStorage.listBlobs(containerURL, azureStorageOptions).then(blobs => {
+      setTransferContext(transferContext => ({
+        ...transferContext,
+        requestItem,
+        blobs: blobs || [],
         containerName,
-        containerPermissions
-      };
-    }
-
-    Axios.post<string>(sasTokenGeneratorEndpoint, request).then(response => {
-      const sasToken = response.data;
-      const containerURL = getContainerURL(accountName, containerName, sasToken);
-
-      AzureStorage.listBlobs(containerURL, azureStorageOptions).then(blobs => {
-        setTransferContext(transferContext => ({
-          ...transferContext,
-          request: item,
-          blobs: blobs || [],
-          containerName,
-          containerURL
-        }));
-      });
+        containerURL
+      }));
     });
   };
+
+  useEffect(() => {
+    if (authProvider) {
+      authProvider.getAccessToken().then(response => {
+        const request = {
+          accountName,
+          accessToken: response.accessToken,
+          accountPermissions,
+          containerToken
+        };
+
+        Axios.post<IRequestRetrieverResponse>(requestRetrieverEndpoint, request).then(setTransferContextFromRetriever);
+      });
+    } else {
+      const request = {
+        accountName,
+        containerPermissions,
+        containerToken
+      };
+
+      Axios.post<IRequestRetrieverResponse>(requestRetrieverEndpoint, request).then(setTransferContextFromRetriever);
+    }
+  }, []);
 
   const azureStorageOptions: IAzureStorageOptions = {
     appOptions: azureStorage,
@@ -119,38 +102,28 @@ export const Transfer: RoutedFC<ITransferProps> = ({ urlSlug, authenticated }) =
       setTransferContext(transferContext => ({ ...transferContext, blobs: [] }))
     );
 
-  const updateCompletedField = (request: Request, field: Field) => {
-    const contentManagementClient = KenticoCloud.contentManagementClient({ ...kenticoCloud.contentManagementClient });
-
-    return contentManagementClient
-      .upsertLanguageVariant()
-      .byItemCodename(field.system.codename)
-      .byLanguageCodename(field.system.language)
-      .withElementCodenames([{ codename: 'completed', value: [{ codename: 'true' }] }])
-      .toPromise();
-  };
-
   const [transferContext, setTransferContext] = useState<ITransferContext>({
     containerName: '',
     containerURL: null as any,
-    request: new Request(),
+    requestItem: null as any,
     blobs: [],
     deleteBlobs,
     downloadBlob,
     readBlobString,
     uploadFiles,
     createContainer,
-    deleteContainer,
-    updateCompletedField
+    deleteContainer
   });
 
   return (
     <Segment basic>
-      {!transferContext.request.system ? null : (
+      {!transferContext.requestItem ? (
+        <Loader active size='massive' />
+      ) : (
         <TransferContext.Provider value={transferContext}>
-          <Header as='h2' content={`${terms.shared.transfer.header} ${transferContext.request.system.name}`} />
+          <Header as='h2' content={`${terms.shared.transfer.header} ${transferContext.requestItem.system.name}`} />
           <Fields />
-          {authenticated && <AdminControls />}
+          {authProvider && authProvider.authenticationState === AuthenticationState.Authenticated && <AdminControls />}
         </TransferContext.Provider>
       )}
     </Segment>

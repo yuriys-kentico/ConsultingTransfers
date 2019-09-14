@@ -9,9 +9,9 @@ import { MarkdownEditor } from '../markdownEditor/MarkdownEditor';
 import { TransferContext } from '../TransferContext';
 
 export const WriteText: FC<IFieldHolderProps> = ({ field, completed, setFieldLoading }) => {
-  const name = field.name.value;
+  const name = field.name;
 
-  const { containerURL, request, blobs, uploadFiles, readBlobString } = useContext(TransferContext);
+  const { containerURL, blobs, uploadFiles, readBlobString } = useContext(TransferContext);
   const [text, setText] = useState<string>('');
   const [loaded, setLoaded] = useState<boolean>();
 

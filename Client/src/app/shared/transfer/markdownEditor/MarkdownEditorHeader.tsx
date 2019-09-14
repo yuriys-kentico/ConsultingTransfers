@@ -13,9 +13,9 @@ import { MarkdownEditorContext } from './MarkdownEditorContext';
 
 export type MenuConfig = { [key: string]: MenuGroup };
 
-export type MenuGroup = { [key: string]: MenuItem };
+export type MenuGroup = { [key: string]: IMenuItem };
 
-export interface MenuItem {
+export interface IMenuItem {
   title: string;
   icon: React.ReactNode;
   active?: (state: EditorState) => boolean;

@@ -9,7 +9,7 @@ import { IFieldHolderProps } from '../FieldHolder';
 import { TransferContext } from '../TransferContext';
 
 export const UploadFile: FC<IFieldHolderProps> = ({ field, completed, setFieldLoading }) => {
-  const name = field.name.value;
+  const name = field.name;
 
   const {
     terms: {
@@ -20,7 +20,7 @@ export const UploadFile: FC<IFieldHolderProps> = ({ field, completed, setFieldLo
       }
     }
   } = useContext(AppContext);
-  const { containerURL, request, blobs, uploadFiles } = useContext(TransferContext);
+  const { containerURL, blobs, uploadFiles } = useContext(TransferContext);
 
   const onDrop = useCallback(files => {
     uploadFiles(files, name, containerURL).then(() => setFieldLoading(false));

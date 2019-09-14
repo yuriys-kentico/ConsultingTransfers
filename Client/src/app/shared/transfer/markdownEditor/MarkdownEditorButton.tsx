@@ -3,11 +3,11 @@ import { Button } from 'semantic-ui-react';
 
 import { Dispatch } from './keymap';
 import { MarkdownEditorContext } from './MarkdownEditorContext';
-import { MenuItem } from './MarkdownEditorHeader';
+import { IMenuItem } from './MarkdownEditorHeader';
 
 interface MenuButtonProps {
   dispatch: Dispatch;
-  button: MenuItem;
+  button: IMenuItem;
 }
 
 export const MarkdownEditorButton: React.FC<MenuButtonProps> = ({

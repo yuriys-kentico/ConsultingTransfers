@@ -1,31 +1,40 @@
 import { Link } from '@reach/router';
+import Axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Header, Segment, Table } from 'semantic-ui-react';
 
-import { Request } from '../../../connectors/kenticoCloud/contentTypes/Request';
-import { KenticoCloud } from '../../../connectors/kenticoCloud/kenticoCloud';
+import { IRequestItem } from '../../../connectors/azureFunctions/RequestItem';
+import { IRequestListerResponse } from '../../../connectors/azureFunctions/RequestLister';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
+import { AuthenticatedContext } from '../AuthenticatedContext';
 
 export const Transfers: RoutedFC = () => {
   const {
     terms: { admin },
-    kenticoCloud
+    azureStorage
   } = useContext(AppContext);
+  const { authProvider } = useContext(AuthenticatedContext);
+  const { accountName, requestListerEndpoint } = azureStorage;
 
-  const [items, setItems] = useState<Request[]>([]);
+  const [requests, setRequests] = useState<IRequestItem[]>([]);
 
   useEffect(() => {
-    const deliveryClient = KenticoCloud.deliveryClient({ ...kenticoCloud.deliveryClient });
+    authProvider.getAccessToken().then(response => {
+      const request = {
+        accountName,
+        accessToken: response.accessToken
+      };
 
-    deliveryClient
-      .items<Request>()
-      .type(Request.codename)
-      .toObservable()
-      .subscribe(response => {
-        setItems(response.items);
-      });
+      Axios.post<IRequestListerResponse>(requestListerEndpoint, request).then(response =>
+        setRequests(response.data.requestItems)
+      );
+    });
   }, []);
+
+  const getRequestUrl = (item: IRequestItem) => {
+    return `${item.system.codename}|test`;
+  };
 
   return (
     <Segment basic>
@@ -40,14 +49,14 @@ export const Transfers: RoutedFC = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {items.map((item, index) => (
+          {requests.map((item, index) => (
             <Table.Row key={index}>
               <Table.Cell>{item.system.name}</Table.Cell>
-              <Table.Cell>{item.account_name.value}</Table.Cell>
-              <Table.Cell>{item.requester.value}</Table.Cell>
+              <Table.Cell>{item.accountName}</Table.Cell>
+              <Table.Cell>{item.requester}</Table.Cell>
               <Table.Cell textAlign='right'>
-                <Button circular icon='edit' as={Link} to={`${item.url.value}`} />
-                <Button circular icon='share square' as={Link} to={`../transfer/${item.url.value}`} />
+                <Button circular icon='edit' as={Link} to={getRequestUrl(item)} />
+                <Button circular icon='share square' as={Link} to={`../transfer/${getRequestUrl(item)}`} />
               </Table.Cell>
             </Table.Row>
           ))}
