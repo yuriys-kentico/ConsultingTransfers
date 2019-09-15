@@ -12,18 +12,19 @@ const Transfer = lazy(() => import('../../shared/transfer/Transfer').then(module
 
 export const Admin: RoutedFC = () => {
   const {
-    terms: { admin, shared }
-  } = useContext(AppContext);
+    admin: { sideBar },
+    shared: { header }
+  } = useContext(AppContext).terms;
 
   const setActiveWhenCurrent = (linkIsCurrent: (link: LinkGetProps) => boolean) => (link: LinkGetProps) => ({
     className: linkIsCurrent(link) ? 'active item' : 'item'
   });
 
-  const sideBar = (visible: boolean, onHide: () => void) => (
+  const sidebar = (visible: boolean, onHide: () => void) => (
     <Sidebar as={Menu} animation='push' icon='labeled' onHide={onHide} vertical visible={visible} width='very thin'>
       <Menu.Item onClick={onHide} as={Link} to='/' getProps={setActiveWhenCurrent(link => link.isCurrent)}>
         <Icon name='home' />
-        {admin.sideBar.home}
+        {sideBar.home}
       </Menu.Item>
       <Menu.Item
         onClick={onHide}
@@ -32,13 +33,13 @@ export const Admin: RoutedFC = () => {
         getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
       >
         <Icon name='sync' />
-        {admin.sideBar.transfers}
+        {sideBar.transfers}
       </Menu.Item>
     </Sidebar>
   );
 
   return (
-    <AppHeader title={shared.header.header} sideBar={sideBar}>
+    <AppHeader title={header.header} sidebar={sidebar}>
       <Suspense fallback={<Loader active size='massive' />}>
         <Container text>
           <Router>

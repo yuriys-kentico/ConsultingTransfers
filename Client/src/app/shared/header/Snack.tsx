@@ -25,9 +25,7 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
   useEffect(() => {
     if (update) {
       const subscription = update.subscribe({
-        next: update => {
-          setProgress({ ...update, duration: Date.now() - startStamp.current });
-        }
+        next: update => setProgress({ ...update, duration: Date.now() - startStamp.current })
       });
 
       return () => subscription.unsubscribe();

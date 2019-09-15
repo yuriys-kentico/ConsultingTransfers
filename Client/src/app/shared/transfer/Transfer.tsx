@@ -1,20 +1,23 @@
 import { ContainerURL } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import Axios, { AxiosResponse } from 'axios';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { lazy, useContext, useEffect, useState } from 'react';
 import { AuthenticationState } from 'react-aad-msal';
 import { Header, Loader, Segment } from 'semantic-ui-react';
 
 import { AzureStorage, getContainerURL, IAzureStorageOptions } from '../../../connectors/azure/azureStorage';
-import { IRequestRetrieverResponse } from '../../../connectors/azureFunctions/RequestRetriever';
+import { IRequestRetrieverResponse } from '../../../connectors/azureFunctions/IRequestRetrieverResponse';
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppContext } from '../../AppContext';
-import { AdminControls } from '../../authenticated/admin/AdminControls';
 import { AuthenticatedContext } from '../../authenticated/AuthenticatedContext';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeaderContext } from '../header/AppHeaderContext';
 import { Fields } from './Fields';
 import { ITransferContext, TransferContext } from './TransferContext';
+
+const AdminControls = lazy(() =>
+  import('../../authenticated/admin/AdminControls').then(module => ({ default: module.AdminControls }))
+);
 
 export interface ITransferProps {
   containerToken: string;
@@ -44,10 +47,10 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
 
   useEffect(() => {
     if (authProvider) {
-      authProvider.getAccessToken().then(response => {
+      authProvider.getAccessToken().then(({ accessToken }) => {
         const request = {
           accountName,
-          accessToken: response.accessToken,
+          accessToken,
           accountPermissions,
           containerToken
         };

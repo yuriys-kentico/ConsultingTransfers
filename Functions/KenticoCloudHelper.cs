@@ -1,8 +1,10 @@
-﻿using KenticoCloud.Delivery;
+﻿using Functions.KenticoCloud;
 
-namespace Functions.KenticoCloud
+using KenticoCloud.Delivery;
+
+namespace Functions
 {
-    public static class KenticoCloud
+    public static class KenticoCloudHelper
     {
         public static IDeliveryClient GetDeliveryClient(string accountName)
             => DeliveryClientBuilder

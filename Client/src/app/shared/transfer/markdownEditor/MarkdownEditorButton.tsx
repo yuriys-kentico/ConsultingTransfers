@@ -5,12 +5,12 @@ import { Dispatch } from './keymap';
 import { MarkdownEditorContext } from './MarkdownEditorContext';
 import { IMenuItem } from './MarkdownEditorHeader';
 
-interface MenuButtonProps {
+interface IMenuButtonProps {
   dispatch: Dispatch;
   button: IMenuItem;
 }
 
-export const MarkdownEditorButton: React.FC<MenuButtonProps> = ({
+export const MarkdownEditorButton: React.FC<IMenuButtonProps> = ({
   dispatch,
   button: { icon, active, enabled: enable, onClick, title }
 }) => {

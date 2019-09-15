@@ -9,11 +9,7 @@ import { BlobDetails } from '../../shared/transfer/BlobDetails';
 import { TransferContext } from '../../shared/transfer/TransferContext';
 
 export const AdminControls: FC = () => {
-  const {
-    terms: {
-      admin: { controls }
-    }
-  } = useContext(AppContext);
+  const { controls } = useContext(AppContext).terms.admin;
   const {
     containerName,
     containerURL,

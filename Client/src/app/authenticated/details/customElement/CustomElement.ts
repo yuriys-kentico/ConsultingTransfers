@@ -1,23 +1,23 @@
 type CustomElement = {
-  value: string | null; // Initial value of a Custom element
-  disabled: boolean; // Indicates whether an element is disabled for editing
+  value: string | null;
+  disabled: boolean;
   config: object | null; // Element configuration object specified in the UI in a content type or a content type snippet
 };
 
 type Context = {
-  projectId: string; // Unique identifier of the Kentico Cloud project
+  projectId: string;
   item: IItem;
   variant: IVariant;
 };
 
 interface IItem {
-  id: string; // ID of an item containing a Custom element
-  codename: string; // Codename of an item containing a Custom element
+  id: string;
+  codename: string;
 }
 
 interface IVariant {
-  id: string; // An identifier of a language variant
-  codename: string; // Codename of a language variant. For example, “en-us“
+  id: string;
+  codename: string;
 }
 
 export interface ICustomElement {

@@ -5,11 +5,11 @@ import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 
 export const Home: RoutedFC = () => {
-  const appContext = useContext(AppContext);
+  const { home } = useContext(AppContext).terms.admin;
 
   return (
     <Segment basic>
-      <Header as='h2'>{appContext.terms.admin.home.header}</Header>
+      <Header as='h2'>{home.header}</Header>
       This is home
     </Segment>
   );

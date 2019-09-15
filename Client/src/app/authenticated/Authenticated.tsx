@@ -10,9 +10,7 @@ import { AuthenticatedContext } from './AuthenticatedContext';
 const Admin = lazy(() => import('./admin/Admin').then(module => ({ default: module.Admin })));
 
 export const Authenticated: RoutedFC = () => {
-  const appContext = useContext(AppContext);
-
-  const { config, accessTokenRequest } = appContext.authentication;
+  const { config, accessTokenRequest } = useContext(AppContext).authentication;
 
   config.auth.redirectUri = window.location.origin;
 

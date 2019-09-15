@@ -48,7 +48,7 @@ namespace Functions.RequestLister
             string accountName
             )
         {
-            var deliveryClient = KenticoCloud.KenticoCloud.GetDeliveryClient(accountName);
+            var deliveryClient = KenticoCloudHelper.GetDeliveryClient(accountName);
 
             var response = await deliveryClient.GetItemsAsync<Request>();
 

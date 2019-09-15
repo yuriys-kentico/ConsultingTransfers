@@ -1,10 +1,10 @@
 import React, { Dispatch, FC, SetStateAction, useContext } from 'react';
 import { Observable } from 'rxjs';
 import { Segment } from 'semantic-ui-react';
+
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
 import { ISnack, IUpdateMessage, Snack, SnackType } from './Snack';
-
 
 export type HideSnackHandler = (snack: ISnack, headerContext: Dispatch<SetStateAction<IAppHeaderContext>>) => void;
 
@@ -49,7 +49,9 @@ export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSn
   });
 };
 
-export const hideSnackWhen = (executor: Promise<unknown>) => (snack: ISnack, setHeaderContext: Dispatch<SetStateAction<IAppHeaderContext>>
+export const hideSnackWhen = (executor: Promise<unknown>) => (
+  snack: ISnack,
+  setHeaderContext: Dispatch<SetStateAction<IAppHeaderContext>>
 ) => {
   executor.then(() => {
     setHeaderContext(headerContext => {

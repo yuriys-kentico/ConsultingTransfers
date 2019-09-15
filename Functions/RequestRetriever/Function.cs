@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -69,9 +70,13 @@ namespace Functions.RequestRetriever
             string itemName
             )
         {
-            var deliveryClient = KenticoCloud.KenticoCloud.GetDeliveryClient(accountName);
+            var deliveryClient = KenticoCloudHelper.GetDeliveryClient(accountName);
 
             var response = await deliveryClient.GetItemAsync<Request>(itemName);
+
+            response.Item.Fields = Regex
+                .Replace(response.Item.Fields, "<.*?>|\n", string.Empty)
+                .Replace("}{", "},{");
 
             return response.Item;
         }

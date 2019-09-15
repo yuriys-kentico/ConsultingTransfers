@@ -10,12 +10,7 @@ export const Fields: FC = () => {
 
   let fields: IFieldHolderProps[] = [];
 
-  const strippedJson = transferContext.requestItem.fields
-    .replace(/<.*?>/g, '')
-    .replace(/\n/g, '')
-    .replace(/}{/g, '},{');
-
-  const maybeJson = `[${strippedJson}]`;
+  const maybeJson = `[${transferContext.requestItem.fields}]`;
 
   try {
     fields = JSON.parse(maybeJson);

@@ -10,10 +10,10 @@ import { ITransferProps } from '../shared/transfer/Transfer';
 const Transfer = lazy(() => import('../shared/transfer/Transfer').then(module => ({ default: module.Transfer })));
 
 export const Public: RoutedFC<ITransferProps> = () => {
-  const appContext = useContext(AppContext);
+  const { header } = useContext(AppContext).terms.shared;
 
   return (
-    <AppHeader title={appContext.terms.shared.header.header}>
+    <AppHeader title={header.header}>
       <Suspense fallback={<Loader active size='massive' />}>
         <Container text>
           <Router>

@@ -3,8 +3,8 @@ import Axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Header, Segment, Table } from 'semantic-ui-react';
 
-import { IRequestItem } from '../../../connectors/azureFunctions/RequestItem';
-import { IRequestListerResponse } from '../../../connectors/azureFunctions/RequestLister';
+import { IRequestItem } from '../../../connectors/azureFunctions/IRequestItem';
+import { IRequestListerResponse } from '../../../connectors/azureFunctions/IRequestListerResponse';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 import { AuthenticatedContext } from '../AuthenticatedContext';
@@ -12,10 +12,9 @@ import { AuthenticatedContext } from '../AuthenticatedContext';
 export const Transfers: RoutedFC = () => {
   const {
     terms: { admin },
-    azureStorage
+    azureStorage: { accountName, requestListerEndpoint }
   } = useContext(AppContext);
   const { authProvider } = useContext(AuthenticatedContext);
-  const { accountName, requestListerEndpoint } = azureStorage;
 
   const [requests, setRequests] = useState<IRequestItem[]>([]);
 

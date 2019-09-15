@@ -3,7 +3,6 @@ import React from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
 import { AzureStorage } from '../../../connectors/azure/azureStorage';
-import { FieldType, IField } from '../../../connectors/azureFunctions/Field';
 import { AppContext } from '../../AppContext';
 import { AppHeaderContext } from '../header/AppHeaderContext';
 import { TransferContext } from './TransferContext';
@@ -11,16 +10,18 @@ import { TransferContext } from './TransferContext';
 const WriteText = lazy(() => import('./fields/WriteText').then(module => ({ default: module.WriteText })));
 const UploadFile = lazy(() => import('./fields/UploadFile').then(module => ({ default: module.UploadFile })));
 
+export type FieldType = 'upload_file' | 'write_text';
 
 export interface IFieldHolderProps {
-  field: IField;
+  name: string;
+  comment: string;
   type: FieldType;
   completed: boolean;
   setFieldLoading: (loading: boolean) => void;
 }
 
 export const FieldHolder: FC<IFieldHolderProps> = props => {
-  const name = props.field.name;
+  const { name, comment, type } = props;
 
   const { terms } = useContext(AppContext);
   const { showInfo } = useContext(AppHeaderContext);
@@ -65,10 +66,10 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
         <Header floated='right' content={<Loader active={fieldLoading} inline size='tiny' />} />
         <Header as='h3' content={name} />
         <Divider fitted hidden />
-        {props.field.comment}
+        {comment}
         <Divider fitted hidden />
         <Divider fitted hidden />
-        <Segment as={getFieldType(props.type)} {...props} completed={completed} setFieldLoading={setFieldLoading} />
+        <Segment as={getFieldType(type)} {...props} completed={completed} setFieldLoading={setFieldLoading} />
       </Segment>
     </Suspense>
   );

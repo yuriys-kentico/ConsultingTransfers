@@ -7,7 +7,7 @@ import { hideSnackAfter, hideSnackWhen, showSnack, SnackBar } from './SnackBar';
 
 export interface IAppHeaderProps {
   title: string;
-  sideBar?: (visible: boolean, onHide: () => void) => ReactNode;
+  sidebar?: (visible: boolean, onHide: () => void) => ReactNode;
 }
 
 export const AppHeader: FC<IAppHeaderProps> = props => {
@@ -45,12 +45,12 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
     <AppHeaderContext.Provider value={headerContext}>
       <SnackBar />
       <Sidebar.Pushable>
-        {props.sideBar && props.sideBar(sidebarOpen, () => toggleSidebar(false))}
+        {props.sidebar && props.sidebar(sidebarOpen, () => toggleSidebar(false))}
         <Sidebar.Pusher className='full height' dimmed={sidebarOpen}>
           <Sidebar.Pushable>
             <Menu borderless size='massive' inverted>
-              {props.sideBar && <Menu.Item icon='bars' onClick={() => toggleSidebar(true)} />}
-              <Menu.Item header fitted={props.sideBar && 'horizontally'} content={props.title} />
+              {props.sidebar && <Menu.Item icon='bars' onClick={() => toggleSidebar(true)} />}
+              <Menu.Item header fitted={props.sidebar && 'horizontally'} content={props.title} />
             </Menu>
             {props.children}
           </Sidebar.Pushable>

@@ -5,7 +5,6 @@ using KenticoCloud.Delivery;
 using KenticoCloud.Delivery.InlineContentItems;
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Functions.KenticoCloud
 {
@@ -31,15 +30,13 @@ namespace Functions.KenticoCloud
         {
             var fieldObject = new
             {
-                field,
+                name = field.Name,
+                comment = field.Comment,
                 type = field.Type.First().Codename,
                 completed = field.Completed.FirstOrDefault()?.Codename == "true"
             };
 
-            return JsonConvert.SerializeObject(fieldObject, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            });
+            return JsonConvert.SerializeObject(fieldObject);
         }
     }
 }

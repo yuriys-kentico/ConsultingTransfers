@@ -8,23 +8,16 @@ import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';
 import { TransferContext } from '../TransferContext';
 
-export const UploadFile: FC<IFieldHolderProps> = ({ field, completed, setFieldLoading }) => {
-  const name = field.name;
-
-  const {
-    terms: {
-      shared: {
-        transfer: {
-          fields: { uploadFile }
-        }
-      }
-    }
-  } = useContext(AppContext);
+export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldLoading }) => {
+  const { uploadFile } = useContext(AppContext).terms.shared.transfer.fields;
   const { containerURL, blobs, uploadFiles } = useContext(TransferContext);
 
-  const onDrop = useCallback(files => {
-    uploadFiles(files, name, containerURL).then(() => setFieldLoading(false));
+  const onDrop = useCallback(async files => {
     setFieldLoading(true);
+
+    await uploadFiles(files, name, containerURL);
+
+    setFieldLoading(false);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, disabled: completed });

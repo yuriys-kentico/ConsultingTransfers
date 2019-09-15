@@ -17,6 +17,7 @@ import { IUpdateMessage } from '../../app/shared/header/Snack';
 
 interface IAzureStorageAppOptions {
   uploadBlockMb: number;
+  parallelism: number;
 }
 
 export interface IAzureStorageOptions {
@@ -24,12 +25,6 @@ export interface IAzureStorageOptions {
   messageHandlers: IShowMessageHandlers;
 }
 
-export interface IAzureSasTokenRequest {
-  accountName: string;
-  accountPermissions?: string;
-  containerName?: string;
-  containerPermissions?: string;
-}
 
 const updateProgress = (progressSubject: Subject<IUpdateMessage>, total: number | undefined) => ({
   loadedBytes
@@ -48,7 +43,7 @@ const getUploadPromise = (
 ) => {
   return uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobURL, {
     blockSize: azureStorageOptions.appOptions.uploadBlockMb * 1024 * 1024,
-    parallelism: 20,
+    parallelism: azureStorageOptions.appOptions.parallelism,
     progress: updateProgress(progressSubject, file.size)
   }).then(() => new Promise(resolve => setTimeout(resolve, 1000)));
 };

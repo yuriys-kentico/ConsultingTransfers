@@ -12,13 +12,13 @@ import { IMarkdownEditorContext, MarkdownEditorContext } from './MarkdownEditorC
 import { MarkdownEditorHeader } from './MarkdownEditorHeader';
 import { placeholder } from './placeholder';
 
-interface MarkdownEditorProps {
+interface IMarkdownEditorProps {
   markdown: string;
   onChange: (value: string) => void;
   disabled: boolean;
 }
 
-export const MarkdownEditor: FC<MarkdownEditorProps> = ({ markdown, onChange, disabled }) => {
+export const MarkdownEditor: FC<IMarkdownEditorProps> = ({ markdown, onChange, disabled }) => {
   const {
     terms: {
       shared: {

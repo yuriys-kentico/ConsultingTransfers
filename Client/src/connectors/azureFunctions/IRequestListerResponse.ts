@@ -1,4 +1,4 @@
-import { IRequestItem } from './RequestItem';
+import { IRequestItem } from './IRequestItem';
 
 export interface IRequestListerResponse {
   requestItems: IRequestItem[];

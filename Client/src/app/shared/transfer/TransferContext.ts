@@ -2,7 +2,7 @@ import { ContainerURL } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import { createContext } from 'react';
 
-import { IRequestItem } from '../../../connectors/azureFunctions/RequestItem';
+import { IRequestItem } from '../../../connectors/azureFunctions/IRequestItem';
 
 export interface ITransferContext {
   containerName: string;
