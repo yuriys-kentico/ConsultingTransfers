@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 
@@ -6,6 +7,8 @@ namespace Functions
 {
     public static class AzureStorageHelper
     {
+        public const string ContainerToken = "ContainerToken";
+
         public static CloudStorageAccount GetStorageAccount(string accountName)
         {
             var storageConnectionString = Environment.GetEnvironmentVariable(accountName, EnvironmentVariableTarget.Process);

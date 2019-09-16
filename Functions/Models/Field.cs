@@ -6,7 +6,7 @@ using KenticoCloud.Delivery.InlineContentItems;
 
 using Newtonsoft.Json;
 
-namespace Functions.KenticoCloud
+namespace Functions.Models
 {
     public class Field : IInlineContentItemsResolver<Field>
     {

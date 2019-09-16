@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Functions.Models;
+
 using KenticoCloud.Delivery;
 
-namespace Functions.KenticoCloud
+namespace Functions
 {
     public class TypeProvider : ITypeProvider
     {

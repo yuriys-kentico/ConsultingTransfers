@@ -16,10 +16,10 @@ export const BlobDetails: FC<IBlobDetailsProps> = ({ file, fileName, color }) =>
   const [size, unit] = getSizeText(contentLength);
 
   return (
-    <div>
+    <>
       <Header as='h5' sub content={fileName} color={color} />
       <Label content={`${size} ${unit}`} icon='save' size='tiny' />
       <Label content={`${lastModified.toLocaleString()}`} icon='calendar check outline' size='tiny' />
-    </div>
+    </>
   );
 };

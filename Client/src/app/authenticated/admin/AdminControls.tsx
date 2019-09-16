@@ -36,7 +36,7 @@ export const AdminControls: FC = () => {
   }
 
   return (
-    <div>
+    <>
       <Divider />
       <Segment>
         <Header as='h2' content={controls.details.header} />
@@ -103,6 +103,6 @@ export const AdminControls: FC = () => {
         floated='right'
         content={controls.createContainer}
       />
-    </div>
+    </>
   );
 };

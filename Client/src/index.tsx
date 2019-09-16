@@ -1,4 +1,4 @@
-import './app.css';
+import './app/app.css';
 import 'semantic-ui-less/semantic.less';
 import 'typeface-source-sans-pro';
 

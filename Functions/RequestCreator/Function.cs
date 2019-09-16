@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 
+using Functions.Models;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -62,7 +64,7 @@ namespace Functions.RequestCreator
 
                 var created = await container.CreateIfNotExistsAsync();
 
-                container.Metadata.Add("ContainerToken", AzureStorageHelper.EncryptToken(item.Codename));
+                container.Metadata.Add(AzureStorageHelper.ContainerToken, AzureStorageHelper.EncryptToken(item.Codename));
 
                 await container.SetMetadataAsync();
             }

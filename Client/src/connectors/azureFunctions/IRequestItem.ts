@@ -1,8 +1,8 @@
 export interface IRequestItem {
   accountName: string;
-  details: string;
-  fields: string;
   requester: string;
+  containerToken: string;
+  fields: string;
   system: {
     name: string;
     codename: string;

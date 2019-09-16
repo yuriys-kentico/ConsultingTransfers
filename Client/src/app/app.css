@@ -124,7 +124,8 @@
   margin-top: 0.2em;
 }
 
-.ui.table td {
+.ui.table td,
+.ui.table th {
   padding: 0.3em 0 !important;
 }
 

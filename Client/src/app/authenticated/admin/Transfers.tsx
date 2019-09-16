@@ -31,10 +31,6 @@ export const Transfers: RoutedFC = () => {
     });
   }, []);
 
-  const getRequestUrl = (item: IRequestItem) => {
-    return `${item.system.codename}|test`;
-  };
-
   return (
     <Segment basic>
       <Header as='h2'>{admin.transfers.header}</Header>
@@ -54,8 +50,8 @@ export const Transfers: RoutedFC = () => {
               <Table.Cell>{item.accountName}</Table.Cell>
               <Table.Cell>{item.requester}</Table.Cell>
               <Table.Cell textAlign='right'>
-                <Button circular icon='edit' as={Link} to={getRequestUrl(item)} />
-                <Button circular icon='share square' as={Link} to={`../transfer/${getRequestUrl(item)}`} />
+                <Button circular icon='edit' as={Link} to={item.containerToken} />
+                <Button circular icon='share square' as={Link} to={`../transfer/${item.containerToken}`} />
               </Table.Cell>
             </Table.Row>
           ))}

@@ -46,7 +46,7 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
       <SnackBar />
       <Sidebar.Pushable>
         {props.sidebar && props.sidebar(sidebarOpen, () => toggleSidebar(false))}
-        <Sidebar.Pusher className='full height' dimmed={sidebarOpen}>
+        <Sidebar.Pusher className='full height app' dimmed={sidebarOpen}>
           <Sidebar.Pushable>
             <Menu borderless size='massive' inverted>
               {props.sidebar && <Menu.Item icon='bars' onClick={() => toggleSidebar(true)} />}

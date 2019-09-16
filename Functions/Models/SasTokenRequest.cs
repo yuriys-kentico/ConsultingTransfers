@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 
-namespace Functions.RequestRetriever
+namespace Functions.Models
 {
     public class SasTokenRequest
     {

@@ -2,7 +2,7 @@
 
 using Newtonsoft.Json;
 
-namespace Functions.RequestCreator
+namespace Functions.Models
 {
     public class Webhook
     {

@@ -1,9 +1,8 @@
 using System;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
-using Functions.KenticoCloud;
+using Functions.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +35,7 @@ namespace Functions.RequestRetriever
 
                 string sasToken;
 
-                if (HasAccess(accessToken))
+                if (AzureFunctionHelper.HasAccess(accessToken))
                 {
                     sasToken = AzureStorageHelper.GetAccountSasToken(storageAccount, accountPermissions);
                 }
@@ -60,25 +59,16 @@ namespace Functions.RequestRetriever
             }
         }
 
-        private static bool HasAccess(string accessToken)
-        {
-            return !string.IsNullOrEmpty(accessToken);
-        }
-
-        private static async Task<Request> GetRequest(
+        private static async Task<RequestItem> GetRequest(
             string accountName,
             string itemName
             )
         {
-            var deliveryClient = KenticoCloudHelper.GetDeliveryClient(accountName);
+            var deliveryClient = KenticoKontentHelper.GetDeliveryClient(accountName);
 
             var response = await deliveryClient.GetItemAsync<Request>(itemName);
 
-            response.Item.Fields = Regex
-                .Replace(response.Item.Fields, "<.*?>|\n", string.Empty)
-                .Replace("}{", "},{");
-
-            return response.Item;
+            return new RequestItem(response.Item, null);
         }
     }
 }
