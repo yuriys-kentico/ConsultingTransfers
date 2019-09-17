@@ -30,7 +30,7 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
 
       return () => subscription.unsubscribe();
     }
-  }, []);
+  }, [update]);
 
   switch (type) {
     case 'success':

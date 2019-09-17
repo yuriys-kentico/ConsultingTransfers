@@ -7,6 +7,7 @@ import { Input, Label, List, Loader } from 'semantic-ui-react';
 
 import { IRequestListerResponse } from '../../../connectors/azureFunctions/IRequestListerResponse';
 import { Context, Element, ICustomElement } from '../../../connectors/customElement/customElement';
+import { promiseAfter, promiseWhile } from '../../../utilities/promises';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 
@@ -25,11 +26,11 @@ export const Details: RoutedFC = () => {
     navigate('/');
   }
 
+  const context = useContext(AppContext);
+
   const {
-    kenticoKontent: { customElementScriptEndpoint },
-    azureStorage: { accountName, requestListerEndpoint },
     terms: { details }
-  } = useContext(AppContext);
+  } = context;
 
   const [available, setAvailable] = useState(false);
   const [enabled, setEnabled] = useState(true);
@@ -40,51 +41,66 @@ export const Details: RoutedFC = () => {
   const customElementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const {
+      kenticoKontent: { customElementScriptEndpoint },
+      azureStorage: { accountName, requestListerEndpoint },
+      experience
+    } = context;
+
     const customElementModule = document.createElement('script');
+
     customElementModule.src = customElementScriptEndpoint;
-
-    document.head.appendChild(customElementModule);
-
     customElementModule.onload = () => CustomElement.init(initCustomElement);
-  }, []);
 
-  const initCustomElement = (element: Element, context: Context) => {
-    const elementValue = JSON.parse(element.value || JSON.stringify(defaultDetailsValue)) as IDetailsValue;
+    const initCustomElement = (element: Element) => {
+      const elementValue = JSON.parse(element.value || JSON.stringify(defaultDetailsValue)) as IDetailsValue;
 
-    setAvailable(true);
+      setAvailable(true);
+      setAccountNameValue(elementValue.accountName);
+      setRequesterValue(elementValue.requester);
+      setEnabledAndRetrieveToken(!element.disabled);
 
-    setEnabled(!element.disabled);
-    if (element.disabled) retrieveContainerToken(context.item.codename);
-
-    setAccountNameValue(elementValue.accountName);
-    setRequesterValue(elementValue.requester);
-
-    CustomElement.onDisabledChanged(disabled => {
-      setEnabled(!disabled);
-      if (disabled) retrieveContainerToken(context.item.codename);
-    });
-  };
-
-  const retrieveContainerToken = (codename: string) => {
-    //   authProvider.getAccessToken().then(response => {
-    setContainerToken(undefined);
-
-    const request = {
-      accountName,
-      accessToken: 'token' //response.accessToken
+      CustomElement.onDisabledChanged(disabled => setEnabledAndRetrieveToken(!disabled));
     };
 
-    Axios.post<IRequestListerResponse>(requestListerEndpoint, request).then(response => {
-      const request = response.data.requestItems.filter(request => request.system.codename === codename)[0];
+    const setEnabledAndRetrieveToken = (enabled: boolean) => {
+      setEnabled(enabled);
 
-      if (request) {
-        setContainerToken(request.containerToken);
-      } else {
-        retrieveContainerToken(codename);
+      if (!enabled) {
+        setContainerToken(undefined);
+
+        const checkContainerToken = (codename: string) => () =>
+          Axios.post<IRequestListerResponse>(requestListerEndpoint, request)
+            .then(response => {
+              const request = response.data.requestItems.filter(request => request.system.codename === codename)[0];
+
+              if (request && request.containerToken) {
+                return request.containerToken;
+              } else {
+                return '';
+              }
+            })
+            .then(promiseAfter(experience.detailsContainerCheckTimeout));
+
+        //authProvider.getAccessToken().then(response => {
+        const request = {
+          accountName,
+          accessToken: 'response.accessToken' //response.accessToken
+        };
+
+        CustomElement.init((_, context: Context) => {
+          promiseWhile(
+            '',
+            containerToken => containerToken.length === 0,
+            checkContainerToken(context.item.codename)
+          ).then(containerToken => setContainerToken(containerToken));
+        });
+        //});
       }
-    });
-    //   });
-  };
+    };
+
+    document.head.appendChild(customElementModule);
+  }, [context]);
 
   useEffect(() => {
     if (available && customElementRef.current) {
@@ -96,7 +112,7 @@ export const Details: RoutedFC = () => {
     if (available) {
       CustomElement.setValue(JSON.stringify({ accountName: accountNameValue, requester: requesterValue }));
     }
-  }, [accountNameValue, requesterValue]);
+  }, [available, accountNameValue, requesterValue]);
 
   const updateStringField = (setStater: Dispatch<SetStateAction<string>>) => (event: ChangeEvent<HTMLInputElement>) => {
     setStater(event.target.value);
@@ -155,13 +171,13 @@ export const Details: RoutedFC = () => {
                 <List>
                   <List.Item>
                     <Label horizontal>{details.container.publicUrl}</Label>
-                    <a href={getUrl(`/transfer/${containerToken}`)} target='_blank'>
+                    <a href={getUrl(`/transfer/${containerToken}`)} target='_blank' rel='noopener noreferrer'>
                       {getUrl(`/transfer/${containerToken}`)}
                     </a>
                   </List.Item>
                   <List.Item>
                     <Label horizontal>{details.container.adminUrl}</Label>
-                    <a href={getUrl(`/transfers/${containerToken}`)} target='_blank'>
+                    <a href={getUrl(`/transfers/${containerToken}`)} target='_blank' rel='noopener noreferrer'>
                       {getUrl(`/transfers/${containerToken}`)}
                     </a>
                   </List.Item>

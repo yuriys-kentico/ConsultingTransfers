@@ -1,7 +1,7 @@
 import { ContainerURL } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import Axios, { AxiosResponse } from 'axios';
-import React, { lazy, useContext, useEffect, useState } from 'react';
+import React, { lazy, useContext, useEffect, useRef, useState } from 'react';
 import { AuthenticationState } from 'react-aad-msal';
 import { Header, Loader, Segment } from 'semantic-ui-react';
 
@@ -30,22 +30,27 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
 
   const { accountName, requestRetrieverEndpoint, accountPermissions, containerPermissions } = azureStorage;
 
-  const setTransferContextFromRetriever = (response: AxiosResponse<IRequestRetrieverResponse>) => {
-    const { sasToken, containerName, requestItem } = response.data;
-    const containerURL = getContainerURL(accountName, containerName, sasToken);
-
-    AzureStorage.listBlobs(containerURL, azureStorageOptions).then(blobs => {
-      setTransferContext(transferContext => ({
-        ...transferContext,
-        requestItem,
-        blobs: blobs || [],
-        containerName,
-        containerURL
-      }));
-    });
-  };
+  const azureStorageOptions = useRef<IAzureStorageOptions>({
+    appOptions: azureStorage,
+    messageHandlers: appHeaderContext
+  });
 
   useEffect(() => {
+    const setTransferContextFromRetriever = (response: AxiosResponse<IRequestRetrieverResponse>) => {
+      const { sasToken, containerName, requestItem } = response.data;
+      const containerURL = getContainerURL(accountName, containerName, sasToken);
+
+      AzureStorage.listBlobs(containerURL, azureStorageOptions.current).then(blobs => {
+        setTransferContext(transferContext => ({
+          ...transferContext,
+          requestItem,
+          blobs: blobs || [],
+          containerName,
+          containerURL
+        }));
+      });
+    };
+
     if (authProvider) {
       authProvider.getAccessToken().then(({ accessToken }) => {
         const request = {
@@ -66,42 +71,37 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
 
       Axios.post<IRequestRetrieverResponse>(requestRetrieverEndpoint, request).then(setTransferContextFromRetriever);
     }
-  }, []);
-
-  const azureStorageOptions: IAzureStorageOptions = {
-    appOptions: azureStorage,
-    messageHandlers: appHeaderContext
-  };
+  }, [accountName, accountPermissions, authProvider, containerPermissions, containerToken, requestRetrieverEndpoint]);
 
   const deleteBlobs = (blobs: BlobItem[] | BlobItem, containerURL: ContainerURL) =>
-    AzureStorage.deleteBlobs(blobs, containerURL, azureStorageOptions).then(() =>
+    AzureStorage.deleteBlobs(blobs, containerURL, azureStorageOptions.current).then(() =>
       setTransferContext(transferContext => {
         return { ...transferContext, blobs: deleteFrom(blobs, transferContext.blobs) };
       })
     );
 
   const downloadBlob = (blob: BlobItem, containerURL: ContainerURL) =>
-    AzureStorage.downloadBlob(blob, containerURL, azureStorageOptions);
+    AzureStorage.downloadBlob(blob, containerURL, azureStorageOptions.current);
 
   const readBlobString = (blob: BlobItem, containerURL: ContainerURL) =>
-    AzureStorage.readBlobString(blob, containerURL, azureStorageOptions);
+    AzureStorage.readBlobString(blob, containerURL, azureStorageOptions.current);
 
   const uploadFiles = (files: File[] | File, directory: string, containerURL: ContainerURL, silent?: boolean) =>
-    AzureStorage.uploadFiles(files, directory, containerURL, azureStorageOptions, silent)
-      .then(() => AzureStorage.listBlobs(containerURL, azureStorageOptions))
+    AzureStorage.uploadFiles(files, directory, containerURL, azureStorageOptions.current, silent)
+      .then(() => AzureStorage.listBlobs(containerURL, azureStorageOptions.current))
       .then(blobs => {
         blobs && setTransferContext(transferContext => ({ ...transferContext, blobs }));
       });
 
   const createContainer = (containerName: string, containerURL: ContainerURL) =>
-    AzureStorage.createContainer(containerName, containerURL, azureStorageOptions)
-      .then(() => AzureStorage.listBlobs(containerURL, azureStorageOptions))
+    AzureStorage.createContainer(containerName, containerURL, azureStorageOptions.current)
+      .then(() => AzureStorage.listBlobs(containerURL, azureStorageOptions.current))
       .then(blobs => {
         blobs && setTransferContext(transferContext => ({ ...transferContext, blobs }));
       });
 
   const deleteContainer = (containerName: string, containerURL: ContainerURL) =>
-    AzureStorage.deleteContainer(containerName, containerURL, azureStorageOptions).then(() =>
+    AzureStorage.deleteContainer(containerName, containerURL, azureStorageOptions.current).then(() =>
       setTransferContext(transferContext => ({ ...transferContext, blobs: [] }))
     );
 

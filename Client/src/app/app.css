@@ -157,6 +157,6 @@ ol.ui.list ol,
   position: relative !important;
 }
 
-.ui.loader {
+.ui.loader:not(.inline) {
   position: fixed !important;
 }

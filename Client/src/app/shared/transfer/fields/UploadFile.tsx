@@ -12,13 +12,16 @@ export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldLoa
   const { uploadFile } = useContext(AppContext).terms.shared.transfer.fields;
   const { containerURL, blobs, uploadFiles } = useContext(TransferContext);
 
-  const onDrop = useCallback(async files => {
-    setFieldLoading(true);
+  const onDrop = useCallback(
+    async files => {
+      setFieldLoading(true);
 
-    await uploadFiles(files, name, containerURL);
+      await uploadFiles(files, name, containerURL);
 
-    setFieldLoading(false);
-  }, []);
+      setFieldLoading(false);
+    },
+    [containerURL, name, setFieldLoading, uploadFiles]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, disabled: completed });
 

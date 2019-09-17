@@ -4,11 +4,13 @@ import { debounceTime } from 'rxjs/operators';
 import { Form } from 'semantic-ui-react';
 
 import { getFieldBlobs } from '../../../../connectors/azure/azureStorage';
+import { AppContext } from '../../../AppContext';
 import { IFieldHolderProps } from '../FieldHolder';
 import { MarkdownEditor } from '../markdownEditor/MarkdownEditor';
 import { TransferContext } from '../TransferContext';
 
 export const WriteText: FC<IFieldHolderProps> = ({ name, completed, setFieldLoading }) => {
+  const { experience } = useContext(AppContext);
   const { containerURL, blobs, uploadFiles, readBlobString } = useContext(TransferContext);
   const [text, setText] = useState<string>('');
   const [loaded, setLoaded] = useState<boolean>();
@@ -29,7 +31,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ name, completed, setFieldLoad
       setLoaded(true);
     }
 
-    const subscription = textStream.current.pipe(debounceTime(2000)).subscribe({
+    const subscription = textStream.current.pipe(debounceTime(experience.writeTextUpdateTimeout)).subscribe({
       next: update => {
         const file = new File([update], `${name}.md`, { type: 'text/plain' });
 
@@ -39,7 +41,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ name, completed, setFieldLoad
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [name, containerURL, readBlobString, blobs, setFieldLoading, uploadFiles, experience.writeTextUpdateTimeout]);
 
   const updateStorage = (value: string) => {
     textStream.current.next(value);

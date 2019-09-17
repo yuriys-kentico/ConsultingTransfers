@@ -4,7 +4,7 @@ import { defaultMarkdownParser, defaultMarkdownSerializer, schema } from 'prosem
 import { EditorState, Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
-import ProseMirrorDocument from 'react-prosemirror-document';
+import ProseMirrorDocument, { typeMap } from 'react-prosemirror-document';
 
 import { AppContext } from '../../../AppContext';
 import { keys } from './keymap';
@@ -18,40 +18,30 @@ interface IMarkdownEditorProps {
   disabled: boolean;
 }
 
+const proseMirrorDocumentTypeMap = {
+  ...typeMap,
+  heading: 'h1',
+  bullet_list: 'ul',
+  ordered_list: 'ol',
+  list_item: 'li'
+};
+
 export const MarkdownEditor: FC<IMarkdownEditorProps> = ({ markdown, onChange, disabled }) => {
-  const {
-    terms: {
-      shared: {
-        transfer: {
-          fields: { writeParagraph }
-        }
-      }
-    }
-  } = useContext(AppContext);
+  const { writeParagraph } = useContext(AppContext).terms.shared.transfer.fields;
   const editorRef = useRef<HTMLDivElement>(null);
   const editorView = useRef<EditorView | null>(null);
 
   const prosemirrorDocument = defaultMarkdownParser.parse(markdown);
 
-  const editorState = EditorState.create({
-    schema,
-    plugins: [keymap(keys), history(), placeholder()],
-    doc: prosemirrorDocument
-  });
+  const editorState = useRef(
+    EditorState.create({
+      schema,
+      plugins: [keymap(keys), history(), placeholder()],
+      doc: prosemirrorDocument
+    })
+  );
 
-  useEffect(() => {
-    if (editorRef.current) {
-      editorView.current = new EditorView(editorRef.current, {
-        state: editorState,
-        dispatchTransaction,
-        attributes: {
-          class: disabled ? 'prose mirror view disabled' : 'prose mirror view'
-        }
-      });
-    }
-  }, [editorRef, disabled]);
-
-  const dispatchTransaction = (transaction: Transaction<any>) => {
+  const dispatchTransaction = useRef((transaction: Transaction<any>) => {
     if (editorView.current) {
       const updatedEditorState = editorView.current.state.apply(transaction);
 
@@ -63,18 +53,35 @@ export const MarkdownEditor: FC<IMarkdownEditorProps> = ({ markdown, onChange, d
 
       onChange(defaultMarkdownSerializer.serialize(updatedEditorState.doc));
     }
-  };
+  });
+
+  useEffect(() => {
+    if (editorRef.current) {
+      editorView.current = new EditorView(editorRef.current, {
+        state: editorState.current,
+        dispatchTransaction: dispatchTransaction.current,
+        attributes: {
+          class: disabled ? 'prose mirror view disabled' : 'prose mirror view'
+        }
+      });
+    }
+  }, [disabled]);
 
   const [markdownEditorContext, setMarkdownEditorContext] = useState<IMarkdownEditorContext>({
-    editorState,
+    editorState: editorState.current,
+    dispatchTransaction: dispatchTransaction.current,
     disabled
   });
 
   return (
     <MarkdownEditorContext.Provider value={markdownEditorContext}>
       <style>{`.prose.mirror .placeholder::before {content: "${writeParagraph.placeholder}"}`}</style>
-      <MarkdownEditorHeader dispatch={dispatchTransaction} />
-      {disabled ? <ProseMirrorDocument document={prosemirrorDocument.toJSON()} /> : <div ref={editorRef} spellCheck />}
+      <MarkdownEditorHeader />
+      {disabled ? (
+        <ProseMirrorDocument document={prosemirrorDocument.toJSON()} typeMap={proseMirrorDocumentTypeMap} />
+      ) : (
+        <div ref={editorRef} spellCheck />
+      )}
     </MarkdownEditorContext.Provider>
   );
 };

@@ -5,7 +5,7 @@ import { UpdateSnackHandler } from './SnackBar';
 
 export type ShowInfoHandler = (text: string, timeout?: number, type?: SnackType) => void;
 
-export type ShowInfoUntilHandler = (message: string, executor: Promise<unknown>, update?: UpdateSnackHandler) => void;
+export type ShowInfoUntilHandler = <T>(message: string, executor: Promise<T>, update?: UpdateSnackHandler) => void;
 
 export interface IAppHeaderContext extends IShowMessageHandlers {
   snacks: ISnack[];

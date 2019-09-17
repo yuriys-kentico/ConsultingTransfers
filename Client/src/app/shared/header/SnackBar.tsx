@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { Segment } from 'semantic-ui-react';
 
 import { deleteFrom } from '../../../utilities/arrays';
+import { promiseAfter } from '../../../utilities/promises';
 import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
 import { ISnack, IUpdateMessage, Snack, SnackType } from './Snack';
 
@@ -49,7 +50,7 @@ export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSn
   });
 };
 
-export const hideSnackWhen = (executor: Promise<unknown>) => (
+export const hideSnackWhen = <T extends {}>(executor: Promise<T>) => (
   snack: ISnack,
   setHeaderContext: Dispatch<SetStateAction<IAppHeaderContext>>
 ) => {
@@ -63,4 +64,4 @@ export const hideSnackWhen = (executor: Promise<unknown>) => (
   });
 };
 
-export const hideSnackAfter = (timeout: number) => hideSnackWhen(new Promise(resolve => setTimeout(resolve, timeout)));
+export const hideSnackAfter = (timeout: number) => hideSnackWhen(promiseAfter(timeout)({}));

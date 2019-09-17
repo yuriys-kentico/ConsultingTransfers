@@ -3,7 +3,7 @@ import { redo, undo } from 'prosemirror-history';
 import { schema } from 'prosemirror-markdown';
 import { MarkType, NodeType } from 'prosemirror-model';
 import { wrapInList } from 'prosemirror-schema-list';
-import { EditorState, NodeSelection, Transaction } from 'prosemirror-state';
+import { EditorState, NodeSelection } from 'prosemirror-state';
 import React, { useContext } from 'react';
 import { Button, Icon } from 'semantic-ui-react';
 
@@ -133,12 +133,7 @@ const menu: MenuConfig = {
     }
   }
 };
-
-interface MenuBarProps {
-  dispatch: (tr: Transaction) => void;
-}
-
-export const MarkdownEditorHeader: React.FC<MenuBarProps> = ({ children, dispatch }) => {
+export const MarkdownEditorHeader: React.FC = ({ children }) => {
   const { disabled } = useContext(MarkdownEditorContext);
 
   return disabled ? null : (
@@ -146,7 +141,7 @@ export const MarkdownEditorHeader: React.FC<MenuBarProps> = ({ children, dispatc
       {Object.entries(menu).map(([key, group]) => (
         <Button.Group key={key}>
           {Object.entries(group).map(([key, button]) => (
-            <MarkdownEditorButton key={key} button={button} dispatch={dispatch} />
+            <MarkdownEditorButton key={key} button={button} />
           ))}
         </Button.Group>
       ))}

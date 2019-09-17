@@ -1,7 +1,7 @@
 import { Link } from '@reach/router';
 import Axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, Header, Segment, Table } from 'semantic-ui-react';
+import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
 import { IRequestItem } from '../../../connectors/azureFunctions/IRequestItem';
 import { IRequestListerResponse } from '../../../connectors/azureFunctions/IRequestListerResponse';
@@ -25,11 +25,11 @@ export const Transfers: RoutedFC = () => {
         accessToken: response.accessToken
       };
 
-      Axios.post<IRequestListerResponse>(requestListerEndpoint, request).then(response =>
-        setRequests(response.data.requestItems)
-      );
+      Axios.post<IRequestListerResponse>(requestListerEndpoint, request, {
+        headers: { Authorization: `Bearer ${response.accessToken}` }
+      }).then(response => setRequests(response.data.requestItems));
     });
-  }, []);
+  }, [accountName, authProvider, requestListerEndpoint]);
 
   return (
     <Segment basic>
@@ -44,17 +44,25 @@ export const Transfers: RoutedFC = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {requests.map((item, index) => (
-            <Table.Row key={index}>
-              <Table.Cell>{item.system.name}</Table.Cell>
-              <Table.Cell>{item.accountName}</Table.Cell>
-              <Table.Cell>{item.requester}</Table.Cell>
-              <Table.Cell textAlign='right'>
-                <Button circular icon='edit' as={Link} to={item.containerToken} />
-                <Button circular icon='share square' as={Link} to={`../transfer/${item.containerToken}`} />
+          {requests.length === 0 ? (
+            <Table.Row>
+              <Table.Cell>
+                <Loader active size='massive' />
               </Table.Cell>
             </Table.Row>
-          ))}
+          ) : (
+            requests.map((item, index) => (
+              <Table.Row key={index}>
+                <Table.Cell>{item.system.name}</Table.Cell>
+                <Table.Cell>{item.accountName}</Table.Cell>
+                <Table.Cell>{item.requester}</Table.Cell>
+                <Table.Cell textAlign='right'>
+                  <Button circular icon='edit' as={Link} to={item.containerToken} />
+                  <Button circular icon='share square' as={Link} to={`../transfer/${item.containerToken}`} />
+                </Table.Cell>
+              </Table.Row>
+            ))
+          )}
         </Table.Body>
       </Table>
     </Segment>
