@@ -12,10 +12,5 @@ namespace Functions
 
             return Environment.GetEnvironmentVariable(key, EnvironmentVariableTarget.Process);
         }
-
-        public static bool HasAccess(string accessToken)
-        {
-            return !string.IsNullOrEmpty(accessToken);
-        }
     }
 }

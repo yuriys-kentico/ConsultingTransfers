@@ -1,0 +1,18 @@
+﻿{
+  "routes": [
+    {
+      "http_methods": [ "POST" ],
+      "path_prefix": "/",
+      "policies": {
+        "unauthenticated_action": "RejectWith404"
+      }
+    },
+    {
+      "http_methods": [ "POST" ],
+      "path_prefix": "/api/RequestRetriever",
+      "policies": {
+        "unauthenticated_action": "AllowAnonymous"
+      }
+    }
+  ]
+}

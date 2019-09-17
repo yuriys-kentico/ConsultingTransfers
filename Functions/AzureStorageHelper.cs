@@ -1,5 +1,6 @@
 ﻿using System;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 

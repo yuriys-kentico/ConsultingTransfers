@@ -20,36 +20,29 @@ using Newtonsoft.Json;
 
 namespace Functions.RequestLister
 {
-    public static class Function
+    public class Function
     {
         [FunctionName(nameof(RequestLister))]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
-            ILogger log
-            )
+        public async Task<IActionResult> Run(
+                [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest request,
+                ILogger log
+                )
         {
             string requestBody = await request.ReadAsStringAsync();
 
             try
             {
-                var (accountName, accessToken, _, _, _)
+                var (accountName, _, _, _)
                     = JsonConvert.DeserializeObject<SasTokenRequest>(requestBody);
 
-                if (AzureFunctionHelper.HasAccess(accessToken))
-                {
-                    var storageConnectionString = AzureFunctionHelper.GetEnvironmentVariable(accountName);
+                var storageConnectionString = AzureFunctionHelper.GetEnvironmentVariable(accountName);
 
-                    var requestItems = await GetRequests(accountName, storageConnectionString);
+                var requestItems = await GetRequests(accountName, storageConnectionString);
 
-                    return new OkObjectResult(new
-                    {
-                        requestItems
-                    });
-                }
-                else
+                return new OkObjectResult(new
                 {
-                    return new UnauthorizedResult();
-                }
+                    requestItems
+                });
             }
             catch (Exception ex)
             {

@@ -55,12 +55,13 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
       authProvider.getAccessToken().then(({ accessToken }) => {
         const request = {
           accountName,
-          accessToken,
           accountPermissions,
           containerToken
         };
 
-        Axios.post<IRequestRetrieverResponse>(requestRetrieverEndpoint, request).then(setTransferContextFromRetriever);
+        Axios.post<IRequestRetrieverResponse>(requestRetrieverEndpoint, request, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }).then(setTransferContextFromRetriever);
       });
     } else {
       const request = {

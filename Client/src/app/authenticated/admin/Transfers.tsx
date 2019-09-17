@@ -19,14 +19,13 @@ export const Transfers: RoutedFC = () => {
   const [requests, setRequests] = useState<IRequestItem[]>([]);
 
   useEffect(() => {
-    authProvider.getAccessToken().then(response => {
+    authProvider.getAccessToken().then(({ accessToken }) => {
       const request = {
-        accountName,
-        accessToken: response.accessToken
+        accountName
       };
 
       Axios.post<IRequestListerResponse>(requestListerEndpoint, request, {
-        headers: { Authorization: `Bearer ${response.accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` }
       }).then(response => setRequests(response.data.requestItems));
     });
   }, [accountName, authProvider, requestListerEndpoint]);

@@ -14,11 +14,11 @@ using Newtonsoft.Json;
 
 namespace Functions.RequestRetriever
 {
-    public static class Function
+    public class Function
     {
         [FunctionName(nameof(RequestRetriever))]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
+        public async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest request,
             ILogger log
             )
         {
@@ -26,7 +26,7 @@ namespace Functions.RequestRetriever
 
             try
             {
-                var (accountName, accessToken, accountPermissions, containerToken, containerPermissions)
+                var (accountName, accountPermissions, containerToken, containerPermissions)
                     = JsonConvert.DeserializeObject<SasTokenRequest>(requestBody);
 
                 var itemName = AzureStorageHelper.DecryptToken(containerToken);
@@ -35,7 +35,7 @@ namespace Functions.RequestRetriever
 
                 string sasToken;
 
-                if (AzureFunctionHelper.HasAccess(accessToken))
+                if (request.HttpContext.User.Identity.IsAuthenticated)
                 {
                     sasToken = AzureStorageHelper.GetAccountSasToken(storageAccount, accountPermissions);
                 }
