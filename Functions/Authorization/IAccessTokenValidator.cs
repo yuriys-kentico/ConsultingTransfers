@@ -1,12 +1,13 @@
 ﻿namespace Functions.Authorization
 {
     using System.Threading.Tasks;
+
     using Microsoft.AspNetCore.Http;
 
     /// <summary>
     /// Validates access tokes that have been submitted as part of a request.
     /// </summary>
-    public interface IAccessTokenProvider
+    public interface IAccessTokenValidator
     {
         /// <summary>
         /// Validate the access token, returning the security principal in a result.

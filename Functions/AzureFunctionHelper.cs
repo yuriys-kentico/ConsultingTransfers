@@ -22,7 +22,7 @@ namespace Functions
                     .UseSecuredProductionApi(GetEnvironmentVariable(accountName, "securedApiKey"))
                     .Build())
                 .WithInlineContentItemsResolver(new Field())
-                .WithTypeProvider(new TypeProvider())
+                .WithTypeProvider(new KontentTypeProvider())
                 .Build();
     }
 }

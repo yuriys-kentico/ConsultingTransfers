@@ -6,7 +6,7 @@ import { AuthenticationState } from 'react-aad-msal';
 import { Header, Loader, Segment } from 'semantic-ui-react';
 
 import { AzureStorage, getContainerURL, IAzureStorageOptions } from '../../../connectors/azure/azureStorage';
-import { IRequestRetrieverResponse } from '../../../connectors/azureFunctions/IRequestRetrieverResponse';
+import { IRequestRetrieverResponse } from '../../../connectors/azure/requests';
 import { deleteFrom } from '../../../utilities/arrays';
 import { getAuthorizationHeaders } from '../../../utilities/requests';
 import { AppContext } from '../../AppContext';
@@ -21,10 +21,10 @@ const AdminControls = lazy(() =>
 );
 
 export interface ITransferProps {
-  containerToken: string;
+  encodedContainerToken: string;
 }
 
-export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
+export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) => {
   const { azureStorage, terms } = useContext(AppContext);
   const appHeaderContext = useContext(AppHeaderContext);
   const { authProvider } = useContext(AuthenticatedContext);
@@ -36,6 +36,8 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
 
   useEffect(() => {
     const { accountName, requestRetriever, accountPermissions, containerPermissions } = azureStorage;
+
+    const containerToken = decodeURIComponent(encodedContainerToken || '');
 
     const setTransferContextFromRetriever = (response: AxiosResponse<IRequestRetrieverResponse>) => {
       const { sasToken, containerName, requestItem } = response.data;
@@ -79,7 +81,7 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
         getAuthorizationHeaders(requestRetriever.key)
       ).then(setTransferContextFromRetriever);
     }
-  }, [authProvider, containerToken, azureStorage]);
+  }, [authProvider, encodedContainerToken, azureStorage]);
 
   const deleteBlobs = (blobs: BlobItem[] | BlobItem, containerURL: ContainerURL) =>
     AzureStorage.deleteBlobs(blobs, containerURL, azureStorageOptions.current).then(() =>

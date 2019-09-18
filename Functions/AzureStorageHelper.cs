@@ -23,6 +23,7 @@ namespace Functions
                 Permissions = permissions,
                 Services = SharedAccessAccountServices.Blob,
                 ResourceTypes = SharedAccessAccountResourceTypes.Container | SharedAccessAccountResourceTypes.Object,
+                SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5),
                 SharedAccessExpiryTime = DateTime.UtcNow.AddHours(12),
                 Protocols = SharedAccessProtocol.HttpsOnly
             };
@@ -38,10 +39,9 @@ namespace Functions
             // The SharedAccessBlobPolicy class is saved to the container's shared access policies
             var policy = new SharedAccessBlobPolicy
             {
-                // Set start time to five minutes before now to avoid clock skew
+                Permissions = permissions,
                 SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5),
-                SharedAccessExpiryTime = DateTime.UtcNow.AddHours(12),
-                Permissions = permissions
+                SharedAccessExpiryTime = DateTime.UtcNow.AddHours(12)
             };
 
             return container.GetSharedAccessSignature(policy, null);
@@ -50,16 +50,6 @@ namespace Functions
         public static string GetSafeStorageName(string itemCodeName)
         {
             return itemCodeName.Replace("_", "");
-        }
-
-        public static string EncryptToken(string source)
-        {
-            return $"{source}|test";
-        }
-
-        public static string DecryptToken(string token)
-        {
-            return token.Split('|')[0];
         }
     }
 }

@@ -18,9 +18,11 @@ namespace Functions
             var metadataAddress = AzureFunctionHelper.GetEnvironmentVariable("authorization", "metadataAddress");
             var audiences = AzureFunctionHelper.GetEnvironmentVariable("authorization", "audiences");
             var issuer = AzureFunctionHelper.GetEnvironmentVariable("authorization", "issuer");
+            var tokenSecret = AzureFunctionHelper.GetEnvironmentVariable("tokenSecret");
 
             functionsHostBuilder.Services
-                .AddSingleton<IAccessTokenProvider>(new AccessTokenProvider(metadataAddress, audiences, issuer));
+                .AddSingleton<IAccessTokenValidator>(new AccessTokenValidator(metadataAddress, audiences, issuer))
+                .AddSingleton<IEncryptionService>(new EncryptionService(tokenSecret));
         }
     }
 }

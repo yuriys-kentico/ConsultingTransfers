@@ -25,7 +25,6 @@ export interface IAzureStorageOptions {
   messageHandlers: IShowMessageHandlers;
 }
 
-
 const updateProgress = (progressSubject: Subject<IUpdateMessage>, total: number | undefined) => ({
   loadedBytes
 }: TransferProgressEvent) => {
@@ -286,6 +285,3 @@ export const AzureStorage = {
   completed
 };
 
-export const getSafeStorageName = (itemCodeName: string) => {
-  return itemCodeName.replace(/_/g, '');
-};

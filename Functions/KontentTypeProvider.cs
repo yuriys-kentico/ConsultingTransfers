@@ -8,7 +8,7 @@ using KenticoCloud.Delivery;
 
 namespace Functions
 {
-    public class TypeProvider : ITypeProvider
+    public class KontentTypeProvider : ITypeProvider
     {
         private static readonly Dictionary<Type, string> codenames = new Dictionary<Type, string>
         {

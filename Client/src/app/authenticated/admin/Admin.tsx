@@ -45,7 +45,7 @@ export const Admin: RoutedFC = () => {
           <Router>
             <Home path='/' />
             <Transfers path='transfers' />
-            <Transfer path='transfers/:containerToken' />
+            <Transfer path='transfers/:encodedContainerToken' />
           </Router>
         </Container>
       </Suspense>

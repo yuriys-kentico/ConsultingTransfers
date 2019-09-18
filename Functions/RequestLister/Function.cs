@@ -23,9 +23,9 @@ namespace Functions.RequestLister
 {
     public class Function
     {
-        private readonly IAccessTokenProvider tokenProvider;
+        private readonly IAccessTokenValidator tokenProvider;
 
-        public Function(IAccessTokenProvider tokenProvider)
+        public Function(IAccessTokenValidator tokenProvider)
         {
             this.tokenProvider = tokenProvider;
         }
@@ -36,27 +36,24 @@ namespace Functions.RequestLister
                 ILogger log
                 )
         {
-            var tokenResult = await tokenProvider.ValidateTokenAsync(request);
-
-            switch (tokenResult.Status)
+            try
             {
-                case AccessTokenStatus.Valid:
-                    try
-                    {
+                var tokenResult = await tokenProvider.ValidateTokenAsync(request);
+
+                switch (tokenResult.Status)
+                {
+                    case AccessTokenStatus.Valid:
                         return await GetRequests(request);
-                    }
-                    catch (Exception ex)
-                    {
-                        return new ExceptionResult(ex, true);
-                    }
 
-                case AccessTokenStatus.Error:
-                    return new ExceptionResult(tokenResult.Exception, true);
-
-                case AccessTokenStatus.Expired:
-                case AccessTokenStatus.NoToken:
-                default:
-                    return new NotFoundResult();
+                    case AccessTokenStatus.NoToken:
+                    case AccessTokenStatus.Expired:
+                    default:
+                        return new NotFoundResult();
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ExceptionResult(ex, true);
             }
         }
 

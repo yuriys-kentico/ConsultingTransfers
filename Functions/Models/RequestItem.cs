@@ -1,5 +1,5 @@
-using System;
 using System.Text.RegularExpressions;
+
 using KenticoCloud.Delivery;
 
 using Newtonsoft.Json;

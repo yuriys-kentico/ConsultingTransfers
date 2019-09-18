@@ -3,8 +3,7 @@ import Axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
-import { IRequestItem } from '../../../connectors/azureFunctions/IRequestItem';
-import { IRequestListerResponse } from '../../../connectors/azureFunctions/IRequestListerResponse';
+import { getTransfersUrl, getTransferUrl, IRequestItem, IRequestListerResponse } from '../../../connectors/azure/requests';
 import { getAuthorizationHeaders } from '../../../utilities/requests';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
@@ -60,8 +59,8 @@ export const Transfers: RoutedFC = () => {
                 <Table.Cell>{item.accountName}</Table.Cell>
                 <Table.Cell>{item.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
-                  <Button circular icon='edit' as={Link} to={item.containerToken} />
-                  <Button circular icon='share square' as={Link} to={`../transfer/${item.containerToken}`} />
+                  <Button circular icon='edit' as={Link} to={getTransfersUrl(item.containerToken)} />
+                  <Button circular icon='share square' as={Link} to={getTransferUrl(item.containerToken)} />
                 </Table.Cell>
               </Table.Row>
             ))

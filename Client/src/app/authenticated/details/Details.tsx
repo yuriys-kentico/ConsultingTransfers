@@ -2,10 +2,11 @@ import './details.css';
 
 import { navigate } from '@reach/router';
 import Axios from 'axios';
+import { element } from 'prop-types';
 import React, { ChangeEvent, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { Input, Label, List, Loader } from 'semantic-ui-react';
 
-import { IRequestListerResponse } from '../../../connectors/azureFunctions/IRequestListerResponse';
+import { getTransfersUrl, getTransferUrl, IRequestListerResponse } from '../../../connectors/azure/requests';
 import { Context, Element, ICustomElement } from '../../../connectors/customElement/customElement';
 import { promiseAfter, promiseWhile } from '../../../utilities/promises';
 import { getAuthorizationHeaders } from '../../../utilities/requests';
@@ -27,11 +28,9 @@ export const Details: RoutedFC = () => {
     navigate('/');
   }
 
-  const context = useContext(AppContext);
+  const appContext = useContext(AppContext);
 
-  const {
-    terms: { details }
-  } = context;
+  const { details } = appContext.terms;
 
   const [available, setAvailable] = useState(false);
   const [enabled, setEnabled] = useState(true);
@@ -46,7 +45,7 @@ export const Details: RoutedFC = () => {
       kenticoKontent: { customElementScriptEndpoint },
       azureStorage: { accountName, requestLister },
       experience
-    } = context;
+    } = appContext;
 
     const customElementModule = document.createElement('script');
 
@@ -59,23 +58,27 @@ export const Details: RoutedFC = () => {
       setAvailable(true);
       setAccountNameValue(elementValue.accountName);
       setRequesterValue(elementValue.requester);
-      setEnabledAndRetrieveToken(!element.disabled);
 
-      CustomElement.onDisabledChanged(disabled => setEnabledAndRetrieveToken(!disabled));
+      // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
+      const key = (element.config as { key: string }).key;
+
+      setEnabledAndRetrieveToken(!element.disabled, key);
+
+      CustomElement.onDisabledChanged(disabled => setEnabledAndRetrieveToken(!disabled, key));
     };
 
-    const setEnabledAndRetrieveToken = (enabled: boolean) => {
+    const setEnabledAndRetrieveToken = (enabled: boolean, key: string) => {
       setEnabled(enabled);
 
       if (!enabled) {
         setContainerToken(undefined);
 
-        //authProvider.getAccessToken().then(response => {
+        //authProvider.getAccessToken().then(({accessToken}) => {
         const checkContainerToken = (codename: string) => () =>
           Axios.post<IRequestListerResponse>(
             requestLister.endpoint,
             { accountName },
-            getAuthorizationHeaders(requestLister.key, 'accessToken')
+            getAuthorizationHeaders(requestLister.key, key) // accessToken)
           )
             .then(response => {
               const request = response.data.requestItems.filter(request => request.system.codename === codename)[0];
@@ -100,7 +103,7 @@ export const Details: RoutedFC = () => {
     };
 
     document.head.appendChild(customElementModule);
-  }, [context]);
+  }, [appContext]);
 
   useEffect(() => {
     if (available && customElementRef.current) {
@@ -171,14 +174,14 @@ export const Details: RoutedFC = () => {
                 <List>
                   <List.Item>
                     <Label horizontal>{details.container.publicUrl}</Label>
-                    <a href={getUrl(`/transfer/${containerToken}`)} target='_blank' rel='noopener noreferrer'>
-                      {getUrl(`/transfer/${containerToken}`)}
+                    <a href={getUrl(getTransferUrl(containerToken))} target='_blank' rel='noopener noreferrer'>
+                      {getUrl(getTransferUrl(containerToken))}
                     </a>
                   </List.Item>
                   <List.Item>
                     <Label horizontal>{details.container.adminUrl}</Label>
-                    <a href={getUrl(`/transfers/${containerToken}`)} target='_blank' rel='noopener noreferrer'>
-                      {getUrl(`/transfers/${containerToken}`)}
+                    <a href={getUrl(getTransfersUrl(containerToken))} target='_blank' rel='noopener noreferrer'>
+                      {getUrl(getTransfersUrl(containerToken))}
                     </a>
                   </List.Item>
                 </List>

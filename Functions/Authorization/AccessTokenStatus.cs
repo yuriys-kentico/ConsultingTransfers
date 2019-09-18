@@ -4,7 +4,6 @@
     {
         Valid,
         Expired,
-        Error,
         NoToken
     }
 }

@@ -17,10 +17,17 @@ using Newtonsoft.Json;
 
 namespace Functions.RequestCreator
 {
-    public static class Function
+    public class Function
     {
+        private readonly IEncryptionService encryptionService;
+
+        public Function(IEncryptionService encryptionService)
+        {
+            this.encryptionService = encryptionService;
+        }
+
         [FunctionName(nameof(RequestCreator))]
-        public static async Task<IActionResult> Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
             ILogger log
             )
@@ -52,7 +59,7 @@ namespace Functions.RequestCreator
             }
         }
 
-        private static async Task CreateContainers(Webhook webhook, string storageConnectionString)
+        private async Task CreateContainers(Webhook webhook, string storageConnectionString)
         {
             var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
             var blobClient = storageAccount.CreateCloudBlobClient();
@@ -64,7 +71,7 @@ namespace Functions.RequestCreator
 
                 var created = await container.CreateIfNotExistsAsync();
 
-                container.Metadata.Add(AzureStorageHelper.ContainerToken, AzureStorageHelper.EncryptToken(item.Codename));
+                container.Metadata.Add(AzureStorageHelper.ContainerToken, encryptionService.Encrypt(item.Codename));
 
                 await container.SetMetadataAsync();
             }

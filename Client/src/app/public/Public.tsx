@@ -17,7 +17,7 @@ export const Public: RoutedFC<ITransferProps> = () => {
       <Suspense fallback={<Loader active size='massive' />}>
         <Container text>
           <Router>
-            <Transfer path=':containerToken' />
+            <Transfer path=':encodedContainerToken' />
           </Router>
         </Container>
       </Suspense>

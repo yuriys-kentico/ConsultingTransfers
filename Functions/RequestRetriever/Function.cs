@@ -17,11 +17,13 @@ namespace Functions.RequestRetriever
 {
     public class Function
     {
-        private readonly IAccessTokenProvider tokenProvider;
+        private readonly IAccessTokenValidator tokenProvider;
+        private readonly IEncryptionService encryptionService;
 
-        public Function(IAccessTokenProvider tokenProvider)
+        public Function(IAccessTokenValidator tokenProvider, IEncryptionService encryptionService)
         {
             this.tokenProvider = tokenProvider;
+            this.encryptionService = encryptionService;
         }
 
         [FunctionName(nameof(RequestRetriever))]
@@ -37,7 +39,7 @@ namespace Functions.RequestRetriever
                 var (accountName, accountPermissions, containerToken, containerPermissions)
                     = JsonConvert.DeserializeObject<SasTokenRequest>(requestBody);
 
-                var itemName = AzureStorageHelper.DecryptToken(containerToken);
+                var itemName = encryptionService.Decrypt(containerToken);
                 var containerName = AzureStorageHelper.GetSafeStorageName(itemName);
                 var storageAccount = AzureStorageHelper.GetStorageAccount(accountName);
 
@@ -51,16 +53,13 @@ namespace Functions.RequestRetriever
                         sasToken = AzureStorageHelper.GetAccountSasToken(storageAccount, accountPermissions);
                         break;
 
-                    case AccessTokenStatus.Expired:
-                        return new NotFoundResult();
-
-                    case AccessTokenStatus.Error:
-                        return new ExceptionResult(tokenResult.Exception, true);
-
                     case AccessTokenStatus.NoToken:
-                    default:
                         sasToken = AzureStorageHelper.GetContainerSasToken(storageAccount, containerName, containerPermissions);
                         break;
+
+                    case AccessTokenStatus.Expired:
+                    default:
+                        return new NotFoundResult();
                 }
 
                 var requestItem = await GetRequest(accountName, itemName);
