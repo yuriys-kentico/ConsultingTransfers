@@ -2,7 +2,6 @@ import './details.css';
 
 import { navigate } from '@reach/router';
 import Axios from 'axios';
-import { element } from 'prop-types';
 import React, { ChangeEvent, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { Input, Label, List, Loader } from 'semantic-ui-react';
 

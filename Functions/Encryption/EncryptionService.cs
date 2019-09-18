@@ -10,10 +10,10 @@ namespace Functions
     {
         private readonly string secret;
 
-        // This constant is used to determine the keysize of the encryption algorithm in bits.
+        // The key size of the encryption algorithm in bytes
         private const int KeySizeBytes = 16;
 
-        // This constant determines the number of iterations for the password bytes generation function.
+        // The number of iterations for the password bytes generation function
         private const int DerivationIterations = 1000;
 
         public EncryptionService(string secret)

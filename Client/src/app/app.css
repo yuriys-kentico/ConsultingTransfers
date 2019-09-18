@@ -160,3 +160,7 @@ ol.ui.list ol,
 .ui.loader:not(.inline) {
   position: fixed !important;
 }
+
+.ui.cards {
+  margin: 0 !important;
+}

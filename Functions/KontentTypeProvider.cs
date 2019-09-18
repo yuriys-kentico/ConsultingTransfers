@@ -10,22 +10,22 @@ namespace Functions
 {
     public class KontentTypeProvider : ITypeProvider
     {
-        private static readonly Dictionary<Type, string> codenames = new Dictionary<Type, string>
+        private static readonly IEnumerable<(Type type, string codename)> codenames = new HashSet<(Type, string)>
         {
-            {typeof(Field), Field.Codename},
-            {typeof(Request), Request.Codename}
+            (typeof(Field), Field.Upload_file),
+            (typeof(Field), Field.Write_text),
+            (typeof(Field), Field.Download_asset),
+            (typeof(Request), Request.Codename)
         };
 
-        public Type GetType(string contentType)
+        public Type GetType(string codename)
         {
-            return codenames.Keys.First(type => GetCodename(type).Equals(contentType));
+            return codenames.First(pair => pair.codename == codename).type;
         }
 
-        public string GetCodename(Type contentType)
+        public string GetCodename(Type type)
         {
-            codenames.TryGetValue(contentType, out var codename);
-
-            return codename;
+            return codenames.First(pair => pair.type == type).codename;
         }
     }
 }

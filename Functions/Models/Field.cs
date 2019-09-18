@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 
 using KenticoCloud.Delivery;
@@ -10,31 +11,39 @@ namespace Functions.Models
 {
     public class Field : IInlineContentItemsResolver<Field>
     {
-        public const string Codename = "field";
-        public const string TypeCodename = "type";
-        public const string NameCodename = "name";
-        public const string CompletedCodename = "completed";
-        public const string CommentCodename = "comment";
+        public const string Upload_file = "upload_file";
+        public const string Write_text = "write_text";
+        public const string Download_asset = "download_asset";
 
-        public IEnumerable<MultipleChoiceOption> Type { get; set; }
-
-        public string Name { get; set; }
-
-        public IEnumerable<MultipleChoiceOption> Completed { get; set; }
-
-        public string Comment { get; set; }
+        public const string FieldDetailsNameCodename = "field_details__name";
+        public const string FieldDetailsCommentCodename = "field_details__comment";
+        public const string FieldDetailsCompletedCodename = "field_details__completed";
 
         public ContentItemSystemAttributes System { get; set; }
 
+        public string FieldDetailsName { get; set; }
+
+        public string FieldDetailsComment { get; set; }
+
+        public IEnumerable<MultipleChoiceOption> FieldDetailsCompleted { get; set; }
+
+        public IEnumerable<Asset> Assets { get; set; }
+
         public string Resolve(Field field)
         {
-            var fieldObject = new
+            dynamic fieldObject = new ExpandoObject();
+
+            fieldObject.name = field.FieldDetailsName;
+            fieldObject.comment = field.FieldDetailsComment;
+            fieldObject.type = field.System.Type;
+            fieldObject.completed = field.FieldDetailsCompleted.FirstOrDefault()?.Codename == "true";
+
+            switch (field.System.Type)
             {
-                name = field.Name,
-                comment = field.Comment,
-                type = field.Type.First().Codename,
-                completed = field.Completed.FirstOrDefault()?.Codename == "true"
-            };
+                case Download_asset:
+                    fieldObject.assets = field.Assets;
+                    break;
+            }
 
             return JsonConvert.SerializeObject(fieldObject);
         }

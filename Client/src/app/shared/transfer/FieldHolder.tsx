@@ -9,15 +9,25 @@ import { TransferContext } from './TransferContext';
 
 const WriteText = lazy(() => import('./fields/WriteText').then(module => ({ default: module.WriteText })));
 const UploadFile = lazy(() => import('./fields/UploadFile').then(module => ({ default: module.UploadFile })));
+const DownloadAsset = lazy(() => import('./fields/DownloadAsset').then(module => ({ default: module.DownloadAsset })));
 
-export type FieldType = 'upload_file' | 'write_text';
+export type FieldType = 'upload_file' | 'write_text' | 'download_asset';
 
 export interface IFieldHolderProps {
   name: string;
   comment: string;
   type: FieldType;
   completed: boolean;
+  assets?: Asset[];
   setFieldLoading: (loading: boolean) => void;
+}
+
+interface Asset {
+  name: string;
+  description: string | null;
+  type: string;
+  size: number;
+  url: string;
 }
 
 export const FieldHolder: FC<IFieldHolderProps> = props => {
@@ -37,6 +47,8 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
         return WriteText;
       case 'upload_file':
         return UploadFile;
+      case 'download_asset':
+        return DownloadAsset;
     }
   };
 
