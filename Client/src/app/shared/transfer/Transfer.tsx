@@ -8,6 +8,7 @@ import { Header, Loader, Segment } from 'semantic-ui-react';
 import { AzureStorage, getContainerURL, IAzureStorageOptions } from '../../../connectors/azure/azureStorage';
 import { IRequestRetrieverResponse } from '../../../connectors/azureFunctions/IRequestRetrieverResponse';
 import { deleteFrom } from '../../../utilities/arrays';
+import { getAuthorizationHeaders } from '../../../utilities/requests';
 import { AppContext } from '../../AppContext';
 import { AuthenticatedContext } from '../../authenticated/AuthenticatedContext';
 import { RoutedFC } from '../../RoutedFC';
@@ -28,14 +29,14 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
   const appHeaderContext = useContext(AppHeaderContext);
   const { authProvider } = useContext(AuthenticatedContext);
 
-  const { accountName, requestRetrieverEndpoint, accountPermissions, containerPermissions } = azureStorage;
-
   const azureStorageOptions = useRef<IAzureStorageOptions>({
     appOptions: azureStorage,
     messageHandlers: appHeaderContext
   });
 
   useEffect(() => {
+    const { accountName, requestRetriever, accountPermissions, containerPermissions } = azureStorage;
+
     const setTransferContextFromRetriever = (response: AxiosResponse<IRequestRetrieverResponse>) => {
       const { sasToken, containerName, requestItem } = response.data;
       const containerURL = getContainerURL(accountName, containerName, sasToken);
@@ -59,9 +60,11 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
           containerToken
         };
 
-        Axios.post<IRequestRetrieverResponse>(requestRetrieverEndpoint, request, {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        }).then(setTransferContextFromRetriever);
+        Axios.post<IRequestRetrieverResponse>(
+          requestRetriever.endpoint,
+          request,
+          getAuthorizationHeaders(requestRetriever.key, accessToken)
+        ).then(setTransferContextFromRetriever);
       });
     } else {
       const request = {
@@ -70,9 +73,13 @@ export const Transfer: RoutedFC<ITransferProps> = ({ containerToken }) => {
         containerToken
       };
 
-      Axios.post<IRequestRetrieverResponse>(requestRetrieverEndpoint, request).then(setTransferContextFromRetriever);
+      Axios.post<IRequestRetrieverResponse>(
+        requestRetriever.endpoint,
+        request,
+        getAuthorizationHeaders(requestRetriever.key)
+      ).then(setTransferContextFromRetriever);
     }
-  }, [accountName, accountPermissions, authProvider, containerPermissions, containerToken, requestRetrieverEndpoint]);
+  }, [authProvider, containerToken, azureStorage]);
 
   const deleteBlobs = (blobs: BlobItem[] | BlobItem, containerURL: ContainerURL) =>
     AzureStorage.deleteBlobs(blobs, containerURL, azureStorageOptions.current).then(() =>

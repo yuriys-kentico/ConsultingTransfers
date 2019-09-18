@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
 
+using Functions.Authorization;
 using Functions.Models;
 
 using KenticoCloud.Delivery;
@@ -22,47 +23,62 @@ namespace Functions.RequestLister
 {
     public class Function
     {
+        private readonly IAccessTokenProvider tokenProvider;
+
+        public Function(IAccessTokenProvider tokenProvider)
+        {
+            this.tokenProvider = tokenProvider;
+        }
+
         [FunctionName(nameof(RequestLister))]
         public async Task<IActionResult> Run(
-                [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest request,
+                [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
                 ILogger log
                 )
         {
-            string requestBody = await request.ReadAsStringAsync();
+            var tokenResult = await tokenProvider.ValidateTokenAsync(request);
 
-            try
+            switch (tokenResult.Status)
             {
-                var (accountName, _, _, _)
-                    = JsonConvert.DeserializeObject<SasTokenRequest>(requestBody);
+                case AccessTokenStatus.Valid:
+                    try
+                    {
+                        return await GetRequests(request);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new ExceptionResult(ex, true);
+                    }
 
-                var storageConnectionString = AzureFunctionHelper.GetEnvironmentVariable(accountName);
+                case AccessTokenStatus.Error:
+                    return new ExceptionResult(tokenResult.Exception, true);
 
-                var requestItems = await GetRequests(accountName, storageConnectionString);
-
-                return new OkObjectResult(new
-                {
-                    requestItems
-                });
-            }
-            catch (Exception ex)
-            {
-                return new ExceptionResult(ex, true);
+                case AccessTokenStatus.Expired:
+                case AccessTokenStatus.NoToken:
+                default:
+                    return new NotFoundResult();
             }
         }
 
-        private static async Task<IEnumerable<RequestItem>> GetRequests(
-            string accountName
-, string storageConnectionString
-            )
+        private static async Task<OkObjectResult> GetRequests(HttpRequest request)
         {
-            var deliveryClient = KenticoKontentHelper.GetDeliveryClient(accountName);
+            string requestBody = await request.ReadAsStringAsync();
+
+            var (accountName, _, _, _) = JsonConvert.DeserializeObject<SasTokenRequest>(requestBody);
+            var deliveryClient = AzureFunctionHelper.GetDeliveryClient(accountName);
 
             var response = await deliveryClient.GetItemsAsync<Request>();
 
+            var storageConnectionString = AzureFunctionHelper.GetEnvironmentVariable(accountName);
             var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
             var blobClient = storageAccount.CreateCloudBlobClient();
 
-            return GetRequestItems(response, blobClient);
+            var requestItems = GetRequestItems(response, blobClient);
+
+            return new OkObjectResult(new
+            {
+                requestItems
+            });
         }
 
         private static IEnumerable<RequestItem> GetRequestItems(DeliveryItemListingResponse<Request> response, CloudBlobClient blobClient)

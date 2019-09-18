@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Web.Http;
 
+using Functions.Authorization;
 using Functions.Models;
 
 using Microsoft.AspNetCore.Http;
@@ -16,9 +17,16 @@ namespace Functions.RequestRetriever
 {
     public class Function
     {
+        private readonly IAccessTokenProvider tokenProvider;
+
+        public Function(IAccessTokenProvider tokenProvider)
+        {
+            this.tokenProvider = tokenProvider;
+        }
+
         [FunctionName(nameof(RequestRetriever))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest request,
+            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
             ILogger log
             )
         {
@@ -35,13 +43,24 @@ namespace Functions.RequestRetriever
 
                 string sasToken;
 
-                if (request.HttpContext.User.Identity.IsAuthenticated)
+                var tokenResult = await tokenProvider.ValidateTokenAsync(request);
+
+                switch (tokenResult.Status)
                 {
-                    sasToken = AzureStorageHelper.GetAccountSasToken(storageAccount, accountPermissions);
-                }
-                else
-                {
-                    sasToken = AzureStorageHelper.GetContainerSasToken(storageAccount, containerName, containerPermissions);
+                    case AccessTokenStatus.Valid:
+                        sasToken = AzureStorageHelper.GetAccountSasToken(storageAccount, accountPermissions);
+                        break;
+
+                    case AccessTokenStatus.Expired:
+                        return new NotFoundResult();
+
+                    case AccessTokenStatus.Error:
+                        return new ExceptionResult(tokenResult.Exception, true);
+
+                    case AccessTokenStatus.NoToken:
+                    default:
+                        sasToken = AzureStorageHelper.GetContainerSasToken(storageAccount, containerName, containerPermissions);
+                        break;
                 }
 
                 var requestItem = await GetRequest(accountName, itemName);
@@ -59,12 +78,9 @@ namespace Functions.RequestRetriever
             }
         }
 
-        private static async Task<RequestItem> GetRequest(
-            string accountName,
-            string itemName
-            )
+        private static async Task<RequestItem> GetRequest(string accountName, string itemName)
         {
-            var deliveryClient = KenticoKontentHelper.GetDeliveryClient(accountName);
+            var deliveryClient = AzureFunctionHelper.GetDeliveryClient(accountName);
 
             var response = await deliveryClient.GetItemAsync<Request>(itemName);
 

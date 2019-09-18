@@ -1,0 +1,10 @@
+﻿namespace Functions.Authorization
+{
+    public enum AccessTokenStatus
+    {
+        Valid,
+        Expired,
+        Error,
+        NoToken
+    }
+}

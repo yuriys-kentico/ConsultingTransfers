@@ -8,6 +8,7 @@ import { Input, Label, List, Loader } from 'semantic-ui-react';
 import { IRequestListerResponse } from '../../../connectors/azureFunctions/IRequestListerResponse';
 import { Context, Element, ICustomElement } from '../../../connectors/customElement/customElement';
 import { promiseAfter, promiseWhile } from '../../../utilities/promises';
+import { getAuthorizationHeaders } from '../../../utilities/requests';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 
@@ -43,7 +44,7 @@ export const Details: RoutedFC = () => {
   useEffect(() => {
     const {
       kenticoKontent: { customElementScriptEndpoint },
-      azureStorage: { accountName, requestListerEndpoint },
+      azureStorage: { accountName, requestLister },
       experience
     } = context;
 
@@ -69,8 +70,13 @@ export const Details: RoutedFC = () => {
       if (!enabled) {
         setContainerToken(undefined);
 
+        //authProvider.getAccessToken().then(response => {
         const checkContainerToken = (codename: string) => () =>
-          Axios.post<IRequestListerResponse>(requestListerEndpoint, request)
+          Axios.post<IRequestListerResponse>(
+            requestLister.endpoint,
+            { accountName },
+            getAuthorizationHeaders(requestLister.key, 'accessToken')
+          )
             .then(response => {
               const request = response.data.requestItems.filter(request => request.system.codename === codename)[0];
 
@@ -81,12 +87,6 @@ export const Details: RoutedFC = () => {
               }
             })
             .then(promiseAfter(experience.detailsContainerCheckTimeout));
-
-        //authProvider.getAccessToken().then(response => {
-        const request = {
-          accountName,
-          accessToken: 'response.accessToken' //response.accessToken
-        };
 
         CustomElement.init((_, context: Context) => {
           promiseWhile(

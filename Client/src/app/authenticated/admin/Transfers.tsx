@@ -5,40 +5,44 @@ import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
 import { IRequestItem } from '../../../connectors/azureFunctions/IRequestItem';
 import { IRequestListerResponse } from '../../../connectors/azureFunctions/IRequestListerResponse';
+import { getAuthorizationHeaders } from '../../../utilities/requests';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 import { AuthenticatedContext } from '../AuthenticatedContext';
 
 export const Transfers: RoutedFC = () => {
-  const {
-    terms: { admin },
-    azureStorage: { accountName, requestListerEndpoint }
-  } = useContext(AppContext);
+  const { terms, azureStorage } = useContext(AppContext);
   const { authProvider } = useContext(AuthenticatedContext);
 
   const [requests, setRequests] = useState<IRequestItem[]>([]);
 
   useEffect(() => {
+    const { accountName, requestLister } = azureStorage;
+
     authProvider.getAccessToken().then(({ accessToken }) => {
       const request = {
         accountName
       };
 
-      Axios.post<IRequestListerResponse>(requestListerEndpoint, request, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      }).then(response => setRequests(response.data.requestItems));
+      Axios.post<IRequestListerResponse>(
+        requestLister.endpoint,
+        request,
+        getAuthorizationHeaders(requestLister.key, accessToken)
+      ).then(response => setRequests(response.data.requestItems));
     });
-  }, [accountName, authProvider, requestListerEndpoint]);
+  }, [authProvider, azureStorage]);
+
+  const { transfers } = terms.admin;
 
   return (
     <Segment basic>
-      <Header as='h2'>{admin.transfers.header}</Header>
+      <Header as='h2'>{transfers.header}</Header>
       <Table stackable singleLine basic='very'>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>{admin.transfers.table.request}</Table.HeaderCell>
-            <Table.HeaderCell>{admin.transfers.table.account}</Table.HeaderCell>
-            <Table.HeaderCell>{admin.transfers.table.requester}</Table.HeaderCell>
+            <Table.HeaderCell>{transfers.table.request}</Table.HeaderCell>
+            <Table.HeaderCell>{transfers.table.account}</Table.HeaderCell>
+            <Table.HeaderCell>{transfers.table.requester}</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>
           </Table.Row>
         </Table.Header>
