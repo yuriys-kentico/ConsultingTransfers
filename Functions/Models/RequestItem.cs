@@ -2,17 +2,15 @@ using System.Text.RegularExpressions;
 
 using KenticoCloud.Delivery;
 
-using Newtonsoft.Json;
-
 namespace Functions.Models
 {
-    internal class DetailsValue
+    public class DetailsValue
     {
         public string AccountName { get; set; }
 
         public string Requester { get; set; }
 
-        internal void Deconstruct(out string accountName, out string requester)
+        public void Deconstruct(out string accountName, out string requester)
         {
             accountName = AccountName;
             requester = Requester;
@@ -33,7 +31,7 @@ namespace Functions.Models
 
         public RequestItem(Request request, string containerToken)
         {
-            var (accountName, requester) = JsonConvert.DeserializeObject<DetailsValue>(request.Details);
+            var (accountName, requester) = AzureFunctionHelper.GetPayload<DetailsValue>(request.Details);
 
             AccountName = accountName;
             Requester = requester;

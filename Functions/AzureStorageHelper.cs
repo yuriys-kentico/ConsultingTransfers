@@ -11,13 +11,22 @@ namespace Functions
 
         public static CloudStorageAccount GetStorageAccount(string accountName)
         {
-            var storageConnectionString = Environment.GetEnvironmentVariable(accountName, EnvironmentVariableTarget.Process);
+            var storageConnectionString = AzureFunctionHelper.GetEnvironmentVariable(accountName);
 
             return CloudStorageAccount.Parse(storageConnectionString);
         }
 
-        public static string GetAccountSasToken(CloudStorageAccount storageAccount, SharedAccessAccountPermissions permissions)
+        public static CloudBlobClient GetCloudBlobClient(string accountName)
         {
+            var storageAccount = GetStorageAccount(accountName);
+
+            return storageAccount.CreateCloudBlobClient();
+        }
+
+        public static string GetAccountSasToken(string accountName, SharedAccessAccountPermissions permissions)
+        {
+            var storageAccount = GetStorageAccount(accountName);
+
             var policy = new SharedAccessAccountPolicy
             {
                 Permissions = permissions,
@@ -31,9 +40,10 @@ namespace Functions
             return storageAccount.GetSharedAccessSignature(policy);
         }
 
-        public static string GetContainerSasToken(CloudStorageAccount storageAccount, string containerName, SharedAccessBlobPermissions permissions)
+        public static string GetContainerSasToken(string accountName, string containerName, SharedAccessBlobPermissions permissions)
         {
-            var blobClient = storageAccount.CreateCloudBlobClient();
+            var blobClient = GetCloudBlobClient(accountName);
+
             var container = blobClient.GetContainerReference(containerName);
 
             // The SharedAccessBlobPolicy class is saved to the container's shared access policies

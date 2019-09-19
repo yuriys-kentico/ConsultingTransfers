@@ -9,6 +9,12 @@ namespace Functions.Models
         public Message Message { get; set; }
 
         public Data Data { get; set; }
+
+        public void Deconstruct(out Data data, out Message message)
+        {
+            data = Data;
+            message = Message;
+        }
     }
 
     public class Message

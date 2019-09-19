@@ -11,8 +11,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
-using Newtonsoft.Json;
-
 namespace Functions.RequestRetriever
 {
     public class Function
@@ -32,16 +30,13 @@ namespace Functions.RequestRetriever
             ILogger log
             )
         {
-            string requestBody = await request.ReadAsStringAsync();
-
             try
             {
                 var (accountName, accountPermissions, containerToken, containerPermissions)
-                    = JsonConvert.DeserializeObject<SasTokenRequest>(requestBody);
+                    = await AzureFunctionHelper.GetPayloadAsync<SasTokenRequest>(request);
 
                 var itemName = encryptionService.Decrypt(containerToken);
                 var containerName = AzureStorageHelper.GetSafeStorageName(itemName);
-                var storageAccount = AzureStorageHelper.GetStorageAccount(accountName);
 
                 string sasToken;
 
@@ -50,11 +45,11 @@ namespace Functions.RequestRetriever
                 switch (tokenResult.Status)
                 {
                     case AccessTokenStatus.Valid:
-                        sasToken = AzureStorageHelper.GetAccountSasToken(storageAccount, accountPermissions);
+                        sasToken = AzureStorageHelper.GetAccountSasToken(accountName, accountPermissions);
                         break;
 
                     case AccessTokenStatus.NoToken:
-                        sasToken = AzureStorageHelper.GetContainerSasToken(storageAccount, containerName, containerPermissions);
+                        sasToken = AzureStorageHelper.GetContainerSasToken(accountName, containerName, containerPermissions);
                         break;
 
                     case AccessTokenStatus.Expired:
@@ -73,15 +68,15 @@ namespace Functions.RequestRetriever
             }
             catch (Exception ex)
             {
-                return new ExceptionResult(ex, true);
+                return AzureFunctionHelper.LogException(request, log, ex);
             }
         }
 
         private static async Task<RequestItem> GetRequest(string accountName, string itemName)
         {
-            var deliveryClient = AzureFunctionHelper.GetDeliveryClient(accountName);
-
-            var response = await deliveryClient.GetItemAsync<Request>(itemName);
+            var response = await AzureFunctionHelper
+                .GetDeliveryClient(accountName)
+                .GetItemAsync<Request>(itemName);
 
             return new RequestItem(response.Item, null);
         }

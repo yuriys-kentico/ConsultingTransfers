@@ -11,13 +11,10 @@ using KenticoCloud.Delivery;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-
-using Newtonsoft.Json;
 
 namespace Functions.RequestLister
 {
@@ -53,22 +50,19 @@ namespace Functions.RequestLister
             }
             catch (Exception ex)
             {
-                return new ExceptionResult(ex, true);
+                return AzureFunctionHelper.LogException(request, log, ex);
             }
         }
 
         private static async Task<OkObjectResult> GetRequests(HttpRequest request)
         {
-            string requestBody = await request.ReadAsStringAsync();
+            var (accountName, _, _, _) = await AzureFunctionHelper.GetPayloadAsync<SasTokenRequest>(request);
 
-            var (accountName, _, _, _) = JsonConvert.DeserializeObject<SasTokenRequest>(requestBody);
-            var deliveryClient = AzureFunctionHelper.GetDeliveryClient(accountName);
+            var response = await AzureFunctionHelper
+                .GetDeliveryClient(accountName)
+                .GetItemsAsync<Request>();
 
-            var response = await deliveryClient.GetItemsAsync<Request>();
-
-            var storageConnectionString = AzureFunctionHelper.GetEnvironmentVariable(accountName);
-            var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
-            var blobClient = storageAccount.CreateCloudBlobClient();
+            var blobClient = AzureStorageHelper.GetCloudBlobClient(accountName);
 
             var requestItems = GetRequestItems(response, blobClient);
 

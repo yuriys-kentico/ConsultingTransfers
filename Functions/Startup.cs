@@ -1,5 +1,6 @@
 ﻿using Functions;
 using Functions.Authorization;
+using Functions.Webhooks;
 
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,8 @@ namespace Functions
             var tokenSecret = AzureFunctionHelper.GetEnvironmentVariable("tokenSecret");
 
             functionsHostBuilder.Services
-                .AddSingleton<IAccessTokenValidator>(new AccessTokenValidator(metadataAddress, audiences, issuer))
+                .AddTransient<IAccessTokenValidator>(_ => new AccessTokenValidator(metadataAddress, audiences, issuer))
+                .AddTransient<IWebhookValidator>(_ => new WebhookValidator())
                 .AddSingleton<IEncryptionService>(new EncryptionService(tokenSecret));
         }
     }
