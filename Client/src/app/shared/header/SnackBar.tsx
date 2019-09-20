@@ -1,6 +1,5 @@
 import React, { Dispatch, FC, SetStateAction, useContext } from 'react';
 import { Observable } from 'rxjs';
-import { Segment } from 'semantic-ui-react';
 
 import { deleteFrom } from '../../../utilities/arrays';
 import { promiseAfter } from '../../../utilities/promises';
@@ -24,10 +23,8 @@ export const SnackBar: FC = () => {
 
   return (
     <div className='snack bar'>
-      {snacks.map((snack, index) => (
-        <Segment basic key={index}>
-          <Snack {...snack} />
-        </Segment>
+      {snacks.map(snack => (
+        <Snack {...snack} />
       ))}
     </div>
   );
@@ -37,7 +34,8 @@ export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSn
   const newSnack: ISnack = {
     text: text,
     type: type,
-    update: updateSnackHandler
+    update: updateSnackHandler,
+    key: Math.random()
   };
 
   setHeaderContext(headerContext => {

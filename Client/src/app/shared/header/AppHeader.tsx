@@ -1,6 +1,7 @@
 import React, { FC, ReactNode, useContext, useState } from 'react';
 import { Menu, Sidebar } from 'semantic-ui-react';
 
+import { promiseAfter } from '../../../utilities/promises';
 import { AppContext } from '../../AppContext';
 import { AppHeaderContext, IAppHeaderContext, ShowInfoHandler, ShowInfoUntilHandler } from './AppHeaderContext';
 import { hideSnackAfter, hideSnackWhen, showSnack, SnackBar } from './SnackBar';
@@ -11,16 +12,17 @@ export interface IAppHeaderProps {
 }
 
 export const AppHeader: FC<IAppHeaderProps> = props => {
-  const appContext = useContext(AppContext);
+  const { snackTimeout } = useContext(AppContext).experience;
 
   const showInfo: ShowInfoHandler = (text, timeout, type = 'info') => {
-    timeout = timeout ? timeout : appContext.experience.snackTimeout;
+    timeout = timeout ? timeout : snackTimeout;
 
     showSnack(setHeaderContext, text, type, hideSnackAfter(timeout));
   };
 
-  const showInfoUntil: ShowInfoUntilHandler = (text, executor, update?) =>
-    showSnack(setHeaderContext, text, 'update', hideSnackWhen(executor), update);
+  const showInfoUntil: ShowInfoUntilHandler = (text, executor, update?) => {
+    showSnack(setHeaderContext, text, 'update', hideSnackWhen(executor.then(promiseAfter(snackTimeout))), update);
+  };
 
   const showError: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'error');
   const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');

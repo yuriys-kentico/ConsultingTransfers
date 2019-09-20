@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
-import { Message, Progress } from 'semantic-ui-react';
+import { Message, Progress, Segment } from 'semantic-ui-react';
 
 import { getSizeText, toRounded } from '../../../utilities/numbers';
 import { UpdateSnackHandler } from './SnackBar';
@@ -10,6 +10,7 @@ export interface ISnack {
   text: string;
   type: SnackType;
   update?: UpdateSnackHandler;
+  key?: number;
 }
 
 export interface IUpdateMessage {
@@ -77,10 +78,12 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
       }
 
       return (
-        <Message floating compact info>
-          {text}
-          {update && <Progress percent={toRounded((current / total) * 100)} content={message} progress indicating />}
-        </Message>
+        <Segment basic>
+          <Message floating compact info>
+            {text}
+            {update && <Progress percent={toRounded((current / total) * 100)} content={message} progress indicating />}
+          </Message>
+        </Segment>
       );
   }
 };
