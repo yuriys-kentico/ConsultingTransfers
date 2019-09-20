@@ -33,20 +33,26 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
     }
   }, [update]);
 
+  let message;
+
   switch (type) {
     case 'success':
-      return <Message floating compact content={text} success />;
+      message = <Message floating compact content={text} success />;
+      break;
     case 'info':
-      return <Message floating compact content={text} info />;
+      message = <Message floating compact content={text} info />;
+      break;
     case 'warning':
-      return <Message floating compact content={text} warning />;
+      message = <Message floating compact content={text} warning />;
+      break;
     case 'error':
-      return <Message floating compact content={text} error />;
+      message = <Message floating compact content={text} error />;
+      break;
     case 'update':
       const { current, total, duration } = progress;
       const [sent, unit] = getSizeText(current, 2);
 
-      let message = `${sent} ${unit}`;
+      let content = `${sent} ${unit}`;
 
       if (duration !== undefined && duration > 0) {
         const rate = toRounded(current / duration, 2);
@@ -74,16 +80,17 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
         const remainingSeconds = (remainingMinutesMilliseconds - remainingSecondsMilliseconds) / 1000;
         remainingTimeSegments.push(`${remainingSeconds} seconds`);
 
-        message += ` at ${getSizeText(rate, 2)[0]} ${unit}/s${remainingTimeSegments.join(' ')} to go`;
+        content += ` at ${getSizeText(rate, 2)[0]} ${unit}/s${remainingTimeSegments.join(' ')} to go`;
       }
 
-      return (
-        <Segment basic>
-          <Message floating compact info>
-            {text}
-            {update && <Progress percent={toRounded((current / total) * 100)} content={message} progress indicating />}
-          </Message>
-        </Segment>
+      message = (
+        <Message floating compact info>
+          {text}
+          {update && <Progress percent={toRounded((current / total) * 100)} content={content} progress indicating />}
+        </Message>
       );
+      break;
   }
+
+  return <Segment basic>{message}</Segment>;
 };
