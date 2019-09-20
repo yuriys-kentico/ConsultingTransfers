@@ -1,6 +1,6 @@
 using KenticoCloud.Delivery;
 
-namespace Functions.Models
+namespace KenticoKontent.Models
 {
     public partial class Request
     {

@@ -53,8 +53,12 @@ const getDownloadPromise = (blockBlobURL: BlockBlobURL, progressSubject: Subject
   });
 };
 
+export const getSafePathSegment = (directory: string) => {
+  return directory.replace(/[^a-zA-Z0-9-_]/g, '');
+};
+
 export const getFieldBlobs = (blobs: BlobItem[], fieldName: string) =>
-  blobs.filter(blob => blob.name.startsWith(`${fieldName}/`) && !blob.name.endsWith(completed));
+  blobs.filter(blob => blob.name.startsWith(`${getSafePathSegment(fieldName)}/`) && !blob.name.endsWith(completed));
 
 export const completed = 'completed';
 
@@ -182,14 +186,15 @@ const downloadBlob = async (blob: BlobItem, containerURL: ContainerURL, azureSto
 
       const body = await response.blobBody;
 
-      const fileStream = createWriteStream(blob.name, {
-        highWaterMark: 16
-      });
-
       const readableStream = new Response(body).body;
 
       if (readableStream) {
+        const fileStream = createWriteStream(blob.name);
         const downloadStream = readableStream.pipeTo(fileStream);
+
+        window.onunload = () => {
+          fileStream.abort('User navigated away');
+        };
 
         await downloadStream;
       }
@@ -248,11 +253,13 @@ const uploadFiles = async (
     filesToUpload = [files];
   }
 
+  const safeDirectory = getSafePathSegment(directory);
+
   try {
     const promises = [];
 
     for (const file of filesToUpload) {
-      const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, `${directory}/${file.name}`);
+      const blockBlobURL = BlockBlobURL.fromContainerURL(containerURL, `${safeDirectory}/${file.name}`);
 
       const progressSubject = new Subject<IUpdateMessage>();
 
@@ -284,4 +291,3 @@ export const AzureStorage = {
   uploadFiles,
   completed
 };
-

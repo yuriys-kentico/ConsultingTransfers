@@ -35,9 +35,14 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
   });
 
   useEffect(() => {
-    const { accountName, requestRetriever, accountPermissions, containerPermissions } = azureStorage;
-
-    const containerToken = decodeURIComponent(encodedContainerToken || '');
+      const { accountName, requestRetriever } = azureStorage;
+      
+      const containerToken = decodeURIComponent(encodedContainerToken || '');
+      
+      const request = {
+        accountName,
+        containerToken
+      };
 
     const setTransferContextFromRetriever = (response: AxiosResponse<IRequestRetrieverResponse>) => {
       const { sasToken, containerName, requestItem } = response.data;
@@ -56,11 +61,6 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
 
     if (authProvider) {
       authProvider.getAccessToken().then(({ accessToken }) => {
-        const request = {
-          accountName,
-          accountPermissions,
-          containerToken
-        };
 
         Axios.post<IRequestRetrieverResponse>(
           requestRetriever.endpoint,
@@ -69,12 +69,6 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
         ).then(setTransferContextFromRetriever);
       });
     } else {
-      const request = {
-        accountName,
-        containerPermissions,
-        containerToken
-      };
-
       Axios.post<IRequestRetrieverResponse>(
         requestRetriever.endpoint,
         request,

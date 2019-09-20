@@ -3,12 +3,15 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-using Functions.Models;
+using Core;
+
+using KenticoKontent.Models;
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 
-namespace Functions.Webhooks
+using Newtonsoft.Json;
+
+namespace KenticoKontent
 {
     public class WebhookValidator : IWebhookValidator
     {
@@ -18,12 +21,12 @@ namespace Functions.Webhooks
         {
             request.Headers.TryGetValue(WebhookSignatureHeaderName, out var signatureFromRequest);
 
-            var requestBody = await request.ReadAsStringAsync();
+            var requestBody = await AzureFunctionHelper.GetBodyAsync(request);
 
-            var secret = AzureFunctionHelper.GetEnvironmentVariable(request.Query["accountName"], "webhookSecret", identifier);
+            var secret = AzureFunctionHelper.GetSetting(request.Query["accountName"], "webhookSecret", identifier);
             var generatedSignature = GetHashForWebhook(requestBody, secret);
 
-            return (generatedSignature == signatureFromRequest, () => AzureFunctionHelper.GetPayload<Webhook>(requestBody));
+            return (generatedSignature == signatureFromRequest, () => JsonConvert.DeserializeObject<Webhook>(requestBody));
         }
 
         private static string GetHashForWebhook(string content, string secret)

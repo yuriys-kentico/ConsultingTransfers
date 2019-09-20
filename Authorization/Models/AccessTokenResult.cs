@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace Functions.Authorization
+namespace Authorization.Models
 {
     public sealed class AccessTokenResult
     {

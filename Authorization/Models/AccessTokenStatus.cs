@@ -1,4 +1,4 @@
-﻿namespace Functions.Authorization
+﻿namespace Authorization.Models
 {
     public enum AccessTokenStatus
     {

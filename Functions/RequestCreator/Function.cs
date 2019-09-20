@@ -1,8 +1,14 @@
 using System;
 using System.Threading.Tasks;
 
-using Functions.Models;
-using Functions.Webhooks;
+using AzureStorage;
+
+using Core;
+
+using Encryption;
+
+using KenticoKontent;
+using KenticoKontent.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +23,13 @@ namespace Functions.RequestCreator
     {
         private readonly IEncryptionService encryptionService;
         private readonly IWebhookValidator webhookValidator;
+        private readonly IStorageService storageService;
 
-        public Function(IEncryptionService encryptionService, IWebhookValidator webhookValidator)
+        public Function(IEncryptionService encryptionService, IWebhookValidator webhookValidator, IStorageService storageService)
         {
             this.encryptionService = encryptionService;
             this.webhookValidator = webhookValidator;
+            this.storageService = storageService;
         }
 
         [FunctionName(nameof(RequestCreator))]
@@ -40,7 +48,7 @@ namespace Functions.RequestCreator
 
                 if (message.Operation == "publish")
                 {
-                    var blobClient = AzureStorageHelper.GetCloudBlobClient(request.Query["accountName"]);
+                    var blobClient = storageService.GetCloudBlobClient(request.Query["accountName"]);
 
                     await CreateContainers(data.Items, blobClient);
                 }
@@ -57,12 +65,12 @@ namespace Functions.RequestCreator
         {
             foreach (var item in items)
             {
-                var containerName = AzureStorageHelper.GetSafeStorageName(item.Codename);
+                var containerName = storageService.GetSafeStorageName(item.Codename);
                 var container = blobClient.GetContainerReference(containerName);
 
                 var created = await container.CreateIfNotExistsAsync();
 
-                container.Metadata.Add(AzureStorageHelper.ContainerToken, encryptionService.Encrypt(item.Codename));
+                container.Metadata.Add(storageService.ContainerToken, encryptionService.Encrypt(item.Codename));
 
                 await container.SetMetadataAsync();
             }

@@ -2,7 +2,9 @@ using System.Text.RegularExpressions;
 
 using KenticoCloud.Delivery;
 
-namespace Functions.Models
+using Newtonsoft.Json;
+
+namespace KenticoKontent.Models
 {
     public class DetailsValue
     {
@@ -31,7 +33,7 @@ namespace Functions.Models
 
         public RequestItem(Request request, string containerToken)
         {
-            var (accountName, requester) = AzureFunctionHelper.GetPayload<DetailsValue>(request.Details);
+            var (accountName, requester) = JsonConvert.DeserializeObject<DetailsValue>(request.Details);
 
             AccountName = accountName;
             Requester = requester;

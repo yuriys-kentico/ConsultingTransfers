@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Functions.Models;
-
 using KenticoCloud.Delivery;
 
-namespace Functions
+using KenticoKontent.Models;
+
+namespace KenticoKontent
 {
-    public class KontentTypeProvider : ITypeProvider
+    public class KenticoKontentTypeProvider : ITypeProvider
     {
         private static readonly IEnumerable<(Type type, string codename)> codenames = new HashSet<(Type, string)>
         {

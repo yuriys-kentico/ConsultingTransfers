@@ -19,6 +19,7 @@ export interface IFieldHolderProps {
   type: FieldType;
   completed: boolean;
   assets?: Asset[];
+  defaultText?: string;
   setFieldLoading: (loading: boolean) => void;
 }
 

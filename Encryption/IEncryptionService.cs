@@ -1,4 +1,4 @@
-﻿namespace Functions
+﻿namespace Encryption
 {
     public interface IEncryptionService
     {

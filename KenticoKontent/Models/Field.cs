@@ -7,7 +7,7 @@ using KenticoCloud.Delivery.InlineContentItems;
 
 using Newtonsoft.Json;
 
-namespace Functions.Models
+namespace KenticoKontent.Models
 {
     public class Field : IInlineContentItemsResolver<Field>
     {
@@ -29,6 +29,8 @@ namespace Functions.Models
 
         public IEnumerable<Asset> Assets { get; set; }
 
+        public string DefaultText { get; set; }
+
         public string Resolve(Field field)
         {
             dynamic fieldObject = new ExpandoObject();
@@ -42,6 +44,10 @@ namespace Functions.Models
             {
                 case Download_asset:
                     fieldObject.assets = field.Assets;
+                    break;
+
+                case Write_text:
+                    fieldObject.defaultText = field.DefaultText;
                     break;
             }
 

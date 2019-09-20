@@ -1,9 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using System.Web.Http;
 
-using Functions.Models;
-using Functions.Webhooks;
+using AzureStorage;
+
+using Core;
+
+using KenticoKontent;
+using KenticoKontent.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +20,12 @@ namespace Functions.RequestDeleter
     public class Function
     {
         private readonly IWebhookValidator webhookValidator;
+        private readonly IStorageService storageService;
 
-        public Function(IWebhookValidator webhookValidator)
+        public Function(IWebhookValidator webhookValidator, IStorageService storageService)
         {
             this.webhookValidator = webhookValidator;
+            this.storageService = storageService;
         }
 
         [FunctionName(nameof(RequestDeleter))]
@@ -39,7 +44,7 @@ namespace Functions.RequestDeleter
 
                 if (message.Operation == "unpublish")
                 {
-                    var blobClient = AzureStorageHelper.GetCloudBlobClient(request.Query["accountName"]);
+                    var blobClient = storageService.GetCloudBlobClient(request.Query["accountName"]);
 
                     await DeleteContainers(data.Items, blobClient);
                 }
@@ -56,7 +61,7 @@ namespace Functions.RequestDeleter
         {
             foreach (var item in items)
             {
-                var containerName = AzureStorageHelper.GetSafeStorageName(item.Codename);
+                var containerName = storageService.GetSafeStorageName(item.Codename);
                 var container = blobClient.GetContainerReference(containerName);
 
                 await container.DeleteAsync();

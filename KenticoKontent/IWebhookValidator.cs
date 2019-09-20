@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using Functions.Models;
+using KenticoKontent.Models;
 
 using Microsoft.AspNetCore.Http;
 
-namespace Functions.Webhooks
+namespace KenticoKontent
 {
     public interface IWebhookValidator
     {

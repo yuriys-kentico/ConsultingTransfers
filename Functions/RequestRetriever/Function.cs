@@ -1,9 +1,18 @@
 using System;
 using System.Threading.Tasks;
-using System.Web.Http;
 
-using Functions.Authorization;
-using Functions.Models;
+using Authorization;
+using Authorization.Models;
+
+using AzureStorage;
+using AzureStorage.Models;
+
+using Core;
+
+using Encryption;
+
+using KenticoKontent;
+using KenticoKontent.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +26,13 @@ namespace Functions.RequestRetriever
     {
         private readonly IAccessTokenValidator tokenProvider;
         private readonly IEncryptionService encryptionService;
+        private readonly IStorageService storageService;
 
-        public Function(IAccessTokenValidator tokenProvider, IEncryptionService encryptionService)
+        public Function(IAccessTokenValidator tokenProvider, IEncryptionService encryptionService, IStorageService storageService)
         {
             this.tokenProvider = tokenProvider;
             this.encryptionService = encryptionService;
+            this.storageService = storageService;
         }
 
         [FunctionName(nameof(RequestRetriever))]
@@ -32,11 +43,10 @@ namespace Functions.RequestRetriever
         {
             try
             {
-                var (accountName, accountPermissions, containerToken, containerPermissions)
-                    = await AzureFunctionHelper.GetPayloadAsync<SasTokenRequest>(request);
+                var (accountName, containerToken) = await AzureFunctionHelper.GetPayloadAsync<SasTokenRequest>(request);
 
                 var itemName = encryptionService.Decrypt(containerToken);
-                var containerName = AzureStorageHelper.GetSafeStorageName(itemName);
+                var containerName = storageService.GetSafeStorageName(itemName);
 
                 string sasToken;
 
@@ -45,11 +55,11 @@ namespace Functions.RequestRetriever
                 switch (tokenResult.Status)
                 {
                     case AccessTokenStatus.Valid:
-                        sasToken = AzureStorageHelper.GetAccountSasToken(accountName, accountPermissions);
+                        sasToken = storageService.GetAccountSasToken(accountName);
                         break;
 
                     case AccessTokenStatus.NoToken:
-                        sasToken = AzureStorageHelper.GetContainerSasToken(accountName, containerName, containerPermissions);
+                        sasToken = storageService.GetContainerSasToken(accountName, containerName);
                         break;
 
                     case AccessTokenStatus.Expired:
@@ -57,7 +67,7 @@ namespace Functions.RequestRetriever
                         return new NotFoundResult();
                 }
 
-                var requestItem = await GetRequest(accountName, itemName);
+                var requestItem = await GetRequestItem(accountName, itemName);
 
                 return new OkObjectResult(new
                 {
@@ -72,9 +82,9 @@ namespace Functions.RequestRetriever
             }
         }
 
-        private static async Task<RequestItem> GetRequest(string accountName, string itemName)
+        private static async Task<RequestItem> GetRequestItem(string accountName, string itemName)
         {
-            var response = await AzureFunctionHelper
+            var response = await KenticoKontentHelper
                 .GetDeliveryClient(accountName)
                 .GetItemAsync<Request>(itemName);
 

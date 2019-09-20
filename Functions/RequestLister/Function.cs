@@ -2,12 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Http;
 
-using Functions.Authorization;
-using Functions.Models;
+using Authorization;
+using Authorization.Models;
+
+using AzureStorage;
+using AzureStorage.Models;
+
+using Core;
 
 using KenticoCloud.Delivery;
+
+using KenticoKontent;
+using KenticoKontent.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,10 +28,12 @@ namespace Functions.RequestLister
     public class Function
     {
         private readonly IAccessTokenValidator tokenProvider;
+        private readonly IStorageService storageService;
 
-        public Function(IAccessTokenValidator tokenProvider)
+        public Function(IAccessTokenValidator tokenProvider, IStorageService storageService)
         {
             this.tokenProvider = tokenProvider;
+            this.storageService = storageService;
         }
 
         [FunctionName(nameof(RequestLister))]
@@ -54,15 +63,15 @@ namespace Functions.RequestLister
             }
         }
 
-        private static async Task<OkObjectResult> GetRequests(HttpRequest request)
+        private async Task<OkObjectResult> GetRequests(HttpRequest request)
         {
-            var (accountName, _, _, _) = await AzureFunctionHelper.GetPayloadAsync<SasTokenRequest>(request);
+            var (accountName, _) = await AzureFunctionHelper.GetPayloadAsync<SasTokenRequest>(request);
 
-            var response = await AzureFunctionHelper
+            var response = await KenticoKontentHelper
                 .GetDeliveryClient(accountName)
                 .GetItemsAsync<Request>();
 
-            var blobClient = AzureStorageHelper.GetCloudBlobClient(accountName);
+            var blobClient = storageService.GetCloudBlobClient(accountName);
 
             var requestItems = GetRequestItems(response, blobClient);
 
@@ -72,16 +81,16 @@ namespace Functions.RequestLister
             });
         }
 
-        private static IEnumerable<RequestItem> GetRequestItems(DeliveryItemListingResponse<Request> response, CloudBlobClient blobClient)
+        private IEnumerable<RequestItem> GetRequestItems(DeliveryItemListingResponse<Request> response, CloudBlobClient blobClient)
         {
             foreach (var request in response.Items)
             {
-                var containerName = AzureStorageHelper.GetSafeStorageName(request.System.Codename);
+                var containerName = storageService.GetSafeStorageName(request.System.Codename);
                 string containerToken = null;
 
                 blobClient.ListContainers(containerName, ContainerListingDetails.Metadata)
                     .FirstOrDefault(container => container.Name == containerName)?
-                    .Metadata.TryGetValue(AzureStorageHelper.ContainerToken, out containerToken);
+                    .Metadata.TryGetValue(storageService.ContainerToken, out containerToken);
 
                 yield return new RequestItem(request, containerToken);
             }

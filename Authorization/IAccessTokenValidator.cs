@@ -1,9 +1,11 @@
-﻿namespace Functions.Authorization
+﻿using System.Threading.Tasks;
+
+using Authorization.Models;
+
+using Microsoft.AspNetCore.Http;
+
+namespace Authorization
 {
-    using System.Threading.Tasks;
-
-    using Microsoft.AspNetCore.Http;
-
     /// <summary>
     /// Validates access tokes that have been submitted as part of a request.
     /// </summary>
