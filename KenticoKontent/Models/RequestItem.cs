@@ -6,19 +6,6 @@ using Newtonsoft.Json;
 
 namespace KenticoKontent.Models
 {
-    public class DetailsValue
-    {
-        public string AccountName { get; set; }
-
-        public string Requester { get; set; }
-
-        public void Deconstruct(out string accountName, out string requester)
-        {
-            accountName = AccountName;
-            requester = Requester;
-        }
-    }
-
     public class RequestItem
     {
         public string AccountName { get; set; }
@@ -33,10 +20,10 @@ namespace KenticoKontent.Models
 
         public RequestItem(Request request, string containerToken)
         {
-            var (accountName, requester) = JsonConvert.DeserializeObject<DetailsValue>(request.Details);
+            dynamic details = JsonConvert.DeserializeObject(request.Details);
 
-            AccountName = accountName;
-            Requester = requester;
+            AccountName = details.crmAccountName;
+            Requester = details.requester;
             ContainerToken = containerToken;
 
             Fields = Regex

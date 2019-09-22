@@ -50,22 +50,21 @@ namespace Functions.RequestRetriever
 
                 string sasToken;
 
-                switch (tokenResult.Status)
+                switch (tokenResult)
                 {
-                    case AccessTokenStatus.Valid:
+                    case ValidAccessTokenResult _:
                         sasToken = storageService.GetAccountSasToken(accountName);
                         break;
 
-                    case AccessTokenStatus.NoToken:
+                    case NoAccessTokenResult _:
                         sasToken = storageService.GetContainerSasToken(accountName, containerName);
                         break;
 
-                    case AccessTokenStatus.Expired:
                     default:
                         return new NotFoundResult();
                 }
 
-                var requestItem = await GetRequestItem(accountName, itemName);
+                var requestItem = await GetRequestItem(accountName, itemName, containerToken);
 
                 return new OkObjectResult(new
                 {
@@ -80,13 +79,13 @@ namespace Functions.RequestRetriever
             }
         }
 
-        private static async Task<RequestItem> GetRequestItem(string accountName, string itemName)
+        private static async Task<RequestItem> GetRequestItem(string accountName, string itemName, string containerToken)
         {
             var response = await KenticoKontentHelper
                 .GetDeliveryClient(accountName)
                 .GetItemAsync<Request>(itemName);
 
-            return new RequestItem(response.Item, null);
+            return new RequestItem(response.Item, containerToken);
         }
     }
 }

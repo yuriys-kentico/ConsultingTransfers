@@ -16,6 +16,6 @@ namespace Authorization
         /// </summary>
         /// <param name="request">The HTTP request containing the access token.</param>
         /// <returns>A result that contains the security principal.</returns>
-        Task<AccessTokenResult> ValidateTokenAsync(HttpRequest request);
+        Task<IAccessTokenResult> ValidateTokenAsync(HttpRequest request);
     }
 }

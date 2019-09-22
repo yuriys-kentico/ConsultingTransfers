@@ -41,7 +41,7 @@ namespace Authorization
             this.detailsKey = detailsKey;
         }
 
-        public async Task<AccessTokenResult> ValidateTokenAsync(HttpRequest request)
+        public async Task<IAccessTokenResult> ValidateTokenAsync(HttpRequest request)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace Authorization
                 {
                     // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
                     if (bearerToken.ToString().Substring(BearerSpace.Length) == detailsKey)
-                        return AccessTokenResult.Valid(null);
+                        return new ValidAccessTokenResult(null);
 
                     var config = await configManager.GetConfigurationAsync().ConfigureAwait(false);
 
@@ -58,14 +58,14 @@ namespace Authorization
                     var result = new JwtSecurityTokenHandler()
                         .ValidateToken(bearerToken.ToString().Substring(BearerSpace.Length), tokenValidationParameters, out _);
 
-                    return AccessTokenResult.Valid(result);
+                    return new ValidAccessTokenResult(result);
                 }
 
-                return AccessTokenResult.NoToken();
+                return new NoAccessTokenResult();
             }
             catch (SecurityTokenExpiredException)
             {
-                return AccessTokenResult.Expired();
+                return new ExpiredAccessTokenResult();
             }
             catch
             {

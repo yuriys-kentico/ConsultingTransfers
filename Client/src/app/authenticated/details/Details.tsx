@@ -33,8 +33,8 @@ export const Details: RoutedFC = () => {
 
   const [available, setAvailable] = useState(false);
   const [enabled, setEnabled] = useState(true);
-  const [accountNameValue, setAccountNameValue] = useState('');
-  const [requesterValue, setRequesterValue] = useState('');
+  const [crmAccountName, setCrmAccountName] = useState('');
+  const [requester, setRequester] = useState('');
   const [containerToken, setContainerToken] = useState();
 
   const customElementRef = useRef<HTMLDivElement>(null);
@@ -55,8 +55,8 @@ export const Details: RoutedFC = () => {
       const elementValue = JSON.parse(element.value || JSON.stringify(defaultDetailsValue)) as IDetailsValue;
 
       setAvailable(true);
-      setAccountNameValue(elementValue.accountName);
-      setRequesterValue(elementValue.requester);
+      setCrmAccountName(elementValue.accountName);
+      setRequester(elementValue.requester);
 
       // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
       const key = (element.config as { key: string }).key;
@@ -112,9 +112,9 @@ export const Details: RoutedFC = () => {
 
   useEffect(() => {
     if (available) {
-      CustomElement.setValue(JSON.stringify({ accountName: accountNameValue, requester: requesterValue }));
+      CustomElement.setValue(JSON.stringify({ crmAccountName, requester }));
     }
-  }, [available, accountNameValue, requesterValue]);
+  }, [available, crmAccountName, requester]);
 
   const updateStringField = (setStater: Dispatch<SetStateAction<string>>) => (event: ChangeEvent<HTMLInputElement>) => {
     setStater(event.target.value);
@@ -132,16 +132,16 @@ export const Details: RoutedFC = () => {
         <>
           <div className='text element'>
             <div className='pane'>
-              <label className='label'>{details.accountName.header}</label>
+              <label className='label'>{details.crmAccountName.header}</label>
               <div className='guidelines'>
-                <p>{details.accountName.guidelines}</p>
+                <p>{details.crmAccountName.guidelines}</p>
               </div>
               <Input
                 className='input'
                 size='big'
                 fluid
-                value={accountNameValue}
-                onChange={updateStringField(setAccountNameValue)}
+                value={crmAccountName}
+                onChange={updateStringField(setCrmAccountName)}
                 placeholder={details.placeholder}
                 disabled={!enabled}
               />
@@ -157,8 +157,8 @@ export const Details: RoutedFC = () => {
                 className='input'
                 size='big'
                 fluid
-                value={requesterValue}
-                onChange={updateStringField(setRequesterValue)}
+                value={requester}
+                onChange={updateStringField(setRequester)}
                 placeholder={details.placeholder}
                 disabled={!enabled}
               />

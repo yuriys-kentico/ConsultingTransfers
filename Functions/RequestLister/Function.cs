@@ -46,13 +46,11 @@ namespace Functions.RequestLister
             {
                 var tokenResult = await tokenProvider.ValidateTokenAsync(request);
 
-                switch (tokenResult.Status)
+                switch (tokenResult)
                 {
-                    case AccessTokenStatus.Valid:
+                    case ValidAccessTokenResult _:
                         return await GetRequests(request);
 
-                    case AccessTokenStatus.NoToken:
-                    case AccessTokenStatus.Expired:
                     default:
                         return new NotFoundResult();
                 }
