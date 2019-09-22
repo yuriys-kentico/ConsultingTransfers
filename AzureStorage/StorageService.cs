@@ -53,7 +53,7 @@ namespace AzureStorage
 
             var container = blobClient.GetContainerReference(containerName);
 
-            // The SharedAccessBlobPolicy class is saved to the container's shared access policies
+            // The SharedAccessBlobPolicy class is saved to the container's shared access policies.
             var policy = new SharedAccessBlobPolicy
             {
                 Permissions = SharedAccessBlobPermissions.Read

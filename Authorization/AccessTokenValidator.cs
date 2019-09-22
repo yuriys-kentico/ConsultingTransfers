@@ -49,7 +49,7 @@ namespace Authorization
                 {
                     // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
                     if (bearerToken.ToString().Substring(BearerSpace.Length) == detailsKey)
-                        return AccessTokenResult.Success(null);
+                        return AccessTokenResult.Valid(null);
 
                     var config = await configManager.GetConfigurationAsync().ConfigureAwait(false);
 
@@ -58,7 +58,7 @@ namespace Authorization
                     var result = new JwtSecurityTokenHandler()
                         .ValidateToken(bearerToken.ToString().Substring(BearerSpace.Length), tokenValidationParameters, out _);
 
-                    return AccessTokenResult.Success(result);
+                    return AccessTokenResult.Valid(result);
                 }
 
                 return AccessTokenResult.NoToken();

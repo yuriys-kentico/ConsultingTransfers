@@ -4,47 +4,29 @@ namespace Authorization.Models
 {
     public sealed class AccessTokenResult
     {
-        private AccessTokenResult()
-        {
-        }
-
         public ClaimsPrincipal Principal { get; private set; }
 
         public AccessTokenStatus Status { get; private set; }
 
-        /// <summary>
-        /// Returns a valid token.
-        /// </summary>
-        public static AccessTokenResult Success(ClaimsPrincipal principal)
+        private AccessTokenResult(AccessTokenStatus status, ClaimsPrincipal principal = null)
         {
-            return new AccessTokenResult
-            {
-                Principal = principal,
-                Status = AccessTokenStatus.Valid
-            };
+            Status = status;
+            Principal = principal;
         }
 
         /// <summary>
-        /// Returns a result that indicates the submitted token has expired.
+        /// Returns a valid result.
         /// </summary>
-        public static AccessTokenResult Expired()
-        {
-            return new AccessTokenResult
-            {
-                Status = AccessTokenStatus.Expired
-            };
-        }
+        public static AccessTokenResult Valid(ClaimsPrincipal principal) => new AccessTokenResult(AccessTokenStatus.Valid, principal);
 
         /// <summary>
-        /// Returns a result in response to no token being in the request.
+        /// Returns an expired result.
         /// </summary>
-        /// <returns></returns>
-        public static AccessTokenResult NoToken()
-        {
-            return new AccessTokenResult
-            {
-                Status = AccessTokenStatus.NoToken
-            };
-        }
+        public static AccessTokenResult Expired() => new AccessTokenResult(AccessTokenStatus.Expired);
+
+        /// <summary>
+        /// Returns a result with no token in the request.
+        /// </summary>
+        public static AccessTokenResult NoToken() => new AccessTokenResult(AccessTokenStatus.NoToken);
     }
 }

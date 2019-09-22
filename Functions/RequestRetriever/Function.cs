@@ -44,13 +44,11 @@ namespace Functions.RequestRetriever
             try
             {
                 var (accountName, containerToken) = await AzureFunctionHelper.GetPayloadAsync<SasTokenRequest>(request);
-
                 var itemName = encryptionService.Decrypt(containerToken);
                 var containerName = storageService.GetSafeStorageName(itemName);
+                var tokenResult = await tokenProvider.ValidateTokenAsync(request);
 
                 string sasToken;
-
-                var tokenResult = await tokenProvider.ValidateTokenAsync(request);
 
                 switch (tokenResult.Status)
                 {

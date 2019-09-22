@@ -66,13 +66,11 @@ namespace Functions.RequestLister
         private async Task<OkObjectResult> GetRequests(HttpRequest request)
         {
             var (accountName, _) = await AzureFunctionHelper.GetPayloadAsync<SasTokenRequest>(request);
-
             var response = await KenticoKontentHelper
                 .GetDeliveryClient(accountName)
                 .GetItemsAsync<Request>();
 
             var blobClient = storageService.GetCloudBlobClient(accountName);
-
             var requestItems = GetRequestItems(response, blobClient);
 
             return new OkObjectResult(new
@@ -92,7 +90,10 @@ namespace Functions.RequestLister
                     .FirstOrDefault(container => container.Name == containerName)?
                     .Metadata.TryGetValue(storageService.ContainerToken, out containerToken);
 
-                yield return new RequestItem(request, containerToken);
+                if (!string.IsNullOrEmpty(containerToken))
+                {
+                    yield return new RequestItem(request, containerToken);
+                }
             }
         }
     }
