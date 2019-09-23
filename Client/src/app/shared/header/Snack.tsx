@@ -55,7 +55,7 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
       let content = `${sent} ${unit}`;
 
       if (duration !== undefined && duration > 0) {
-        const rate = toRounded(current / duration, 2);
+        const rate = toRounded(current / duration / 1000, 2);
 
         const remainingMilliseconds = (total - current) * (duration / current);
 

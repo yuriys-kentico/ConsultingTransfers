@@ -4,8 +4,8 @@ import { navigate } from '@reach/router';
 import React, { ChangeEvent, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { Input, Label, List, Loader } from 'semantic-ui-react';
 
-import { AzureFunctions, getTransfersUrl, getTransferUrl } from '../../../connectors/azure/AzureFunctions';
-import { Context, Element, ICustomElement } from '../../../connectors/customElement/customElement';
+import { AzureFunctions, getTransfersUrl, getTransferUrl } from '../../../connectors/AzureFunctions';
+import { Context, Element, ICustomElement } from '../../../connectors/customElement';
 import { promiseAfter, promiseWhile } from '../../../utilities/promises';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';

@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { Form } from 'semantic-ui-react';
 
-import { getFieldBlobs, getSafePathSegment } from '../../../../connectors/azure/AzureStorage';
+import { getFieldBlobs, getSafePathSegment } from '../../../../connectors/AzureStorage';
 import { AppContext } from '../../../AppContext';
 import { IFieldHolderProps } from '../FieldHolder';
 import { MarkdownEditor } from '../markdownEditor/MarkdownEditor';
@@ -11,7 +11,7 @@ import { TransferContext } from '../TransferContext';
 
 export const WriteText: FC<IFieldHolderProps> = ({ name, completed, setFieldLoading, defaultText }) => {
   const { experience } = useContext(AppContext);
-  const { containerURL, blobs, uploadFiles, readBlobString } = useContext(TransferContext);
+  const { blobs, uploadFiles, readBlobString } = useContext(TransferContext);
   const [text, setText] = useState<string>('');
   const [loaded, setLoaded] = useState<boolean>();
 
@@ -21,7 +21,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ name, completed, setFieldLoad
     const fieldBlobs = getFieldBlobs(blobs, name);
 
     if (fieldBlobs.length > 0) {
-      readBlobString(fieldBlobs[0], containerURL).then(blobString => {
+      readBlobString(fieldBlobs[0]).then(blobString => {
         if (blobString !== undefined) {
           setText(blobString);
         }
@@ -38,22 +38,13 @@ export const WriteText: FC<IFieldHolderProps> = ({ name, completed, setFieldLoad
       next: update => {
         const file = new File([update], `${getSafePathSegment(name)}.md`, { type: 'text/plain' });
 
-        uploadFiles(file, name, containerURL, true);
+        uploadFiles(file, name, true);
         setFieldLoading(false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [
-    name,
-    containerURL,
-    readBlobString,
-    blobs,
-    setFieldLoading,
-    uploadFiles,
-    experience.writeTextUpdateTimeout,
-    defaultText
-  ]);
+  }, [name, readBlobString, blobs, setFieldLoading, uploadFiles, experience.writeTextUpdateTimeout, defaultText]);
 
   const updateStorage = (value: string) => {
     textStream.current.next(value);

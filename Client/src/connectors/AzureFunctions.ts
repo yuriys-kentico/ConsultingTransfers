@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import { MsalAuthProvider } from 'react-aad-msal';
 
-import { IShowMessageHandlers } from '../../app/shared/header/AppHeaderContext';
+import { IShowMessageHandlers } from '../app/shared/header/AppHeaderContext';
 
 export interface ITransfer {
   customer: string;

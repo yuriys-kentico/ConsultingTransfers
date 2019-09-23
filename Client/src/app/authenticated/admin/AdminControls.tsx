@@ -2,24 +2,19 @@ import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useContext, useState } from 'react';
 import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-ui-react';
 
-import { AzureStorage } from '../../../connectors/azure/AzureStorage';
+import { AzureStorage, IAzureStorageOptions } from '../../../connectors/AzureStorage';
 import { deleteFrom } from '../../../utilities/arrays';
 import { AppContext } from '../../AppContext';
 import { BlobDetails } from '../../shared/transfer/BlobDetails';
 import { TransferContext } from '../../shared/transfer/TransferContext';
 
-export const AdminControls: FC = () => {
+interface IAdminControlsProps {
+  azureStorageOptions: IAzureStorageOptions;
+}
+
+export const AdminControls: FC<IAdminControlsProps> = ({ azureStorageOptions }) => {
   const { controls } = useContext(AppContext).terms.admin;
-  const {
-    containerName,
-    containerURL,
-    transfer,
-    blobs,
-    downloadBlob,
-    deleteBlobs,
-    createContainer,
-    deleteContainer
-  } = useContext(TransferContext);
+  const { transfer, blobs, downloadBlob, deleteBlobs, createContainer, deleteContainer } = useContext(TransferContext);
   const [selectedBlobs, setSelectedBlobs] = useState<BlobItem[]>([]);
 
   const toggleSelectedBlob = (blob: BlobItem) => {
@@ -71,7 +66,7 @@ export const AdminControls: FC = () => {
         <List>
           <List.Item>
             <Label horizontal>{controls.details.containerName}</Label>
-            {containerName}
+            {azureStorageOptions.containerName}
           </List.Item>
           <List.Item>
             <Label horizontal>{controls.details.customer}</Label>
@@ -105,8 +100,8 @@ export const AdminControls: FC = () => {
                   />
                 </Table.Cell>
                 <Table.Cell textAlign='right'>
-                  <Button circular icon='download' onClick={() => downloadBlob(file, containerURL)} />
-                  <Button circular icon='trash' onClick={() => deleteBlobs(file, containerURL)} />
+                  <Button circular icon='download' onClick={() => downloadBlob(file)} />
+                  <Button circular icon='trash' onClick={() => deleteBlobs(file)} />
                 </Table.Cell>
               </Table.Row>
             ))}
@@ -115,22 +110,13 @@ export const AdminControls: FC = () => {
       </Segment>
       <Divider hidden />
       <Button
-        onClick={() => deleteBlobs(selectedBlobs, containerURL)}
+        onClick={() => deleteBlobs(selectedBlobs)}
         disabled={selectedBlobs.length === 0}
         negative
         content={controls.deleteSelected}
       />
-      <Button
-        onClick={() => deleteContainer(containerName, containerURL)}
-        negative
-        floated='right'
-        content={controls.deleteContainer}
-      />
-      <Button
-        onClick={() => createContainer(containerName, containerURL)}
-        floated='right'
-        content={controls.createContainer}
-      />
+      <Button onClick={() => deleteContainer()} negative floated='right' content={controls.deleteContainer} />
+      <Button onClick={() => createContainer()} floated='right' content={controls.createContainer} />
       {/* <Button onClick={() => showRandomSnack()} floated='right' content='Show random snack' /> */}
     </>
   );

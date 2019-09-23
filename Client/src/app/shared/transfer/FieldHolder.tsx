@@ -2,7 +2,7 @@ import { FC, lazy, Suspense, useContext, useState } from 'react';
 import React from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
-import { AzureStorage, getSafePathSegment } from '../../../connectors/azure/AzureStorage';
+import { AzureStorage, getSafePathSegment } from '../../../connectors/AzureStorage';
 import { AppContext } from '../../AppContext';
 import { AppHeaderContext } from '../header/AppHeaderContext';
 import { TransferContext } from './TransferContext';
@@ -36,7 +36,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
 
   const { terms } = useContext(AppContext);
   const { showInfo } = useContext(AppHeaderContext);
-  const { containerURL, uploadFiles, blobs } = useContext(TransferContext);
+  const { uploadFiles, blobs } = useContext(TransferContext);
   const [loading, setLoading] = useState(false);
   const [fieldLoading, setFieldLoading] = useState(false);
 
@@ -59,7 +59,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
 
     setLoading(true);
 
-    await uploadFiles(file, name, containerURL, true);
+    await uploadFiles(file, name, true);
 
     setLoading(false);
     showInfo(terms.shared.transfer.fields.markedCompleted);

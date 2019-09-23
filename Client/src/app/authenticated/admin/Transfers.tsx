@@ -2,7 +2,7 @@ import { Link } from '@reach/router';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
-import { AzureFunctions, getTransfersUrl, getTransferUrl, ITransfer } from '../../../connectors/azure/AzureFunctions';
+import { AzureFunctions, getTransfersUrl, getTransferUrl, ITransfer } from '../../../connectors/AzureFunctions';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
