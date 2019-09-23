@@ -6,9 +6,9 @@ using Newtonsoft.Json;
 
 namespace KenticoKontent.Models
 {
-    public class RequestItem
+    public class Transfer
     {
-        public string AccountName { get; set; }
+        public string Customer { get; set; }
 
         public string Requester { get; set; }
 
@@ -18,19 +18,19 @@ namespace KenticoKontent.Models
 
         public ContentItemSystemAttributes System { get; set; }
 
-        public RequestItem(Request request, string containerToken)
+        public Transfer(TransferItem transfer, string containerToken)
         {
-            dynamic details = JsonConvert.DeserializeObject(request.Details);
+            dynamic details = JsonConvert.DeserializeObject(transfer.Details);
 
-            AccountName = details.crmAccountName;
+            Customer = details.customer;
             Requester = details.requester;
             ContainerToken = containerToken;
 
             Fields = Regex
-                .Replace(request.Fields, "<.*?>|\n", string.Empty)
+                .Replace(transfer.Fields, "<.*?>|\n", string.Empty)
                 .Replace("}{", "},{");
 
-            System = request.System;
+            System = transfer.System;
         }
     }
 }

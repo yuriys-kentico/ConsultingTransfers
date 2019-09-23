@@ -1,5 +1,4 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 using Authorization.Models;
@@ -11,9 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Authorization
 {
-    /// <summary>
-    /// Validates a incoming request and extracts any <see cref="ClaimsPrincipal"/> contained within the bearer token.
-    /// </summary>
     public class AccessTokenValidator : IAccessTokenValidator
     {
         private const string Authorization = "Authorization";
@@ -29,13 +25,9 @@ namespace Authorization
 
             tokenValidationParameters = new TokenValidationParameters
             {
-                RequireSignedTokens = true,
                 ValidAudiences = audiences.Split(';'),
-                ValidateAudience = true,
                 ValidIssuer = issuer,
-                ValidateIssuer = true,
-                ValidateIssuerSigningKey = true,
-                ValidateLifetime = true
+                ValidateIssuerSigningKey = true
             };
 
             this.detailsKey = detailsKey;

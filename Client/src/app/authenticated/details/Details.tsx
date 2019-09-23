@@ -1,26 +1,26 @@
 import './details.css';
 
 import { navigate } from '@reach/router';
-import Axios from 'axios';
 import React, { ChangeEvent, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { Input, Label, List, Loader } from 'semantic-ui-react';
 
-import { getTransfersUrl, getTransferUrl, IRequestListerResponse } from '../../../connectors/azure/requests';
+import { AzureFunctions, getTransfersUrl, getTransferUrl } from '../../../connectors/azure/AzureFunctions';
 import { Context, Element, ICustomElement } from '../../../connectors/customElement/customElement';
 import { promiseAfter, promiseWhile } from '../../../utilities/promises';
-import { getAuthorizationHeaders } from '../../../utilities/requests';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
+import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
+import { AuthenticatedContext } from '../AuthenticatedContext';
 
 // Expose access to Kentico custom element API
 declare const CustomElement: ICustomElement;
 
 interface IDetailsValue {
-  accountName: string;
+  customer: string;
   requester: string;
 }
 
-const defaultDetailsValue = { accountName: '', requester: '' };
+const defaultDetailsValue: IDetailsValue = { customer: '', requester: '' };
 
 export const Details: RoutedFC = () => {
   if (window.self === window.top) {
@@ -28,12 +28,12 @@ export const Details: RoutedFC = () => {
   }
 
   const appContext = useContext(AppContext);
-
-  const { details } = appContext.terms;
+  const appHeaderContext = useContext(AppHeaderContext);
+  const { authProvider } = useContext(AuthenticatedContext);
 
   const [available, setAvailable] = useState(false);
   const [enabled, setEnabled] = useState(true);
-  const [crmAccountName, setCrmAccountName] = useState('');
+  const [customer, setCustomer] = useState('');
   const [requester, setRequester] = useState('');
   const [containerToken, setContainerToken] = useState();
 
@@ -42,7 +42,7 @@ export const Details: RoutedFC = () => {
   useEffect(() => {
     const {
       kenticoKontent: { customElementScriptEndpoint },
-      azureStorage: { accountName, requestLister },
+      azureStorage: { accountName, listTransfers },
       experience
     } = appContext;
 
@@ -55,7 +55,7 @@ export const Details: RoutedFC = () => {
       const elementValue = JSON.parse(element.value || JSON.stringify(defaultDetailsValue)) as IDetailsValue;
 
       setAvailable(true);
-      setCrmAccountName(elementValue.accountName);
+      setCustomer(elementValue.customer);
       setRequester(elementValue.requester);
 
       // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
@@ -72,37 +72,28 @@ export const Details: RoutedFC = () => {
       if (!enabled) {
         setContainerToken(undefined);
 
-        //authProvider.getAccessToken().then(({accessToken}) => {
         const checkContainerToken = (codename: string) => () =>
-          Axios.post<IRequestListerResponse>(
-            requestLister.endpoint,
-            { accountName },
-            getAuthorizationHeaders(requestLister.key, key) // accessToken)
-          )
-            .then(response => {
-              const request = response.data.requestItems.filter(request => request.system.codename === codename)[0];
+          AzureFunctions.listTransfers(accountName, listTransfers, authProvider, appHeaderContext, key)
+            .then(transfers => {
+              const transfer = transfers && transfers.filter(transfer => transfer.system.codename === codename)[0];
 
-              if (request && request.containerToken) {
-                return request.containerToken;
+              if (transfer && transfer.containerToken) {
+                setContainerToken(transfer.containerToken);
+                return true;
               } else {
-                return '';
+                return false;
               }
             })
             .then(promiseAfter(experience.detailsContainerCheckTimeout));
 
-        CustomElement.init((_, context: Context) => {
-          promiseWhile(
-            '',
-            containerToken => containerToken.length === 0,
-            checkContainerToken(context.item.codename)
-          ).then(containerToken => setContainerToken(containerToken));
-        });
-        //});
+        CustomElement.init((_, context: Context) =>
+          promiseWhile(false, tokenIsSet => tokenIsSet === false, checkContainerToken(context.item.codename))
+        );
       }
     };
 
     document.head.appendChild(customElementModule);
-  }, [appContext]);
+  }, [appContext, authProvider, appHeaderContext]);
 
   useEffect(() => {
     if (available && customElementRef.current) {
@@ -112,9 +103,9 @@ export const Details: RoutedFC = () => {
 
   useEffect(() => {
     if (available) {
-      CustomElement.setValue(JSON.stringify({ crmAccountName, requester }));
+      CustomElement.setValue(JSON.stringify({ customer, requester }));
     }
-  }, [available, crmAccountName, requester]);
+  }, [available, customer, requester]);
 
   const updateStringField = (setStater: Dispatch<SetStateAction<string>>) => (event: ChangeEvent<HTMLInputElement>) => {
     setStater(event.target.value);
@@ -124,6 +115,8 @@ export const Details: RoutedFC = () => {
     return `${window.location.protocol}//${window.location.host}${path}`;
   };
 
+  const { details } = appContext.terms;
+
   return (
     <div className={`custom element ${enabled ? '' : 'disabled'}`} ref={customElementRef}>
       {!available ? (
@@ -132,16 +125,16 @@ export const Details: RoutedFC = () => {
         <>
           <div className='text element'>
             <div className='pane'>
-              <label className='label'>{details.crmAccountName.header}</label>
+              <label className='label'>{details.customer.header}</label>
               <div className='guidelines'>
-                <p>{details.crmAccountName.guidelines}</p>
+                <p>{details.customer.guidelines}</p>
               </div>
               <Input
                 className='input'
                 size='big'
                 fluid
-                value={crmAccountName}
-                onChange={updateStringField(setCrmAccountName)}
+                value={customer}
+                onChange={updateStringField(setCustomer)}
                 placeholder={details.placeholder}
                 disabled={!enabled}
               />

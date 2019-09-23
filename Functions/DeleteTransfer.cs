@@ -15,20 +15,20 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Functions.RequestDeleter
+namespace Functions
 {
-    public class Function
+    public class DeleteTransfer
     {
         private readonly IWebhookValidator webhookValidator;
         private readonly IStorageService storageService;
 
-        public Function(IWebhookValidator webhookValidator, IStorageService storageService)
+        public DeleteTransfer(IWebhookValidator webhookValidator, IStorageService storageService)
         {
             this.webhookValidator = webhookValidator;
             this.storageService = storageService;
         }
 
-        [FunctionName(nameof(RequestDeleter))]
+        [FunctionName(nameof(DeleteTransfer))]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
             ILogger log

@@ -1,62 +1,54 @@
 import { Link } from '@reach/router';
-import Axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
-import { getTransfersUrl, getTransferUrl, IRequestItem, IRequestListerResponse } from '../../../connectors/azure/requests';
-import { getAuthorizationHeaders } from '../../../utilities/requests';
+import { AzureFunctions, getTransfersUrl, getTransferUrl, ITransfer } from '../../../connectors/azure/AzureFunctions';
 import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
+import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
 import { AuthenticatedContext } from '../AuthenticatedContext';
 
 export const Transfers: RoutedFC = () => {
   const { terms, azureStorage } = useContext(AppContext);
+  const appHeaderContext = useContext(AppHeaderContext);
   const { authProvider } = useContext(AuthenticatedContext);
 
-  const [requests, setRequests] = useState<IRequestItem[]>([]);
+  const [transfers, setTransfers] = useState<ITransfer[]>([]);
 
   useEffect(() => {
-    const { accountName, requestLister } = azureStorage;
+    const { accountName, listTransfers } = azureStorage;
 
-    authProvider.getAccessToken().then(({ accessToken }) => {
-      const request = {
-        accountName
-      };
+    AzureFunctions.listTransfers(accountName, listTransfers, authProvider, appHeaderContext).then(
+      transfers => transfers && setTransfers(transfers)
+    );
+  }, [authProvider, azureStorage, appHeaderContext]);
 
-      Axios.post<IRequestListerResponse>(
-        requestLister.endpoint,
-        request,
-        getAuthorizationHeaders(requestLister.key, accessToken)
-      ).then(response => setRequests(response.data.requestItems));
-    });
-  }, [authProvider, azureStorage]);
-
-  const { transfers } = terms.admin;
+  const { header, table } = terms.admin.transfers;
 
   return (
     <Segment basic>
-      <Header as='h2'>{transfers.header}</Header>
+      <Header as='h2'>{header}</Header>
       <Table stackable singleLine basic='very'>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>{transfers.table.request}</Table.HeaderCell>
-            <Table.HeaderCell>{transfers.table.account}</Table.HeaderCell>
-            <Table.HeaderCell>{transfers.table.requester}</Table.HeaderCell>
+            <Table.HeaderCell>{table.transfer}</Table.HeaderCell>
+            <Table.HeaderCell>{table.account}</Table.HeaderCell>
+            <Table.HeaderCell>{table.requester}</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {requests.length === 0 ? (
+          {transfers.length === 0 ? (
             <Table.Row>
               <Table.Cell>
                 <Loader active size='massive' />
               </Table.Cell>
             </Table.Row>
           ) : (
-            requests.map((item, index) => (
+            transfers.map((item, index) => (
               <Table.Row key={index}>
                 <Table.Cell>{item.system.name}</Table.Cell>
-                <Table.Cell>{item.crmAccountName}</Table.Cell>
+                <Table.Cell>{item.customer}</Table.Cell>
                 <Table.Cell>{item.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
                   <Button circular icon='edit' as={Link} to={getTransfersUrl(item.containerToken)} />

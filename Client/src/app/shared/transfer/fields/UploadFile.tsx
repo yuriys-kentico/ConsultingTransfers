@@ -2,7 +2,7 @@ import React, { FC, useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Container, List } from 'semantic-ui-react';
 
-import { getFieldBlobs } from '../../../../connectors/azure/azureStorage';
+import { getFieldBlobs } from '../../../../connectors/azure/AzureStorage';
 import { AppContext } from '../../../AppContext';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';

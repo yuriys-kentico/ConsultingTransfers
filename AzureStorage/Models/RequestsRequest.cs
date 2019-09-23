@@ -1,6 +1,6 @@
 ﻿namespace AzureStorage.Models
 {
-    public class SasTokenRequest
+    public class RequestsRequest
     {
         public string AccountName { get; set; }
 

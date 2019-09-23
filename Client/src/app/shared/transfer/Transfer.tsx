@@ -1,14 +1,12 @@
 import { ContainerURL } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
-import Axios, { AxiosResponse } from 'axios';
 import React, { lazy, useContext, useEffect, useRef, useState } from 'react';
 import { AuthenticationState } from 'react-aad-msal';
 import { Header, Loader, Segment } from 'semantic-ui-react';
 
-import { AzureStorage, getContainerURL, IAzureStorageOptions } from '../../../connectors/azure/azureStorage';
-import { IRequestRetrieverResponse } from '../../../connectors/azure/requests';
+import { AzureFunctions } from '../../../connectors/azure/AzureFunctions';
+import { AzureStorage, getContainerURL, IAzureStorageOptions } from '../../../connectors/azure/AzureStorage';
 import { deleteFrom } from '../../../utilities/arrays';
-import { getAuthorizationHeaders } from '../../../utilities/requests';
 import { AppContext } from '../../AppContext';
 import { AuthenticatedContext } from '../../authenticated/AuthenticatedContext';
 import { RoutedFC } from '../../RoutedFC';
@@ -35,47 +33,29 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
   });
 
   useEffect(() => {
-      const { accountName, requestRetriever } = azureStorage;
-      
-      const containerToken = decodeURIComponent(encodedContainerToken || '');
-      
-      const request = {
-        accountName,
-        containerToken
-      };
+    const { accountName, getTransfer } = azureStorage;
 
-    const setTransferContextFromRetriever = (response: AxiosResponse<IRequestRetrieverResponse>) => {
-      const { sasToken, containerName, requestItem } = response.data;
-      const containerURL = getContainerURL(accountName, containerName, sasToken);
+    const containerToken = decodeURIComponent(encodedContainerToken || '');
 
-      AzureStorage.listBlobs(containerURL, azureStorageOptions.current).then(blobs => {
-        setTransferContext(transferContext => ({
-          ...transferContext,
-          requestItem,
-          blobs: blobs || [],
-          containerName,
-          containerURL
-        }));
-      });
-    };
+    AzureFunctions.getTransfer(accountName, getTransfer, authProvider, containerToken, appHeaderContext).then(
+      response => {
+        if (response) {
+          const { sasToken, containerName, transfer } = response;
+          const containerURL = getContainerURL(accountName, containerName, sasToken);
 
-    if (authProvider) {
-      authProvider.getAccessToken().then(({ accessToken }) => {
-
-        Axios.post<IRequestRetrieverResponse>(
-          requestRetriever.endpoint,
-          request,
-          getAuthorizationHeaders(requestRetriever.key, accessToken)
-        ).then(setTransferContextFromRetriever);
-      });
-    } else {
-      Axios.post<IRequestRetrieverResponse>(
-        requestRetriever.endpoint,
-        request,
-        getAuthorizationHeaders(requestRetriever.key)
-      ).then(setTransferContextFromRetriever);
-    }
-  }, [authProvider, encodedContainerToken, azureStorage]);
+          AzureStorage.listBlobs(containerURL, azureStorageOptions.current).then(blobs =>
+            setTransferContext(transferContext => ({
+              ...transferContext,
+              transfer,
+              blobs: blobs || [],
+              containerName,
+              containerURL
+            }))
+          );
+        }
+      }
+    );
+  }, [authProvider, encodedContainerToken, azureStorage, appHeaderContext]);
 
   const deleteBlobs = (blobs: BlobItem[] | BlobItem, containerURL: ContainerURL) =>
     AzureStorage.deleteBlobs(blobs, containerURL, azureStorageOptions.current).then(() =>
@@ -112,7 +92,7 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
   const [transferContext, setTransferContext] = useState<ITransferContext>({
     containerName: '',
     containerURL: null as any,
-    requestItem: null as any,
+    transfer: null as any,
     blobs: [],
     deleteBlobs,
     downloadBlob,
@@ -124,11 +104,11 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
 
   return (
     <Segment basic>
-      {!transferContext.requestItem ? (
+      {!transferContext.transfer ? (
         <Loader active size='massive' />
       ) : (
         <TransferContext.Provider value={transferContext}>
-          <Header as='h2' content={`${terms.shared.transfer.header} ${transferContext.requestItem.system.name}`} />
+          <Header as='h2' content={`${terms.shared.transfer.header} ${transferContext.transfer.system.name}`} />
           <Fields />
           {authProvider && authProvider.authenticationState === AuthenticationState.Authenticated && <AdminControls />}
         </TransferContext.Provider>

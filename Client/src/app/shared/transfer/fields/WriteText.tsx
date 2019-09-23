@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { Form } from 'semantic-ui-react';
 
-import { getFieldBlobs, getSafePathSegment } from '../../../../connectors/azure/azureStorage';
+import { getFieldBlobs, getSafePathSegment } from '../../../../connectors/azure/AzureStorage';
 import { AppContext } from '../../../AppContext';
 import { IFieldHolderProps } from '../FieldHolder';
 import { MarkdownEditor } from '../markdownEditor/MarkdownEditor';

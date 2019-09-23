@@ -10,7 +10,7 @@ export const Fields: FC = () => {
 
   let fields: IFieldHolderProps[] = [];
 
-  const maybeJson = `[${transferContext.requestItem.fields}]`;
+  const maybeJson = `[${transferContext.transfer.fields}]`;
 
   try {
     fields = JSON.parse(maybeJson);

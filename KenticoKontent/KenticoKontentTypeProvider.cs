@@ -15,7 +15,7 @@ namespace KenticoKontent
             (typeof(Field), Field.Upload_file),
             (typeof(Field), Field.Write_text),
             (typeof(Field), Field.Download_asset),
-            (typeof(Request), Request.Codename)
+            (typeof(TransferItem), TransferItem.Codename)
         };
 
         public Type GetType(string codename)

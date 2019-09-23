@@ -2,12 +2,12 @@ import { ContainerURL } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import { createContext } from 'react';
 
-import { IRequestItem } from '../../../connectors/azure/requests';
+import { ITransfer } from '../../../connectors/azure/AzureFunctions';
 
 export interface ITransferContext {
   containerName: string;
   containerURL: ContainerURL;
-  requestItem: IRequestItem;
+  transfer: ITransfer;
   blobs: BlobItem[];
   deleteBlobs: (blobs: BlobItem[] | BlobItem, containerURL: ContainerURL) => void;
   downloadBlob: (blob: BlobItem, containerURL: ContainerURL) => void;

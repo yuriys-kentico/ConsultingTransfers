@@ -17,22 +17,22 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Functions.RequestCreator
+namespace Functions
 {
-    public class Function
+    public class CreateTransfer
     {
         private readonly IEncryptionService encryptionService;
         private readonly IWebhookValidator webhookValidator;
         private readonly IStorageService storageService;
 
-        public Function(IEncryptionService encryptionService, IWebhookValidator webhookValidator, IStorageService storageService)
+        public CreateTransfer(IEncryptionService encryptionService, IWebhookValidator webhookValidator, IStorageService storageService)
         {
             this.encryptionService = encryptionService;
             this.webhookValidator = webhookValidator;
             this.storageService = storageService;
         }
 
-        [FunctionName(nameof(RequestCreator))]
+        [FunctionName(nameof(CreateTransfer))]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
             ILogger log
@@ -67,12 +67,10 @@ namespace Functions.RequestCreator
             {
                 var containerName = storageService.GetSafeStorageName(item.Codename);
                 var container = blobClient.GetContainerReference(containerName);
-                var created = await container.CreateIfNotExistsAsync();
 
-                if (created)
-                {
-                    container.Metadata.Add(storageService.ContainerToken, encryptionService.Encrypt(item.Codename));
-                }
+                await container.CreateIfNotExistsAsync();
+
+                container.Metadata.Add(storageService.ContainerToken, encryptionService.Encrypt(item.Codename));
 
                 await container.SetMetadataAsync();
             }

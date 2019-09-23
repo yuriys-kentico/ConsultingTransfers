@@ -1,15 +1,10 @@
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useContext, useState } from 'react';
-import { Subject } from 'rxjs';
 import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-ui-react';
 
-import { AzureStorage } from '../../../connectors/azure/azureStorage';
+import { AzureStorage } from '../../../connectors/azure/AzureStorage';
 import { deleteFrom } from '../../../utilities/arrays';
-import { toRounded } from '../../../utilities/numbers';
-import { promiseAfter } from '../../../utilities/promises';
 import { AppContext } from '../../AppContext';
-import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
-import { IUpdateMessage } from '../../shared/header/Snack';
 import { BlobDetails } from '../../shared/transfer/BlobDetails';
 import { TransferContext } from '../../shared/transfer/TransferContext';
 
@@ -18,7 +13,7 @@ export const AdminControls: FC = () => {
   const {
     containerName,
     containerURL,
-    requestItem,
+    transfer,
     blobs,
     downloadBlob,
     deleteBlobs,
@@ -26,8 +21,6 @@ export const AdminControls: FC = () => {
     deleteContainer
   } = useContext(TransferContext);
   const [selectedBlobs, setSelectedBlobs] = useState<BlobItem[]>([]);
-
-  const { showInfoUntil } = useContext(AppHeaderContext);
 
   const toggleSelectedBlob = (blob: BlobItem) => {
     selectedBlobs.indexOf(blob) > -1
@@ -42,31 +35,33 @@ export const AdminControls: FC = () => {
     }
   }
 
-  const showRandomSnack = () => {
-    const getRandomInt = (min: number, max: number) => {
-      return toRounded(Math.random() * (max - min) + min);
-    };
+  // const { showInfoUntil } = useContext(AppHeaderContext);
 
-    const totalTime = getRandomInt(1000, 15000);
-    const totalUpdates = 20;
-    const updater = new Subject<IUpdateMessage>();
-    let progress = 0;
+  //   const showRandomSnack = () => {
+  //     const getRandomInt = (min: number, max: number) => {
+  //       return toRounded(Math.random() * (max - min) + min);
+  //     };
 
-    const interval = setInterval(() => {
-      progress += 100 / totalUpdates;
+  //     const totalTime = getRandomInt(1000, 15000);
+  //     const totalUpdates = 20;
+  //     const updater = new Subject<IUpdateMessage>();
+  //     let progress = 0;
 
-      updater.next({
-        current: progress,
-        total: 100
-      });
+  //     const interval = setInterval(() => {
+  //       progress += 100 / totalUpdates;
 
-      if (progress === 100) {
-        clearInterval(interval);
-      }
-    }, totalTime / totalUpdates);
+  //       updater.next({
+  //         current: progress,
+  //         total: 100
+  //       });
 
-    showInfoUntil(`test ${totalTime}`, promiseAfter(totalTime)(''), updater);
-  };
+  //       if (progress === 100) {
+  //         clearInterval(interval);
+  //       }
+  //     }, totalTime / totalUpdates);
+
+  //     showInfoUntil(`test ${totalTime}`, promiseAfter(totalTime)(''), updater);
+  //   };
 
   return (
     <>
@@ -79,12 +74,12 @@ export const AdminControls: FC = () => {
             {containerName}
           </List.Item>
           <List.Item>
-            <Label horizontal>{controls.details.crmAccountName}</Label>
-            {requestItem.crmAccountName}
+            <Label horizontal>{controls.details.customer}</Label>
+            {transfer.customer}
           </List.Item>
           <List.Item>
             <Label horizontal>{controls.details.requester}</Label>
-            {requestItem.requester}
+            {transfer.requester}
           </List.Item>
         </List>
       </Segment>
