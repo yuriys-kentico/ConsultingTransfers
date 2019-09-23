@@ -64,16 +64,12 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
         const remainingHoursMilliseconds = remainingMilliseconds % (60 * 60 * 1000);
 
         const remainingHours = (remainingMilliseconds - remainingHoursMilliseconds) / 60 / 60 / 1000;
-        if (remainingHours > 0) {
-          remainingTimeSegments.push(`${remainingHours} hours`);
-        }
+        remainingHours > 0 && remainingTimeSegments.push(`${remainingHours} hours`);
 
         const remainingMinutesMilliseconds = remainingHoursMilliseconds % (60 * 1000);
 
         const remainingMinutes = (remainingHoursMilliseconds - remainingMinutesMilliseconds) / 60 / 1000;
-        if (remainingMinutes > 0) {
-          remainingTimeSegments.push(`${remainingMinutes} minutes`);
-        }
+        remainingMinutes > 0 && remainingTimeSegments.push(`${remainingMinutes} minutes`);
 
         const remainingSecondsMilliseconds = remainingMinutesMilliseconds % 1000;
 
