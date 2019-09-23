@@ -67,10 +67,12 @@ namespace Functions.RequestCreator
             {
                 var containerName = storageService.GetSafeStorageName(item.Codename);
                 var container = blobClient.GetContainerReference(containerName);
-
                 var created = await container.CreateIfNotExistsAsync();
 
-                container.Metadata.Add(storageService.ContainerToken, encryptionService.Encrypt(item.Codename));
+                if (created)
+                {
+                    container.Metadata.Add(storageService.ContainerToken, encryptionService.Encrypt(item.Codename));
+                }
 
                 await container.SetMetadataAsync();
             }

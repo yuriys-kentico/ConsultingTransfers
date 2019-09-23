@@ -22,7 +22,6 @@ namespace KenticoKontent
             request.Headers.TryGetValue(WebhookSignatureHeaderName, out var signatureFromRequest);
 
             var requestBody = await AzureFunctionHelper.GetBodyAsync(request);
-
             var secret = AzureFunctionHelper.GetSetting(request.Query["accountName"], "webhookSecret", identifier);
             var generatedSignature = GetHashForWebhook(requestBody, secret);
 

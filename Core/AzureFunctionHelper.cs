@@ -18,15 +18,15 @@ namespace Core
         {
             request.EnableBuffering();
 
-            string requestBody = null;
             using (var reader = new StreamReader(request.Body, Encoding.UTF8, true, 1024, true))
             {
+                string requestBody = null;
+
                 requestBody = await reader.ReadToEndAsync();
+                request.Body.Seek(0, SeekOrigin.Begin);
+
+                return requestBody;
             }
-
-            request.Body.Seek(0, SeekOrigin.Begin);
-
-            return requestBody;
         }
 
         public static async Task<T> GetPayloadAsync<T>(HttpRequest request)

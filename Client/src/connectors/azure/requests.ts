@@ -1,5 +1,5 @@
 export interface IRequestItem {
-  accountName: string;
+  crmAccountName: string;
   requester: string;
   containerToken: string;
   fields: string;

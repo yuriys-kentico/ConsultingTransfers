@@ -10,10 +10,10 @@ namespace Encryption
     {
         private readonly string secret;
 
-        // The key size of the encryption algorithm in bytes
+        // The key size of the encryption algorithm in bytes.
         private const int KeySizeBytes = 16;
 
-        // The number of iterations for the password bytes generation function
+        // The number of iterations for the password bytes generation function.
         private const int DerivationIterations = 1000;
 
         public EncryptionService(string secret)
@@ -35,90 +35,71 @@ namespace Encryption
                 return randomBytes;
             }
 
-            // Salt and IV are randomly generated each time, but are preprended to encrypted cipher text
+            // Salt and IV are randomly generated each time, but are preprended to encrypted bytes.
             var saltStringBytes = Get128RandomBits();
             var iVStringBytes = Get128RandomBits();
+            var sourceBytes = Encoding.UTF8.GetBytes(source);
 
-            var plainTextBytes = Encoding.UTF8.GetBytes(source);
-
+            using (var symmetricKey = new RijndaelManaged())
             using (var password = new Rfc2898DeriveBytes(secret, saltStringBytes, DerivationIterations))
             {
+                symmetricKey.BlockSize = KeySizeBytes * 8;
+
                 var keyBytes = password.GetBytes(KeySizeBytes);
 
-                using (var symmetricKey = new RijndaelManaged())
+                using (var encryptor = symmetricKey.CreateEncryptor(keyBytes, iVStringBytes))
+                using (var memoryStream = new MemoryStream())
+                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
                 {
-                    symmetricKey.BlockSize = 128;
-                    symmetricKey.Mode = CipherMode.CBC;
-                    symmetricKey.Padding = PaddingMode.PKCS7;
+                    cryptoStream.Write(sourceBytes, 0, sourceBytes.Length);
+                    cryptoStream.FlushFinalBlock();
 
-                    using (var encryptor = symmetricKey.CreateEncryptor(keyBytes, iVStringBytes))
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                            {
-                                cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
-                                cryptoStream.FlushFinalBlock();
+                    // Concatenate the random salt bytes, the random IV bytes and the encrypted bytes.
+                    var encryptedBytes = saltStringBytes
+                        .Concat(iVStringBytes)
+                        .Concat(memoryStream.ToArray())
+                        .ToArray();
 
-                                // Create the final bytes as a concatenation of the random salt bytes, the random IV bytes and the cipher bytes.
-                                var cipherTextBytes = saltStringBytes
-                                    .Concat(iVStringBytes)
-                                    .Concat(memoryStream.ToArray())
-                                    .ToArray();
-
-                                return Convert.ToBase64String(cipherTextBytes);
-                            }
-                        }
-                    }
+                    return Convert.ToBase64String(encryptedBytes);
                 }
             }
         }
 
-        public string Decrypt(string token)
+        public string Decrypt(string encrypted)
         {
-            // Get the complete stream of bytes that represent:
-            // [32 bytes of Salt] + [32 bytes of IV] + [n bytes of CipherText]
-            var cipherTextBytesWithSaltAndIv = Convert.FromBase64String(token);
+            // [32 bytes of salt] + [32 bytes of IV] + [n bytes of encrypted].
+            var saltStringiVStringEncryptedBytes = Convert.FromBase64String(encrypted);
 
-            // Get the salt bytes by extracting the first 32 bytes from the supplied cipherText bytes.
-            var saltStringBytes = cipherTextBytesWithSaltAndIv
+            // Get the salt bytes by extracting the first 32 bytes from encrypted.
+            var saltStringBytes = saltStringiVStringEncryptedBytes
                 .Take(KeySizeBytes)
                 .ToArray();
 
-            // Get the IV bytes by extracting the next 32 bytes from the supplied cipherText bytes.
-            var ivStringBytes = cipherTextBytesWithSaltAndIv
+            // Get the IV bytes by extracting the next 32 bytes from encrypted.
+            var ivStringBytes = saltStringiVStringEncryptedBytes
                 .Skip(KeySizeBytes)
                 .Take(KeySizeBytes)
                 .ToArray();
 
-            // Get the actual cipher text bytes by removing the first 64 bytes from the cipherText string.
-            var cipherTextBytes = cipherTextBytesWithSaltAndIv
+            var encryptedBytes = saltStringiVStringEncryptedBytes
                 .Skip(KeySizeBytes * 2)
                 .ToArray();
 
+            using (var symmetricKey = new RijndaelManaged())
             using (var password = new Rfc2898DeriveBytes(secret, saltStringBytes, DerivationIterations))
             {
+                symmetricKey.BlockSize = KeySizeBytes * 8;
+
                 var keyBytes = password.GetBytes(KeySizeBytes);
 
-                using (var symmetricKey = new RijndaelManaged())
+                using (var decryptor = symmetricKey.CreateDecryptor(keyBytes, ivStringBytes))
+                using (var memoryStream = new MemoryStream(encryptedBytes))
+                using (var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
                 {
-                    symmetricKey.BlockSize = 128;
-                    symmetricKey.Mode = CipherMode.CBC;
-                    symmetricKey.Padding = PaddingMode.PKCS7;
+                    var plainTextBytes = new byte[encryptedBytes.Length];
+                    var decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
 
-                    using (var decryptor = symmetricKey.CreateDecryptor(keyBytes, ivStringBytes))
-                    {
-                        using (var memoryStream = new MemoryStream(cipherTextBytes))
-                        {
-                            using (var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
-                            {
-                                var plainTextBytes = new byte[cipherTextBytes.Length];
-                                var decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
-
-                                return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount);
-                            }
-                        }
-                    }
+                    return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount);
                 }
             }
         }

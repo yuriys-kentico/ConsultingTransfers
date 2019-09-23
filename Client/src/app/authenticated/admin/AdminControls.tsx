@@ -79,8 +79,8 @@ export const AdminControls: FC = () => {
             {containerName}
           </List.Item>
           <List.Item>
-            <Label horizontal>{controls.details.accountName}</Label>
-            {requestItem.accountName}
+            <Label horizontal>{controls.details.crmAccountName}</Label>
+            {requestItem.crmAccountName}
           </List.Item>
           <List.Item>
             <Label horizontal>{controls.details.requester}</Label>

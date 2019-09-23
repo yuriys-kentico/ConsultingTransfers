@@ -56,7 +56,7 @@ export const Transfers: RoutedFC = () => {
             requests.map((item, index) => (
               <Table.Row key={index}>
                 <Table.Cell>{item.system.name}</Table.Cell>
-                <Table.Cell>{item.accountName}</Table.Cell>
+                <Table.Cell>{item.crmAccountName}</Table.Cell>
                 <Table.Cell>{item.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
                   <Button circular icon='edit' as={Link} to={getTransfersUrl(item.containerToken)} />
