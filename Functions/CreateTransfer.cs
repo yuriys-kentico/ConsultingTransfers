@@ -48,7 +48,7 @@ namespace Functions
 
                 if (message.Operation == "publish")
                 {
-                    var blobClient = storageService.GetCloudBlobClient(request.Query["accountName"]);
+                    var blobClient = storageService.GetCloudBlobClient(request.Query["region"]);
 
                     await CreateContainers(data.Items, blobClient);
                 }

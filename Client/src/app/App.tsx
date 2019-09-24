@@ -2,6 +2,7 @@ import { Router } from '@reach/router';
 import React, { lazy, Suspense } from 'react';
 import { boundary, useError } from 'react-boundary';
 import { Loader } from 'semantic-ui-react';
+import { getTransferUrl } from '../connectors/AzureFunctions';
 
 const Authenticated = lazy(() =>
   import('./authenticated/Authenticated').then(module => ({ default: module.Authenticated }))
@@ -22,7 +23,7 @@ export const App = boundary(() => {
     <Suspense fallback={<Loader active size='massive' />}>
       <Router>
         <Authenticated path='/*' />
-        <Public path='/transfer/*' />
+        <Public path={getTransferUrl('*')} />
         <Details path='/details/*' />
       </Router>
     </Suspense>

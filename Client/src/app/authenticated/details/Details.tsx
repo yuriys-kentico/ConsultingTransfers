@@ -4,10 +4,10 @@ import { navigate } from '@reach/router';
 import React, { ChangeEvent, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
 import { Input, Label, List, Loader } from 'semantic-ui-react';
 
+import { experience, kenticoKontent, terms } from '../../../appSettings.json';
 import { AzureFunctions, getTransfersUrl, getTransferUrl } from '../../../connectors/AzureFunctions';
-import { Context, Element, ICustomElement } from '../../../connectors/customElement';
+import { Element, ICustomElement } from '../../../connectors/customElement';
 import { promiseAfter, promiseWhile } from '../../../utilities/promises';
-import { AppContext } from '../../AppContext';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
 import { AuthenticatedContext } from '../AuthenticatedContext';
@@ -27,7 +27,6 @@ export const Details: RoutedFC = () => {
     navigate('/');
   }
 
-  const appContext = useContext(AppContext);
   const appHeaderContext = useContext(AppHeaderContext);
   const { authProvider } = useContext(AuthenticatedContext);
 
@@ -40,15 +39,9 @@ export const Details: RoutedFC = () => {
   const customElementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const {
-      kenticoKontent: { customElementScriptEndpoint },
-      azureStorage: { accountName, listTransfers },
-      experience
-    } = appContext;
-
     const customElementModule = document.createElement('script');
 
-    customElementModule.src = customElementScriptEndpoint;
+    customElementModule.src = kenticoKontent.customElementScriptEndpoint;
     customElementModule.onload = () => CustomElement.init(initCustomElement);
 
     const initCustomElement = (element: Element) => {
@@ -73,7 +66,7 @@ export const Details: RoutedFC = () => {
         setContainerToken(undefined);
 
         const checkContainerToken = (codename: string) => () =>
-          AzureFunctions.listTransfers(accountName, listTransfers, authProvider, appHeaderContext, key)
+          AzureFunctions.listTransfers(authProvider, appHeaderContext, key)
             .then(transfers => {
               const transfer = transfers && transfers.filter(transfer => transfer.system.codename === codename)[0];
 
@@ -86,14 +79,14 @@ export const Details: RoutedFC = () => {
             })
             .then(promiseAfter(experience.detailsContainerCheckTimeout));
 
-        CustomElement.init((_, context: Context) =>
+        CustomElement.init((_, context) =>
           promiseWhile(false, tokenIsSet => tokenIsSet === false, checkContainerToken(context.item.codename))
         );
       }
     };
 
     document.head.appendChild(customElementModule);
-  }, [appContext, authProvider, appHeaderContext]);
+  }, [authProvider, appHeaderContext]);
 
   useEffect(() => {
     if (available && customElementRef.current) {
@@ -115,7 +108,7 @@ export const Details: RoutedFC = () => {
     return `${window.location.protocol}//${window.location.host}${path}`;
   };
 
-  const { details } = appContext.terms;
+  const { details } = terms;
 
   return (
     <div className={`custom element ${enabled ? '' : 'disabled'}`} ref={customElementRef}>

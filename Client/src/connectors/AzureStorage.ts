@@ -23,7 +23,6 @@ interface IAzureStorageAppOptions {
 export interface IAzureStorageOptions {
   appOptions: IAzureStorageAppOptions;
   messageHandlers: IShowMessageHandlers;
-  containerName: string;
   containerUrl: ContainerURL;
 }
 
@@ -64,42 +63,40 @@ export const getFieldBlobs = (blobs: BlobItem[], fieldName: string) =>
 
 export const completed = 'completed';
 
-export const getContainerURL = (accountName: string, containerName: string, sasToken: string) => {
-  return new ContainerURL(
-    `https://${accountName}.blob.core.windows.net/${containerName}${sasToken}`,
-    StorageURL.newPipeline(new AnonymousCredential())
-  );
+export const getContainerURL = (containerUrl: string) => {
+  return new ContainerURL(containerUrl, StorageURL.newPipeline(new AnonymousCredential()));
 };
 
-const createContainer = async (azureStorageOptions: IAzureStorageOptions) => {
+const createContainer = async (azureStorageOptions: IAzureStorageOptions, containerName: string) => {
   const { showInfoUntil, showError, showSuccess } = azureStorageOptions.messageHandlers;
 
   try {
     var createPromise = azureStorageOptions.containerUrl.create(Aborter.none);
 
-    showInfoUntil(`Creating container "${azureStorageOptions.containerName}"...`, createPromise);
+    showInfoUntil(`Creating container "${containerName}"...`, createPromise);
 
     await createPromise;
 
     showSuccess(`Done.`);
   } catch (error) {
+    console.error(error);
     showError((error.body && error.body.message) || error.message);
   }
 };
 
-const deleteContainer = async (azureStorageOptions: IAzureStorageOptions) => {
+const deleteContainer = async (azureStorageOptions: IAzureStorageOptions, containerName: string) => {
   const { showInfoUntil, showError, showSuccess } = azureStorageOptions.messageHandlers;
 
   try {
     var deletePromise = azureStorageOptions.containerUrl.delete(Aborter.none);
 
-    showInfoUntil(`Deleting container "${azureStorageOptions.containerName}"...`, deletePromise);
+    showInfoUntil(`Deleting container "${containerName}"...`, deletePromise);
 
     await deletePromise;
 
     showSuccess(`Done.`);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     showError((error.body && error.body.message) || error.message);
   }
 };
@@ -125,7 +122,7 @@ const listBlobs = async (azureStorageOptions: IAzureStorageOptions) => {
 
     return blobs;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     showError((error.body && error.body.message) || error.message);
   }
 };
@@ -156,7 +153,7 @@ const deleteBlobs = async (blobs: BlobItem[] | BlobItem, azureStorageOptions: IA
       showSuccess('Done.');
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     showError((error.body && error.body.message) || error.message);
   }
 };
@@ -192,7 +189,7 @@ const downloadBlob = async (blob: BlobItem, azureStorageOptions: IAzureStorageOp
       showSuccess(`Finished downloading ${blob.name}.`);
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     showError((error.body && error.body.message) || error.message);
   }
 };
@@ -217,7 +214,7 @@ const readBlobString = async (blob: BlobItem, azureStorageOptions: IAzureStorage
       return text;
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     showError((error.body && error.body.message) || error.message);
   }
 };
@@ -264,7 +261,7 @@ const uploadFiles = async (
 
     !silent && showSuccess(`Finished uploading ${fileNames}.`);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     showError((error.body && error.body.message) || error.message);
   }
 };

@@ -1,57 +1,103 @@
+import 'draft-js/dist/Draft.css';
+import 'draftail/dist/draftail.css';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+
+import { ContentState, convertFromRaw, convertToRaw, EditorState } from 'draft-js';
+import { draftToMarkdown, markdownToDraft } from 'markdown-draft-js';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Form } from 'semantic-ui-react';
 
+import { experience, terms } from '../../../../appSettings.json';
 import { getFieldBlobs, getSafePathSegment } from '../../../../connectors/AzureStorage';
-import { AppContext } from '../../../AppContext';
 import { IFieldHolderProps } from '../FieldHolder';
-import { MarkdownEditor } from '../markdownEditor/MarkdownEditor';
 import { TransferContext } from '../TransferContext';
 
-export const WriteText: FC<IFieldHolderProps> = ({ name, completed, setFieldLoading, defaultText }) => {
-  const { experience } = useContext(AppContext);
+export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldLoading, defaultText }) => {
+  const { writeText } = terms.shared.transfer.fields;
   const { blobs, uploadFiles, readBlobString } = useContext(TransferContext);
-  const [text, setText] = useState<string>('');
-  const [loaded, setLoaded] = useState<boolean>();
 
-  const textStream = useRef(new Subject<string>());
+  const [loaded, setLoaded] = useState(false);
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+
+  const stateStream = useRef(new Subject<ContentState>());
 
   useEffect(() => {
     const fieldBlobs = getFieldBlobs(blobs, name);
 
-    if (fieldBlobs.length > 0) {
-      readBlobString(fieldBlobs[0]).then(blobString => {
-        if (blobString !== undefined) {
-          setText(blobString);
-        }
-        setLoaded(true);
-      });
-    } else {
-      if (defaultText) {
-        setText(defaultText);
+    const updateEditorState = (text?: string) => {
+      if (text) {
+        setEditorState(EditorState.createWithContent(convertFromRaw(markdownToDraft(text))));
       }
       setLoaded(true);
+    };
+
+    if (fieldBlobs.length > 0) {
+      readBlobString(fieldBlobs[0]).then(blobString => {
+        updateEditorState(blobString);
+      });
+    } else {
+      updateEditorState(defaultText);
     }
 
-    const subscription = textStream.current.pipe(debounceTime(experience.writeTextUpdateTimeout)).subscribe({
-      next: update => {
-        const file = new File([update], `${getSafePathSegment(name)}.md`, { type: 'text/plain' });
+    const subscription = stateStream.current.pipe(debounceTime(experience.writeTextUpdateTimeout)).subscribe({
+      next: (update: ContentState) => {
+        const content = draftToMarkdown(convertToRaw(update));
 
-        uploadFiles(file, name, true);
-        setFieldLoading(false);
+        const file = new File([content], `${getSafePathSegment(name)}.md`, { type: 'text/plain' });
+
+        uploadFiles(file, name, true).then(() => setFieldLoading(false));
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [name, readBlobString, blobs, setFieldLoading, uploadFiles, experience.writeTextUpdateTimeout, defaultText]);
+  }, [completed, name, setFieldLoading, defaultText, uploadFiles, readBlobString]);
 
-  const updateStorage = (value: string) => {
-    textStream.current.next(value);
+  const updateEditorState = (draftState: EditorState) => {
+    setEditorState(draftState);
     setFieldLoading(true);
+
+    stateStream.current.next(draftState.getCurrentContent());
+  };
+
+  const toolbar = {
+    options: ['blockType', 'inline', 'link', 'list', 'history'],
+    blockType: {
+      inDropdown: false,
+      options: ['Normal', 'H3']
+    },
+    inline: {
+      options: ['bold', 'italic', 'monospace']
+    },
+    link: {
+      options: ['link']
+    }
+  };
+
+  const localization = {
+    locale: 'en',
+    translations: {
+      'components.controls.blocktype.normal': <b>P</b>,
+      'components.controls.blocktype.h3': <b>H</b>
+    }
   };
 
   return (
-    <Form>{!loaded ? null : <MarkdownEditor markdown={text} onChange={updateStorage} disabled={completed} />}</Form>
+    <>
+      {!loaded ? null : (
+        <WysiwygEditor
+          editorState={editorState}
+          onEditorStateChange={updateEditorState}
+          toolbar={!completed ? toolbar : { options: [] }}
+          localization={localization}
+          wrapperClassName='editor'
+          editorClassName={!completed ? 'view' : 'view disabled'}
+          toolbarClassName='toolbar'
+          placeholder={writeText.placeholder}
+          readOnly={completed}
+        />
+      )}
+    </>
   );
 };

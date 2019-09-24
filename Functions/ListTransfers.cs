@@ -61,12 +61,12 @@ namespace Functions
 
         private async Task<OkObjectResult> GetTransfers(HttpRequest request)
         {
-            var (accountName, _) = await AzureFunctionHelper.GetPayloadAsync<RequestsRequest>(request);
+            var (region, _) = await AzureFunctionHelper.GetPayloadAsync<RequestsRequest>(request);
             var response = await KenticoKontentHelper
-                .GetDeliveryClient(accountName)
+                .GetDeliveryClient(region)
                 .GetItemsAsync<TransferItem>();
 
-            var blobClient = storageService.GetCloudBlobClient(accountName);
+            var blobClient = storageService.GetCloudBlobClient(region);
             var transfers = GetTransfers(response.Items, blobClient);
 
             return new OkObjectResult(new

@@ -2,6 +2,7 @@ import Axios from 'axios';
 import { MsalAuthProvider } from 'react-aad-msal';
 
 import { IShowMessageHandlers } from '../app/shared/header/AppHeaderContext';
+import transfers from '../transfers.json';
 
 export interface ITransfer {
   customer: string;
@@ -19,7 +20,7 @@ export interface IListTransfersResponse {
 }
 
 export interface IGetTransferResponse {
-  sasToken: string;
+  containerUrl: string;
   containerName: string;
   transfer: ITransfer;
 }
@@ -43,19 +44,18 @@ const getAuthorizationHeaders = (key: string, bearerToken?: string) => {
 };
 
 const listTransfers = async (
-  accountName: string,
-  listTransfers: { endpoint: string; key: string },
   authProvider: MsalAuthProvider,
   messageHandlers: IShowMessageHandlers,
   detailsKey?: string
 ) => {
   const { showError } = messageHandlers;
   const bearerToken = detailsKey ? detailsKey : (await authProvider.getAccessToken()).accessToken;
+  const { region, listTransfers } = transfers;
 
   try {
     const response = await Axios.post<IListTransfersResponse>(
       listTransfers.endpoint,
-      { accountName },
+      { region },
       getAuthorizationHeaders(listTransfers.key, bearerToken)
     );
 
@@ -66,19 +66,18 @@ const listTransfers = async (
 };
 
 const getTransfer = async (
-  accountName: string,
-  getTransfer: { endpoint: string; key: string },
   authProvider: MsalAuthProvider,
   containerToken: string,
   messageHandlers: IShowMessageHandlers
 ) => {
   const { showError } = messageHandlers;
   const bearerToken = !authProvider ? undefined : (await authProvider.getAccessToken()).accessToken;
+  const { region, getTransfer } = transfers;
 
   try {
     const response = await Axios.post<IGetTransferResponse>(
       getTransfer.endpoint,
-      { accountName, containerToken },
+      { region, containerToken },
       getAuthorizationHeaders(getTransfer.key, bearerToken)
     );
 

@@ -10,8 +10,8 @@ export interface ITransferContext {
   downloadBlob: (blob: BlobItem) => void;
   readBlobString: (blob: BlobItem) => Promise<string | undefined>;
   uploadFiles: (files: File[] | File, directory: string, silent?: boolean) => Promise<void>;
-  createContainer: () => void;
-  deleteContainer: () => void;
+  createContainer: (containerName: string) => void;
+  deleteContainer: (containerName: string) => void;
 }
 
 export const TransferContext = createContext<ITransferContext>({} as any);

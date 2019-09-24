@@ -3,64 +3,56 @@ import React, { lazy, useContext, useEffect, useRef, useState } from 'react';
 import { AuthenticationState } from 'react-aad-msal';
 import { Header, Loader, Segment } from 'semantic-ui-react';
 
+import { azureStorage, terms } from '../../../appSettings.json';
 import { AzureFunctions } from '../../../connectors/AzureFunctions';
 import { AzureStorage, getContainerURL, IAzureStorageOptions } from '../../../connectors/AzureStorage';
 import { deleteFrom } from '../../../utilities/arrays';
-import { AppContext } from '../../AppContext';
 import { AuthenticatedContext } from '../../authenticated/AuthenticatedContext';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeaderContext } from '../header/AppHeaderContext';
 import { Fields } from './Fields';
 import { ITransferContext, TransferContext } from './TransferContext';
 
-const AdminControls = lazy(() =>
-  import('../../authenticated/admin/AdminControls').then(module => ({ default: module.AdminControls }))
-);
+const Debug = lazy(() => import('../../authenticated/admin/Debug').then(module => ({ default: module.Debug })));
 
 export interface ITransferProps {
   encodedContainerToken: string;
 }
 
 export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) => {
-  const { azureStorage, terms } = useContext(AppContext);
   const appHeaderContext = useContext(AppHeaderContext);
   const { authProvider } = useContext(AuthenticatedContext);
 
   const azureStorageOptions = useRef<IAzureStorageOptions>({
     appOptions: azureStorage,
     messageHandlers: appHeaderContext,
-    containerName: '',
     containerUrl: null as any
   });
 
-  useEffect(() => {
-    const { accountName, getTransfer } = azureStorage;
+  const containerNameRef = useRef('');
 
+  useEffect(() => {
     const containerToken = decodeURIComponent(encodedContainerToken || '');
 
-    AzureFunctions.getTransfer(
-      accountName,
-      getTransfer,
-      authProvider,
-      containerToken,
-      azureStorageOptions.current.messageHandlers
-    ).then(response => {
-      if (response) {
-        const { sasToken, containerName, transfer } = response;
+    AzureFunctions.getTransfer(authProvider, containerToken, azureStorageOptions.current.messageHandlers).then(
+      response => {
+        if (response) {
+          const { containerUrl, containerName, transfer } = response;
 
-        azureStorageOptions.current.containerName = containerName;
-        azureStorageOptions.current.containerUrl = getContainerURL(accountName, containerName, sasToken);
+          containerNameRef.current = containerName;
+          azureStorageOptions.current.containerUrl = getContainerURL(containerUrl);
 
-        AzureStorage.listBlobs(azureStorageOptions.current).then(blobs =>
-          setTransferContext(transferContext => ({
-            ...transferContext,
-            transfer,
-            blobs: blobs || []
-          }))
-        );
+          AzureStorage.listBlobs(azureStorageOptions.current).then(blobs =>
+            setTransferContext(transferContext => ({
+              ...transferContext,
+              transfer,
+              blobs: blobs || []
+            }))
+          );
+        }
       }
-    });
-  }, [authProvider, encodedContainerToken, azureStorage, appHeaderContext]);
+    );
+  }, [authProvider, encodedContainerToken, appHeaderContext]);
 
   const deleteBlobs = (blobs: BlobItem[] | BlobItem) =>
     AzureStorage.deleteBlobs(blobs, azureStorageOptions.current).then(() =>
@@ -76,13 +68,13 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
       .then(() => AzureStorage.listBlobs(azureStorageOptions.current))
       .then(blobs => blobs && setTransferContext(transferContext => ({ ...transferContext, blobs })));
 
-  const createContainer = () =>
-    AzureStorage.createContainer(azureStorageOptions.current)
+  const createContainer = (containerName: string) =>
+    AzureStorage.createContainer(azureStorageOptions.current, containerName)
       .then(() => AzureStorage.listBlobs(azureStorageOptions.current))
       .then(blobs => blobs && setTransferContext(transferContext => ({ ...transferContext, blobs })));
 
-  const deleteContainer = () =>
-    AzureStorage.deleteContainer(azureStorageOptions.current).then(() =>
+  const deleteContainer = (containerName: string) =>
+    AzureStorage.deleteContainer(azureStorageOptions.current, containerName).then(() =>
       setTransferContext(transferContext => ({ ...transferContext, blobs: [] }))
     );
 
@@ -106,7 +98,7 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
           <Header as='h2' content={`${terms.shared.transfer.header} ${transferContext.transfer.system.name}`} />
           <Fields />
           {authProvider && authProvider.authenticationState === AuthenticationState.Authenticated && (
-            <AdminControls azureStorageOptions={azureStorageOptions.current} />
+            <Debug containerName={containerNameRef.current} />
           )}
         </TransferContext.Provider>
       )}

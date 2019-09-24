@@ -44,7 +44,7 @@ namespace Functions
 
                 if (message.Operation == "unpublish")
                 {
-                    var blobClient = storageService.GetCloudBlobClient(request.Query["accountName"]);
+                    var blobClient = storageService.GetCloudBlobClient(request.Query["region"]);
 
                     await DeleteContainers(data.Items, blobClient);
                 }

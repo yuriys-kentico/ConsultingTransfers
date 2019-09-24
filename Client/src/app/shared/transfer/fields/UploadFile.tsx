@@ -3,13 +3,13 @@ import { useDropzone } from 'react-dropzone';
 import { Container, List } from 'semantic-ui-react';
 
 import { getFieldBlobs, getSafePathSegment } from '../../../../connectors/AzureStorage';
-import { AppContext } from '../../../AppContext';
+import { terms } from '../../../../appSettings.json';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';
 import { TransferContext } from '../TransferContext';
 
 export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldLoading }) => {
-  const { uploadFile } = useContext(AppContext).terms.shared.transfer.fields;
+  const { uploadFile } = terms.shared.transfer.fields;
   const { blobs, uploadFiles } = useContext(TransferContext);
 
   const onDrop = useCallback(

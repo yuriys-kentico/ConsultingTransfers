@@ -11,23 +11,23 @@ namespace AzureStorage
     {
         public string ContainerToken => "ContainerToken";
 
-        public CloudStorageAccount GetStorageAccount(string accountName)
+        public CloudStorageAccount GetStorageAccount(string region)
         {
-            var storageConnectionString = AzureFunctionHelper.GetSetting(accountName);
+            var storageConnectionString = AzureFunctionHelper.GetSetting(region);
 
             return CloudStorageAccount.Parse(storageConnectionString);
         }
 
-        public CloudBlobClient GetCloudBlobClient(string accountName)
+        public CloudBlobClient GetCloudBlobClient(string region)
         {
-            var storageAccount = GetStorageAccount(accountName);
+            var storageAccount = GetStorageAccount(region);
 
             return storageAccount.CreateCloudBlobClient();
         }
 
-        public string GetAccountSasToken(string accountName)
+        public string GetAdminContainerUrl(string region, string containerName)
         {
-            var storageAccount = GetStorageAccount(accountName);
+            var storageAccount = GetStorageAccount(region);
 
             var policy = new SharedAccessAccountPolicy
             {
@@ -44,12 +44,12 @@ namespace AzureStorage
                 Protocols = SharedAccessProtocol.HttpsOnly
             };
 
-            return storageAccount.GetSharedAccessSignature(policy);
+            return GetContainerUrl(region, containerName, storageAccount.GetSharedAccessSignature(policy));
         }
 
-        public string GetContainerSasToken(string accountName, string containerName)
+        public string GetPublicContainerUrl(string region, string containerName)
         {
-            var blobClient = GetCloudBlobClient(accountName);
+            var blobClient = GetCloudBlobClient(region);
 
             var container = blobClient.GetContainerReference(containerName);
 
@@ -63,7 +63,14 @@ namespace AzureStorage
                 SharedAccessExpiryTime = DateTime.UtcNow.AddHours(12)
             };
 
-            return container.GetSharedAccessSignature(policy, null);
+            return GetContainerUrl(region, containerName, container.GetSharedAccessSignature(policy, null));
+        }
+
+        private string GetContainerUrl(string region, string containerName, string sasToken)
+        {
+            var accountName = AzureFunctionHelper.GetSetting(region, "accountName");
+
+            return $"https://{accountName}.blob.core.windows.net/{containerName}{sasToken}";
         }
 
         public string GetSafeStorageName(string itemCodeName)

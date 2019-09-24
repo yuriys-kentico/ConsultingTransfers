@@ -3,25 +3,22 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
 import { AzureFunctions, getTransfersUrl, getTransferUrl, ITransfer } from '../../../connectors/AzureFunctions';
-import { AppContext } from '../../AppContext';
+import { terms } from '../../../appSettings.json';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
 import { AuthenticatedContext } from '../AuthenticatedContext';
 
 export const Transfers: RoutedFC = () => {
-  const { terms, azureStorage } = useContext(AppContext);
   const appHeaderContext = useContext(AppHeaderContext);
   const { authProvider } = useContext(AuthenticatedContext);
 
   const [transfers, setTransfers] = useState<ITransfer[]>([]);
 
   useEffect(() => {
-    const { accountName, listTransfers } = azureStorage;
-
-    AzureFunctions.listTransfers(accountName, listTransfers, authProvider, appHeaderContext).then(
+    AzureFunctions.listTransfers(authProvider, appHeaderContext).then(
       transfers => transfers && setTransfers(transfers)
     );
-  }, [authProvider, azureStorage, appHeaderContext]);
+  }, [authProvider, appHeaderContext]);
 
   const { header, table } = terms.admin.transfers;
 

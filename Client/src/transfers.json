@@ -1,0 +1,11 @@
+{
+  "region": "us",
+  "getTransfer": {
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/api/GetTransfer",
+    "key": "5AkNlfj6MVMWlN1HFBl4VI9RMam9juLXG8WYdXIbsSyeFW3z2IwLuQ=="
+  },
+  "listTransfers": {
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/api/ListTransfers",
+    "key": "GfH7H8ufdtb/dL3htMnX7/oe1YNIt4Dv/NP/uEx6IfCgk8EITUZb5g=="
+  }
+}

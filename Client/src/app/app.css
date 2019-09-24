@@ -46,10 +46,6 @@
   background: none !important;
 }
 
-.ui.sub.header {
-  text-transform: initial !important;
-}
-
 .drop.zone {
   display: flex;
   flex-direction: column;
@@ -72,31 +68,53 @@
   border-color: #cacbcd;
 }
 
-.prose.mirror.view {
+.editor .view {
   font-family: Roboto, sans-serif;
-  outline: none;
-  border-color: #eeeeee;
-  border-width: 2px;
   min-height: 5em;
+  height: initial;
 }
 
-.ProseMirror.prose.mirror.view * {
-  white-space: normal;
+.editor .view:not(.disabled) {
+  border: 2px #eeeeee solid;
 }
 
-.prose.mirror.view:not(.disabled) {
-  border-style: solid;
-}
-
-.prose.mirror.view:focus,
-.prose.mirror.view:hover {
+.editor .view:hover {
   border-color: #cacbcd;
 }
 
-.prose.mirror .placeholder::before {
-  position: absolute;
-  color: #aaa;
-  cursor: text;
+.editor .toolbar {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.editor .toolbar .rdw-option-wrapper {
+  border: none;
+  opacity: 0.7;
+}
+
+.editor .toolbar .rdw-option-active {
+  opacity: 1;
+  box-shadow: none;
+}
+
+.editor .toolbar .rdw-option-wrapper:hover {
+  opacity: 0.9;
+  box-shadow: none;
+}
+
+.editor .toolbar .rdw-link-modal-input {
+  height: initial !important;
+  margin-top: 5px !important;
+  border-radius: 2px;
+  border: 1px solid #f1f1f1;
+  height: 25px !important;
+  margin-bottom: 15px !important;
+  padding: 0 5px !important;
+}
+
+.ui.sub.header {
+  text-transform: initial !important;
 }
 
 .ui.negative.buttons .button:hover,

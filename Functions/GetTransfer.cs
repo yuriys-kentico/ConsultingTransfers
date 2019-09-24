@@ -43,21 +43,21 @@ namespace Functions
         {
             try
             {
-                var (accountName, containerToken) = await AzureFunctionHelper.GetPayloadAsync<RequestsRequest>(request);
+                var (region, containerToken) = await AzureFunctionHelper.GetPayloadAsync<RequestsRequest>(request);
                 var itemName = encryptionService.Decrypt(containerToken);
                 var containerName = storageService.GetSafeStorageName(itemName);
                 var tokenResult = await tokenProvider.ValidateTokenAsync(request);
 
-                string sasToken;
+                string containerUrl;
 
                 switch (tokenResult)
                 {
                     case ValidAccessTokenResult _:
-                        sasToken = storageService.GetAccountSasToken(accountName);
+                        containerUrl = storageService.GetAdminContainerUrl(region, containerName);
                         break;
 
                     case NoAccessTokenResult _:
-                        sasToken = storageService.GetContainerSasToken(accountName, containerName);
+                        containerUrl = storageService.GetPublicContainerUrl(region, containerName);
                         break;
 
                     default:
@@ -65,14 +65,14 @@ namespace Functions
                 }
 
                 var response = await KenticoKontentHelper
-                    .GetDeliveryClient(accountName)
+                    .GetDeliveryClient(region)
                     .GetItemAsync<TransferItem>(itemName);
 
                 var transfer = new Transfer(response.Item, containerToken);
 
                 return new OkObjectResult(new
                 {
-                    sasToken,
+                    containerUrl,
                     containerName,
                     transfer
                 });

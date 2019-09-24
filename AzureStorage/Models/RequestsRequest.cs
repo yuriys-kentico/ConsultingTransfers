@@ -2,13 +2,13 @@
 {
     public class RequestsRequest
     {
-        public string AccountName { get; set; }
+        public string Region { get; set; }
 
         public string ContainerToken { get; set; }
 
-        public void Deconstruct(out string accountName, out string containerToken)
+        public void Deconstruct(out string region, out string containerToken)
         {
-            accountName = AccountName;
+            region = Region;
             containerToken = ContainerToken;
         }
     }

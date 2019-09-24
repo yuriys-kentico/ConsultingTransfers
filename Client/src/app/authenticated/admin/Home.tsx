@@ -1,11 +1,11 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Header, Segment } from 'semantic-ui-react';
 
-import { AppContext } from '../../AppContext';
+import { terms } from '../../../appSettings.json';
 import { RoutedFC } from '../../RoutedFC';
 
 export const Home: RoutedFC = () => {
-  const { home } = useContext(AppContext).terms.admin;
+  const { home } = terms.admin;
 
   return (
     <Segment basic>

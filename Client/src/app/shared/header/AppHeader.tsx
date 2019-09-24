@@ -1,8 +1,8 @@
-import React, { FC, ReactNode, useContext, useState } from 'react';
+import React, { FC, ReactNode, useState } from 'react';
 import { Menu, Sidebar } from 'semantic-ui-react';
 
+import { experience } from '../../../appSettings.json';
 import { promiseAfter } from '../../../utilities/promises';
-import { AppContext } from '../../AppContext';
 import { AppHeaderContext, IAppHeaderContext, ShowInfoHandler, ShowInfoUntilHandler } from './AppHeaderContext';
 import { hideSnackAfter, hideSnackWhen, showSnack, SnackBar } from './SnackBar';
 
@@ -12,7 +12,7 @@ export interface IAppHeaderProps {
 }
 
 export const AppHeader: FC<IAppHeaderProps> = props => {
-  const { snackTimeout } = useContext(AppContext).experience;
+  const { snackTimeout } = experience;
 
   const showInfo: ShowInfoHandler = (text, timeout, type = 'info') => {
     timeout = timeout ? timeout : snackTimeout;

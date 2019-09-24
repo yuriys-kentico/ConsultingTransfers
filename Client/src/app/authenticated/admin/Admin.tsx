@@ -1,8 +1,8 @@
 import { Link, LinkGetProps, Router } from '@reach/router';
-import React, { lazy, Suspense, useContext } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
-import { AppContext } from '../../AppContext';
+import { terms } from '../../../appSettings.json';
 import { RoutedFC } from '../../RoutedFC';
 import { AppHeader } from '../../shared/header/AppHeader';
 
@@ -12,9 +12,9 @@ const Transfer = lazy(() => import('../../shared/transfer/Transfer').then(module
 
 export const Admin: RoutedFC = () => {
   const {
-    admin: { sideBar },
+    admin,
     shared: { header }
-  } = useContext(AppContext).terms;
+  } = terms;
 
   const setActiveWhenCurrent = (linkIsCurrent: (link: LinkGetProps) => boolean) => (link: LinkGetProps) => ({
     className: linkIsCurrent(link) ? 'active item' : 'item'
@@ -24,7 +24,7 @@ export const Admin: RoutedFC = () => {
     <Sidebar as={Menu} animation='push' icon='labeled' onHide={onHide} vertical visible={visible} width='very thin'>
       <Menu.Item onClick={onHide} as={Link} to='/' getProps={setActiveWhenCurrent(link => link.isCurrent)}>
         <Icon name='home' />
-        {sideBar.home}
+        {admin.home.header}
       </Menu.Item>
       <Menu.Item
         onClick={onHide}
@@ -33,7 +33,7 @@ export const Admin: RoutedFC = () => {
         getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
       >
         <Icon name='sync' />
-        {sideBar.transfers}
+        {admin.transfers.header}
       </Menu.Item>
     </Sidebar>
   );

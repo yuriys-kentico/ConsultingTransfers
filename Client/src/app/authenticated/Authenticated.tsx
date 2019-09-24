@@ -1,16 +1,16 @@
 import { Router } from '@reach/router';
 import { Configuration } from 'msal';
-import React, { lazy, useContext } from 'react';
+import React, { lazy } from 'react';
 import AzureAD, { LoginType, MsalAuthProvider } from 'react-aad-msal';
 
-import { AppContext } from '../AppContext';
+import { authentication } from '../../appSettings.json';
 import { RoutedFC } from '../RoutedFC';
 import { AuthenticatedContext } from './AuthenticatedContext';
 
 const Admin = lazy(() => import('./admin/Admin').then(module => ({ default: module.Admin })));
 
 export const Authenticated: RoutedFC = () => {
-  const { config, accessTokenRequest } = useContext(AppContext).authentication;
+  const { config, accessTokenRequest } = authentication;
 
   config.auth.redirectUri = window.location.origin;
 

@@ -15,7 +15,7 @@ export const Fields: FC = () => {
   try {
     fields = JSON.parse(maybeJson);
   } catch (error) {
-    console.log(maybeJson, error);
+    console.error(maybeJson, error);
   }
 
   return (

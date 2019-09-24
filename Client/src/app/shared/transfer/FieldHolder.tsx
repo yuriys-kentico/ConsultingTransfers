@@ -3,7 +3,7 @@ import React from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
 import { AzureStorage, getSafePathSegment } from '../../../connectors/AzureStorage';
-import { AppContext } from '../../AppContext';
+import { terms } from '../../../appSettings.json';
 import { AppHeaderContext } from '../header/AppHeaderContext';
 import { TransferContext } from './TransferContext';
 
@@ -34,7 +34,6 @@ interface Asset {
 export const FieldHolder: FC<IFieldHolderProps> = props => {
   const { name, comment, type } = props;
 
-  const { terms } = useContext(AppContext);
   const { showInfo } = useContext(AppHeaderContext);
   const { uploadFiles, blobs } = useContext(TransferContext);
   const [loading, setLoading] = useState(false);

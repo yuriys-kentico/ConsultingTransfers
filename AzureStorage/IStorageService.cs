@@ -7,14 +7,14 @@ namespace AzureStorage
     {
         string ContainerToken { get; }
 
-        string GetAccountSasToken(string accountName);
+        CloudStorageAccount GetStorageAccount(string region);
 
-        CloudBlobClient GetCloudBlobClient(string accountName);
+        CloudBlobClient GetCloudBlobClient(string region);
 
-        string GetContainerSasToken(string accountName, string containerName);
+        string GetAdminContainerUrl(string region, string containerName);
+
+        string GetPublicContainerUrl(string region, string containerName);
 
         string GetSafeStorageName(string itemCodeName);
-
-        CloudStorageAccount GetStorageAccount(string accountName);
     }
 }

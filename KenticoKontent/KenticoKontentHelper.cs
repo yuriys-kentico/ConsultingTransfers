@@ -8,11 +8,11 @@ namespace KenticoKontent
 {
     public static class KenticoKontentHelper
     {
-        public static IDeliveryClient GetDeliveryClient(string accountName)
+        public static IDeliveryClient GetDeliveryClient(string region)
             => DeliveryClientBuilder
                 .WithOptions(builder => builder
-                    .WithProjectId(AzureFunctionHelper.GetSetting(accountName, "projectId"))
-                    .UseSecuredProductionApi(AzureFunctionHelper.GetSetting(accountName, "deliveryApiSecureAccessKey"))
+                    .WithProjectId(AzureFunctionHelper.GetSetting(region, "projectId"))
+                    .UseSecuredProductionApi(AzureFunctionHelper.GetSetting(region, "deliveryApiSecureAccessKey"))
                     .Build())
                 .WithInlineContentItemsResolver(new Field())
                 .WithTypeProvider(new KenticoKontentTypeProvider())
