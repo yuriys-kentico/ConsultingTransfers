@@ -1,5 +1,4 @@
 import 'draft-js/dist/Draft.css';
-import 'draftail/dist/draftail.css';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 
 import { ContentState, convertFromRaw, convertToRaw, EditorState } from 'draft-js';
