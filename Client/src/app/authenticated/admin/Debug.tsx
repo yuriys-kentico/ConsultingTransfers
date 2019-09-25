@@ -1,8 +1,10 @@
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
-import React, { FC, useContext, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-ui-react';
 
-import { AzureStorage } from '../../../connectors/AzureStorage';
+import { AzureStorageHelper } from '../../../services/azureStorage/AzureStorageHelper';
+import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
+import { useDependency } from '../../../services/dependencyContainer';
 import { deleteFrom } from '../../../utilities/arrays';
 import { BlobDetails } from '../../shared/transfer/BlobDetails';
 import { TransferContext } from '../../shared/transfer/TransferContext';
@@ -12,8 +14,9 @@ interface IAdminControlsProps {
 }
 
 export const Debug: FC<IAdminControlsProps> = ({ containerName }) => {
-  const { transfer, blobs, downloadBlob, deleteBlobs, createContainer, deleteContainer } = useContext(TransferContext);
+  const { transfer, downloadBlob, deleteBlobs, createContainer, deleteContainer } = useContext(TransferContext);
   const [selectedBlobs, setSelectedBlobs] = useState<BlobItem[]>([]);
+  const [blobsStream, setBlobsStream] = useState<BlobItem[]>([]);
 
   const toggleSelectedBlob = (blob: BlobItem) => {
     selectedBlobs.indexOf(blob) > -1
@@ -22,11 +25,25 @@ export const Debug: FC<IAdminControlsProps> = ({ containerName }) => {
   };
 
   for (const blob of selectedBlobs) {
-    const blobIndex = blobs.indexOf(blob);
+    const blobIndex = blobsStream.indexOf(blob);
     if (blobIndex === -1) {
       toggleSelectedBlob(blob);
     }
   }
+
+  const azureStorageService = useDependency(IAzureStorageService);
+
+  useEffect(() => {
+    const sub = azureStorageService.blobs.subscribe({
+      next: blobs => {
+        console.log(blobs);
+
+        setBlobsStream(blobs);
+      }
+    });
+
+    return () => sub.unsubscribe();
+  }, [azureStorageService.blobs]);
 
   // const { showInfoUntil } = useContext(AppHeaderContext);
 
@@ -80,7 +97,7 @@ export const Debug: FC<IAdminControlsProps> = ({ containerName }) => {
         <Header as='h2' content='Files:' />
         <Table stackable singleLine basic='very' compact>
           <Table.Body>
-            {blobs.map((file, index) => (
+            {blobsStream.map((file, index) => (
               <Table.Row key={index}>
                 <Table.Cell collapsing>
                   <Button
@@ -94,7 +111,7 @@ export const Debug: FC<IAdminControlsProps> = ({ containerName }) => {
                   <BlobDetails
                     file={file}
                     fileName={file.name}
-                    color={file.name.endsWith(AzureStorage.completed) ? 'green' : 'black'}
+                    color={file.name.endsWith(AzureStorageHelper.completed) ? 'green' : 'black'}
                   />
                 </Table.Cell>
                 <Table.Cell textAlign='right'>

@@ -23,6 +23,7 @@
     "rxjs": "^6.5.2",
     "semantic-ui-react": "^0.88.1",
     "streamsaver": "^2.0.3",
+    "typed-inject": "^2.1.1",
     "typeface-source-sans-pro": "^0.0.75",
     "web-streams-polyfill": "^2.0.4"
   },
@@ -50,7 +51,6 @@
   "devDependencies": {
     "@craco/craco": "^5.4.0",
     "@semantic-ui-react/craco-less": "^1.1.0",
-    "babel-eslint": "^10.0.2",
     "eslint": "^6.2.2",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-plugin-import": "^2.18.2",

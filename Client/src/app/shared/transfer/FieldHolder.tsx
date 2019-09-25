@@ -2,8 +2,8 @@ import { FC, lazy, Suspense, useContext, useState } from 'react';
 import React from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
-import { AzureStorage, getSafePathSegment } from '../../../connectors/AzureStorage';
 import { terms } from '../../../appSettings.json';
+import { AzureStorageHelper } from '../../../services/azureStorage/AzureStorageHelper';
 import { AppHeaderContext } from '../header/AppHeaderContext';
 import { TransferContext } from './TransferContext';
 
@@ -40,7 +40,8 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   const [fieldLoading, setFieldLoading] = useState(false);
 
   const completed =
-    blobs.filter(blob => blob.name === `${getSafePathSegment(name)}/${AzureStorage.completed}`).length > 0;
+    blobs.filter(blob => blob.name === `${AzureStorageHelper.getSafePathSegment(name)}/${AzureStorageHelper.completed}`)
+      .length > 0;
 
   const getFieldType = (fieldType: FieldType) => {
     switch (fieldType) {
@@ -54,7 +55,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   };
 
   const updateCompleted = async () => {
-    const file = new File([], AzureStorage.completed);
+    const file = new File([], AzureStorageHelper.completed);
 
     setLoading(true);
 
