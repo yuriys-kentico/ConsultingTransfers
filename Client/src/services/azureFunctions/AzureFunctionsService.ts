@@ -3,7 +3,10 @@ import { AuthenticationState, MsalAuthProvider } from 'react-aad-msal';
 import { BehaviorSubject } from 'rxjs';
 
 import { IMessageHandlers } from '../../app/shared/header/MessageContext';
+import { terms } from '../../appSettings.json';
 import { getTransfer, listTransfers, region } from '../../transfers.json';
+import { navigateToError } from '../../utilities/routing';
+import { format } from '../../utilities/strings';
 import { IGetTransferDetails, IListTransfers, ITransfer } from './azureFunctions';
 
 export const IAzureFunctionsService = 'IAzureFunctionsService';
