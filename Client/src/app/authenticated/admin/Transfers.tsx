@@ -1,24 +1,27 @@
 import { Link } from '@reach/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
-import { AzureFunctions, getTransfersUrl, getTransferUrl, ITransfer } from '../../../connectors/AzureFunctions';
 import { terms } from '../../../appSettings.json';
-import { RoutedFC } from '../../RoutedFC';
-import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
-import { AuthenticatedContext } from '../AuthenticatedContext';
+import { getTransfersUrl, getTransferUrl } from '../../../services/azureFunctions/azureFunctions';
+import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
+import { useDependency } from '../../../services/dependencyContainer';
+import { useSubscription } from '../../../utilities/observables';
+import { RoutedFC } from '../../../utilities/routing';
+import { AuthenticatedContext } from '../../AuthenticatedContext';
+import { MessageContext } from '../../shared/header/MessageContext';
 
 export const Transfers: RoutedFC = () => {
-  const appHeaderContext = useContext(AppHeaderContext);
+  const messageContext = useContext(MessageContext);
   const { authProvider } = useContext(AuthenticatedContext);
 
-  const [transfers, setTransfers] = useState<ITransfer[]>([]);
+  const azureFunctionsService = useDependency(IAzureFunctionsService);
 
   useEffect(() => {
-    AzureFunctions.listTransfers(authProvider, appHeaderContext).then(
-      transfers => transfers && setTransfers(transfers)
-    );
-  }, [authProvider, appHeaderContext]);
+    azureFunctionsService.listTransfers(authProvider, messageContext);
+  }, [azureFunctionsService, authProvider, messageContext]);
+
+  const transfers = useSubscription(azureFunctionsService.transfers);
 
   const { header, table } = terms.admin.transfers;
 
@@ -29,13 +32,13 @@ export const Transfers: RoutedFC = () => {
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>{table.transfer}</Table.HeaderCell>
-            <Table.HeaderCell>{table.account}</Table.HeaderCell>
+            <Table.HeaderCell>{table.customer}</Table.HeaderCell>
             <Table.HeaderCell>{table.requester}</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {transfers.length === 0 ? (
+          {!transfers ? (
             <Table.Row>
               <Table.Cell>
                 <Loader active size='massive' />

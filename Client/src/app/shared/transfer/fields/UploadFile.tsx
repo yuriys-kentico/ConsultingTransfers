@@ -1,31 +1,43 @@
+import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useCallback, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Container, List } from 'semantic-ui-react';
 
-import { getFieldBlobs, getSafePathSegment } from '../../../../connectors/AzureStorage';
 import { terms } from '../../../../appSettings.json';
+import { getFieldBlobs, getSafePathSegment } from '../../../../services/azureStorage/azureStorage';
+import { IAzureStorageService } from '../../../../services/azureStorage/AzureStorageService';
+import { useDependency } from '../../../../services/dependencyContainer';
+import { useSubscription } from '../../../../utilities/observables';
+import { MessageContext } from '../../header/MessageContext';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';
-import { TransferContext } from '../TransferContext';
 
 export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldLoading }) => {
   const { uploadFile } = terms.shared.transfer.fields;
-  const { blobs, uploadFiles } = useContext(TransferContext);
+
+  const azureStorageService = useDependency(IAzureStorageService);
+  azureStorageService.messageHandlers = useContext(MessageContext);
 
   const onDrop = useCallback(
     async files => {
       setFieldLoading(true);
 
-      await uploadFiles(files, name);
+      await azureStorageService.uploadFiles(files, name);
 
       setFieldLoading(false);
     },
-    [name, setFieldLoading, uploadFiles]
+    [name, setFieldLoading, azureStorageService]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, disabled: completed });
 
-  const fieldBlobs = getFieldBlobs(blobs, name);
+  let fieldBlobs: BlobItem[] = [];
+
+  const blobs = useSubscription(azureStorageService.blobs);
+
+  if (blobs) {
+    fieldBlobs = getFieldBlobs(blobs, name);
+  }
 
   const getClassName = ['drop zone', isDragActive ? 'active' : '', completed ? 'disabled' : ''].join(' ');
 

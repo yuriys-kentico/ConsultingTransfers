@@ -1,21 +1,20 @@
-import { FC, useContext } from 'react';
+import { FC } from 'react';
 import React from 'react';
 import { List } from 'semantic-ui-react';
 
+import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
+import { useDependency } from '../../../services/dependencyContainer';
+import { useSubscription } from '../../../utilities/observables';
 import { FieldHolder, IFieldHolderProps } from './FieldHolder';
-import { TransferContext } from './TransferContext';
 
 export const Fields: FC = () => {
-  const transferContext = useContext(TransferContext);
+  const azureFunctionService = useDependency(IAzureFunctionsService);
+  const transferDetails = useSubscription(azureFunctionService.transferDetails);
 
   let fields: IFieldHolderProps[] = [];
 
-  const maybeJson = `[${transferContext.transfer.fields}]`;
-
-  try {
-    fields = JSON.parse(maybeJson);
-  } catch (error) {
-    console.error(maybeJson, error);
+  if (transferDetails) {
+    fields = JSON.parse(`[${transferDetails.transfer.fields}]`);
   }
 
   return (

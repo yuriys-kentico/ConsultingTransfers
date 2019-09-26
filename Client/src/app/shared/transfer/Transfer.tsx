@@ -1,17 +1,16 @@
-import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
-import React, { lazy, useContext, useEffect, useRef, useState } from 'react';
-import { AuthenticationState } from 'react-aad-msal';
+import React, { lazy, useContext, useEffect } from 'react';
+import AzureAD from 'react-aad-msal';
 import { Header, Loader, Segment } from 'semantic-ui-react';
 
-import { azureStorage, terms } from '../../../appSettings.json';
-import { AzureFunctions } from '../../../connectors/AzureFunctions';
-import { AzureStorage, getContainerURL, IAzureStorageOptions } from '../../../connectors/AzureStorage';
-import { deleteFrom } from '../../../utilities/arrays';
-import { AuthenticatedContext } from '../../authenticated/AuthenticatedContext';
-import { RoutedFC } from '../../RoutedFC';
-import { AppHeaderContext } from '../header/AppHeaderContext';
+import { terms } from '../../../appSettings.json';
+import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
+import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
+import { useDependency } from '../../../services/dependencyContainer';
+import { useSubscription } from '../../../utilities/observables';
+import { RoutedFC } from '../../../utilities/routing';
+import { AuthenticatedContext } from '../../AuthenticatedContext';
+import { MessageContext } from '../header/MessageContext';
 import { Fields } from './Fields';
-import { ITransferContext, TransferContext } from './TransferContext';
 
 const Debug = lazy(() => import('../../authenticated/admin/Debug').then(module => ({ default: module.Debug })));
 
@@ -20,87 +19,41 @@ export interface ITransferProps {
 }
 
 export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) => {
-  const appHeaderContext = useContext(AppHeaderContext);
   const { authProvider } = useContext(AuthenticatedContext);
+  const messageContext = useContext(MessageContext);
 
-  const azureStorageOptions = useRef<IAzureStorageOptions>({
-    appOptions: azureStorage,
-    messageHandlers: appHeaderContext,
-    containerUrl: null as any
-  });
+  const azureStorageService = useDependency(IAzureStorageService);
+  azureStorageService.messageHandlers = messageContext;
 
-  const containerNameRef = useRef('');
+  const azureFunctionsService = useDependency(IAzureFunctionsService);
+  const transferDetails = useSubscription(azureFunctionsService.transferDetails);
+
+  const containerToken = decodeURIComponent(encodedContainerToken || '');
 
   useEffect(() => {
-    const containerToken = decodeURIComponent(encodedContainerToken || '');
+    azureFunctionsService.getTransferDetails(authProvider, containerToken, messageContext);
+  }, [azureFunctionsService, authProvider, containerToken, messageContext]);
 
-    AzureFunctions.getTransfer(authProvider, containerToken, azureStorageOptions.current.messageHandlers).then(
-      response => {
-        if (response) {
-          const { containerUrl, containerName, transfer } = response;
+  useEffect(() => {
+    if (transferDetails) {
+      const { containerUrl, containerName } = transferDetails;
 
-          containerNameRef.current = containerName;
-          azureStorageOptions.current.containerUrl = getContainerURL(containerUrl);
-
-          AzureStorage.listBlobs(azureStorageOptions.current).then(blobs =>
-            setTransferContext(transferContext => ({
-              ...transferContext,
-              transfer,
-              blobs: blobs || []
-            }))
-          );
-        }
-      }
-    );
-  }, [authProvider, encodedContainerToken, appHeaderContext]);
-
-  const deleteBlobs = (blobs: BlobItem[] | BlobItem) =>
-    AzureStorage.deleteBlobs(blobs, azureStorageOptions.current).then(() =>
-      setTransferContext(transferContext => ({ ...transferContext, blobs: deleteFrom(blobs, transferContext.blobs) }))
-    );
-
-  const downloadBlob = (blob: BlobItem) => AzureStorage.downloadBlob(blob, azureStorageOptions.current);
-
-  const readBlobString = (blob: BlobItem) => AzureStorage.readBlobString(blob, azureStorageOptions.current);
-
-  const uploadFiles = (files: File[] | File, directory: string, silent?: boolean) =>
-    AzureStorage.uploadFiles(files, directory, azureStorageOptions.current, silent)
-      .then(() => AzureStorage.listBlobs(azureStorageOptions.current))
-      .then(blobs => blobs && setTransferContext(transferContext => ({ ...transferContext, blobs })));
-
-  const createContainer = (containerName: string) =>
-    AzureStorage.createContainer(azureStorageOptions.current, containerName)
-      .then(() => AzureStorage.listBlobs(azureStorageOptions.current))
-      .then(blobs => blobs && setTransferContext(transferContext => ({ ...transferContext, blobs })));
-
-  const deleteContainer = (containerName: string) =>
-    AzureStorage.deleteContainer(azureStorageOptions.current, containerName).then(() =>
-      setTransferContext(transferContext => ({ ...transferContext, blobs: [] }))
-    );
-
-  const [transferContext, setTransferContext] = useState<ITransferContext>({
-    transfer: null as any,
-    blobs: [],
-    deleteBlobs,
-    downloadBlob,
-    readBlobString,
-    uploadFiles,
-    createContainer,
-    deleteContainer
-  });
+      azureStorageService.initialize(containerName, containerUrl);
+    }
+  }, [transferDetails, azureStorageService]);
 
   return (
     <Segment basic>
-      {!transferContext.transfer ? (
+      {!transferDetails ? (
         <Loader active size='massive' />
       ) : (
-        <TransferContext.Provider value={transferContext}>
-          <Header as='h2' content={`${terms.shared.transfer.header} ${transferContext.transfer.system.name}`} />
+        <>
+          <Header as='h2' content={`${terms.shared.transfer.header} ${transferDetails.transfer.system.name}`} />
           <Fields />
-          {authProvider && authProvider.authenticationState === AuthenticationState.Authenticated && (
-            <Debug containerName={containerNameRef.current} />
-          )}
-        </TransferContext.Provider>
+          <AzureAD provider={authProvider}>
+            <Debug />
+          </AzureAD>
+        </>
       )}
     </Segment>
   );

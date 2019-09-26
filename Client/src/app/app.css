@@ -6,8 +6,7 @@
   white-space: pre;
 }
 
-#root,
-#root div[role='group'] {
+#root {
   height: 100%;
 }
 
@@ -111,6 +110,10 @@
   height: 25px !important;
   margin-bottom: 15px !important;
   padding: 0 5px !important;
+}
+
+.ui.menu .header.item:only-child {
+  padding-left: 1.14285714em !important;
 }
 
 .ui.sub.header {

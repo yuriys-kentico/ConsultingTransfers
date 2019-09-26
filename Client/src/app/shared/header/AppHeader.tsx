@@ -1,18 +1,25 @@
-import React, { FC, ReactNode, useState } from 'react';
-import { Menu, Sidebar } from 'semantic-ui-react';
+import { Link, LinkGetProps } from '@reach/router';
+import React, { FC, useContext, useState } from 'react';
+import AzureAD from 'react-aad-msal';
+import { Icon, Menu, Sidebar } from 'semantic-ui-react';
 
-import { experience } from '../../../appSettings.json';
+import { experience, terms } from '../../../appSettings.json';
 import { promiseAfter } from '../../../utilities/promises';
-import { AppHeaderContext, IAppHeaderContext, ShowInfoHandler, ShowInfoUntilHandler } from './AppHeaderContext';
-import { hideSnackAfter, hideSnackWhen, showSnack, SnackBar } from './SnackBar';
+import { AuthenticatedContext } from '../../AuthenticatedContext';
+import { IMessageContext, MessageContext, ShowErrorHandler, ShowInfoHandler, ShowInfoUntilHandler } from './MessageContext';
+import { SnackBar } from './SnackBar';
+import { hideSnackAfter, hideSnackWhen, showSnack } from './snacks';
 
 export interface IAppHeaderProps {
   title: string;
-  sidebar?: (visible: boolean, onHide: () => void) => ReactNode;
 }
 
-export const AppHeader: FC<IAppHeaderProps> = props => {
+export const AppHeader: FC<IAppHeaderProps> = ({ title, children }) => {
   const { snackTimeout } = experience;
+  const { admin } = terms;
+  const { authProvider } = useContext(AuthenticatedContext);
+
+  const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');
 
   const showInfo: ShowInfoHandler = (text, timeout, type = 'info') => {
     timeout = timeout ? timeout : snackTimeout;
@@ -24,40 +31,83 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
     showSnack(setHeaderContext, text, 'update', hideSnackWhen(executor.then(promiseAfter(snackTimeout))), update);
   };
 
-  const showError: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'error');
-  const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');
-  const showWarning: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'warning');
+  const showWarning: ShowErrorHandler = (error, timeout) => {
+    console.warn(error);
 
-  const [headerContext, setHeaderContext] = useState<IAppHeaderContext>({
+    const text = (error.body && error.body.message) || error.message;
+
+    showInfo(text, timeout, 'warning');
+  };
+
+  const showError: ShowErrorHandler = (error, timeout) => {
+    console.error(error);
+
+    const text = (error.body && error.body.message) || error.message;
+
+    showInfo(text, timeout, 'error');
+  };
+
+  const [headerContext, setHeaderContext] = useState<IMessageContext>({
     snacks: [],
+    showSuccess,
     showInfo,
     showInfoUntil,
-    showError,
-    showSuccess,
-    showWarning
+    showWarning,
+    showError
   });
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleSidebar = (open: boolean) => {
-    setSidebarOpen(open);
-  };
+  const setActiveWhenCurrent = (linkIsCurrent: (link: LinkGetProps) => boolean) => (link: LinkGetProps) => ({
+    className: linkIsCurrent(link) ? 'active item' : 'item'
+  });
 
   return (
-    <AppHeaderContext.Provider value={headerContext}>
+    <MessageContext.Provider value={headerContext}>
       <SnackBar />
       <Sidebar.Pushable>
-        {props.sidebar && props.sidebar(sidebarOpen, () => toggleSidebar(false))}
+        <AzureAD provider={authProvider}>
+          <Sidebar
+            as={Menu}
+            animation='push'
+            icon='labeled'
+            onHide={() => setSidebarOpen(false)}
+            vertical
+            visible={sidebarOpen}
+            width='very thin'
+          >
+            <Menu.Item
+              onClick={() => setSidebarOpen(false)}
+              as={Link}
+              to='/'
+              getProps={setActiveWhenCurrent(link => link.isCurrent)}
+            >
+              <Icon name='home' />
+              {admin.home.header}
+            </Menu.Item>
+            <Menu.Item
+              onClick={() => setSidebarOpen(false)}
+              as={Link}
+              to='transfers'
+              getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
+            >
+              <Icon name='sync' />
+              {admin.transfers.header}
+            </Menu.Item>
+          </Sidebar>
+        </AzureAD>
         <Sidebar.Pusher className='full height app' dimmed={sidebarOpen}>
           <Sidebar.Pushable>
             <Menu borderless size='massive' inverted>
-              {props.sidebar && <Menu.Item icon='bars' onClick={() => toggleSidebar(true)} />}
-              <Menu.Item header fitted={props.sidebar && 'horizontally'} content={props.title} />
+              <AzureAD provider={authProvider}>
+                <Menu.Item icon='bars' onClick={() => setSidebarOpen(true)} />
+              </AzureAD>
+              <Menu.Item header fitted='horizontally' content={title} />
             </Menu>
-            {props.children}
+            {children}
           </Sidebar.Pushable>
         </Sidebar.Pusher>
       </Sidebar.Pushable>
-    </AppHeaderContext.Provider>
+    </MessageContext.Provider>
   );
 };
