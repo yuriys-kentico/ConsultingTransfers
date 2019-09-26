@@ -7,9 +7,9 @@ import { getTransfersUrl, getTransferUrl } from '../../../services/azureFunction
 import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
 import { useDependency } from '../../../services/dependencyContainer';
 import { useSubscription } from '../../../utilities/observables';
-import { RoutedFC } from '../../RoutedFC';
+import { RoutedFC } from '../../../utilities/routing';
+import { AuthenticatedContext } from '../../AuthenticatedContext';
 import { MessageContext } from '../../shared/header/MessageContext';
-import { AuthenticatedContext } from '../AuthenticatedContext';
 
 export const Transfers: RoutedFC = () => {
   const messageContext = useContext(MessageContext);
@@ -32,20 +32,19 @@ export const Transfers: RoutedFC = () => {
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>{table.transfer}</Table.HeaderCell>
-            <Table.HeaderCell>{table.account}</Table.HeaderCell>
+            <Table.HeaderCell>{table.customer}</Table.HeaderCell>
             <Table.HeaderCell>{table.requester}</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {transfers && transfers.length === 0 ? (
+          {!transfers ? (
             <Table.Row>
               <Table.Cell>
                 <Loader active size='massive' />
               </Table.Cell>
             </Table.Row>
           ) : (
-            transfers &&
             transfers.map((item, index) => (
               <Table.Row key={index}>
                 <Table.Cell>{item.system.name}</Table.Cell>

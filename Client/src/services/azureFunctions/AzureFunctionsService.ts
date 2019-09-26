@@ -1,5 +1,5 @@
 import Axios from 'axios';
-import { MsalAuthProvider } from 'react-aad-msal';
+import { AuthenticationState, MsalAuthProvider } from 'react-aad-msal';
 import { BehaviorSubject } from 'rxjs';
 
 import { IMessageHandlers } from '../../app/shared/header/MessageContext';
@@ -39,7 +39,7 @@ export class AzureFunctionsService implements IAzureFunctionsService {
 
       transfers = response.data.transfers;
     } catch (error) {
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
 
     this.transfers.next(transfers);
@@ -47,7 +47,10 @@ export class AzureFunctionsService implements IAzureFunctionsService {
 
   async getTransferDetails(authProvider: MsalAuthProvider, containerToken: string, messageHandlers: IMessageHandlers) {
     const { showError } = messageHandlers;
-    const bearerToken = !authProvider ? undefined : (await authProvider.getAccessToken()).accessToken;
+    const bearerToken =
+      authProvider.authenticationState === AuthenticationState.Authenticated
+        ? (await authProvider.getAccessToken()).accessToken
+        : undefined;
 
     let getTransferResponse!: IGetTransferDetails;
 
@@ -58,9 +61,9 @@ export class AzureFunctionsService implements IAzureFunctionsService {
         this.getAuthorizationHeaders(getTransfer.key, bearerToken)
       );
 
-      getTransferResponse = response.data;
+      getTransferResponse = response && response.data;
     } catch (error) {
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
 
     this.transferDetails.next(getTransferResponse);

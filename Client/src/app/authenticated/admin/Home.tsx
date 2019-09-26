@@ -2,7 +2,7 @@ import React from 'react';
 import { Header, Segment } from 'semantic-ui-react';
 
 import { terms } from '../../../appSettings.json';
-import { RoutedFC } from '../../RoutedFC';
+import { RoutedFC } from '../../../utilities/routing';
 
 export const Home: RoutedFC = () => {
   const { home } = terms.admin;
