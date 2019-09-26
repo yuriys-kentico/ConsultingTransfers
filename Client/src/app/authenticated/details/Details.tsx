@@ -10,9 +10,9 @@ import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFu
 import { useDependency } from '../../../services/dependencyContainer';
 import { useSubscription } from '../../../utilities/observables';
 import { promiseAfter } from '../../../utilities/promises';
+import { AuthenticatedContext } from '../../AuthenticatedContext';
 import { RoutedFC } from '../../RoutedFC';
 import { MessageContext } from '../../shared/header/MessageContext';
-import { AuthenticatedContext } from '../AuthenticatedContext';
 import { Element, ICustomElement } from './customElement';
 
 // Expose access to Kentico custom element API
@@ -30,15 +30,15 @@ export const Details: RoutedFC = () => {
     navigate('/');
   }
 
-  const messageContext = useContext(MessageContext);
   const { authProvider } = useContext(AuthenticatedContext);
+  const messageContext = useContext(MessageContext);
 
   const [available, setAvailable] = useState(false);
-  const [codename, setCodename] = useState('');
-  const [enabled, setEnabled] = useState(true);
   const [customer, setCustomer] = useState('');
   const [requester, setRequester] = useState('');
+  const [enabled, setEnabled] = useState(true);
   const [containerToken, setContainerToken] = useState<string>();
+  const [codename, setCodename] = useState('');
 
   const customElementRef = useRef<HTMLDivElement>(null);
   const customElementKey = useRef<string>();
@@ -84,14 +84,16 @@ export const Details: RoutedFC = () => {
 
   const transfers = useSubscription(azureFunctionsService.transfers);
 
-  const transfer = transfers && transfers.filter(transfer => transfer.system.codename === codename)[0];
+  if (transfers) {
+    const transfer = transfers.filter(transfer => transfer.system.codename === codename)[0];
 
-  if (transfer && transfer.containerToken && !containerToken) {
-    setContainerToken(transfer.containerToken);
-  } else if (customElementKey.current) {
-    promiseAfter(experience.detailsContainerCheckTimeout)(() =>
-      azureFunctionsService.listTransfers(authProvider, messageContext, customElementKey.current)
-    );
+    if (transfer.containerToken && !containerToken) {
+      setContainerToken(transfer.containerToken);
+    } else if (customElementKey.current) {
+      promiseAfter(experience.detailsContainerCheckTimeout)(() =>
+        azureFunctionsService.listTransfers(authProvider, messageContext, customElementKey.current)
+      );
+    }
   }
 
   useEffect(() => {

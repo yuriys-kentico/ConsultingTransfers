@@ -6,9 +6,10 @@ import { createWriteStream } from 'streamsaver';
 
 import { IMessageContext, IMessageHandlers } from '../../app/shared/header/MessageContext';
 import { IUpdateMessage } from '../../app/shared/header/Snack';
-import { azureStorage } from '../../appSettings.json';
+import { azureStorage, terms } from '../../appSettings.json';
 import { ensureArray } from '../../utilities/arrays';
 import { promiseAfter } from '../../utilities/promises';
+import { format } from '../../utilities/strings';
 import { getContainerURL, getSafePathSegment } from './azureStorage';
 
 export const IAzureStorageService = 'IAzureStorageService';
@@ -47,14 +48,13 @@ export class AzureStorageService implements IAzureStorageService {
     try {
       var createPromise = this.containerUrl.create(Aborter.none);
 
-      showInfoUntil(`Creating container "${containerName}"...`, createPromise);
+      showInfoUntil(format(terms.azureStorage.creatingContainer, containerName), createPromise);
 
       await createPromise;
 
-      showSuccess(`Done.`);
+      showSuccess(terms.azureStorage.done);
     } catch (error) {
-      console.error(error);
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
   }
 
@@ -64,14 +64,13 @@ export class AzureStorageService implements IAzureStorageService {
     try {
       var deletePromise = this.containerUrl.delete(Aborter.none);
 
-      showInfoUntil(`Deleting container "${containerName}"...`, deletePromise);
+      showInfoUntil(format(terms.azureStorage.deletingContainer, containerName), deletePromise);
 
       await deletePromise;
 
-      showSuccess(`Done.`);
+      showSuccess(terms.azureStorage.done);
     } catch (error) {
-      console.error(error);
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
   }
 
@@ -91,8 +90,7 @@ export class AzureStorageService implements IAzureStorageService {
         marker = nextMarker;
       } while (marker);
     } catch (error) {
-      console.error(error);
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
 
     this.blobs.next(blobs);
@@ -107,19 +105,18 @@ export class AzureStorageService implements IAzureStorageService {
 
     try {
       if (blobsToDelete.length === 0) {
-        showWarning('No files selected.');
+        showWarning(terms.azureStorage.noFilesSelected);
       } else {
-        showInfo(`Deleting ${blobNames}...`);
+        showInfo(format(terms.azureStorage.deletingFiles, blobNames));
 
         for (const blob of blobsToDelete) {
           await BlobURL.fromContainerURL(this.containerUrl, blob.name).delete(Aborter.none);
         }
 
-        showSuccess('Done.');
+        showSuccess(terms.azureStorage.done);
       }
     } catch (error) {
-      console.error(error);
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
 
     await this.listBlobs();
@@ -140,7 +137,7 @@ export class AzureStorageService implements IAzureStorageService {
         const progressSubject = new Subject<IUpdateMessage>();
         const uploadPromise = this.getUploadPromise(file, blockBlobURL, progressSubject);
 
-        !silent && showInfoUntil(`Uploading ${file.name}...`, uploadPromise, progressSubject);
+        !silent && showInfoUntil(format(terms.azureStorage.uploadingFiles, file.name), uploadPromise, progressSubject);
 
         promises.push(uploadPromise);
       }
@@ -149,10 +146,9 @@ export class AzureStorageService implements IAzureStorageService {
 
       const fileNames = filesToUpload.map(file => `${file.name}`).join(', ');
 
-      !silent && showSuccess(`Finished uploading ${fileNames}.`);
+      !silent && showSuccess(format(terms.azureStorage.finishedUploading, fileNames));
     } catch (error) {
-      console.error(error);
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
 
     await this.listBlobs();
@@ -169,7 +165,7 @@ export class AzureStorageService implements IAzureStorageService {
       const response = await downloadPromise;
 
       if (response.blobBody) {
-        showInfoUntil(`Downloading ${blob.name}...`, response.blobBody, progressSubject);
+        showInfoUntil(format(terms.azureStorage.downloadingFile, blob.name), response.blobBody, progressSubject);
 
         const body = await response.blobBody;
 
@@ -180,17 +176,16 @@ export class AzureStorageService implements IAzureStorageService {
           const downloadStream = readableStream.pipeTo(fileStream);
 
           window.onunload = () => {
-            fileStream.abort('User navigated away');
+            fileStream.abort(terms.azureStorage.abortDownload);
           };
 
           await downloadStream;
         }
 
-        showSuccess(`Finished downloading ${blob.name}.`);
+        showSuccess(format(terms.azureStorage.finishedDownloading, blob.name));
       }
     } catch (error) {
-      console.error(error);
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
   }
 
@@ -214,8 +209,7 @@ export class AzureStorageService implements IAzureStorageService {
         return text;
       }
     } catch (error) {
-      console.error(error);
-      showError((error.body && error.body.message) || error.message);
+      showError(error);
     }
   }
 

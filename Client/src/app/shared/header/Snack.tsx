@@ -2,7 +2,7 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import { Message, Progress, Segment } from 'semantic-ui-react';
 
 import { getSizeText, toRounded } from '../../../utilities/numbers';
-import { UpdateSnackHandler } from './SnackBar';
+import { UpdateSnackHandler } from './snacks';
 
 export type SnackType = 'success' | 'info' | 'warning' | 'error' | 'update';
 
@@ -79,10 +79,12 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
         content += ` at ${getSizeText(rate, 2)[0]} ${unit}/s${remainingTimeSegments.join(' ')} to go`;
       }
 
+      const percent = toRounded((current / total) * 100);
+
       message = (
         <Message floating compact info>
           {text}
-          {update && <Progress percent={toRounded((current / total) * 100)} content={content} progress indicating />}
+          {update && <Progress percent={percent} content={content} progress indicating autoSuccess />}
         </Message>
       );
       break;

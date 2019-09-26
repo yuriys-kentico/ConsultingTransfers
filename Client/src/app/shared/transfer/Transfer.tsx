@@ -1,5 +1,5 @@
 import React, { lazy, useContext, useEffect } from 'react';
-import { AuthenticationState } from 'react-aad-msal';
+import AzureAD from 'react-aad-msal';
 import { Header, Loader, Segment } from 'semantic-ui-react';
 
 import { terms } from '../../../appSettings.json';
@@ -7,8 +7,8 @@ import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFu
 import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../services/dependencyContainer';
 import { useSubscription } from '../../../utilities/observables';
-import { AuthenticatedContext } from '../../authenticated/AuthenticatedContext';
-import { RoutedFC } from '../../RoutedFC';
+import { RoutedFC } from '../../../utilities/routing';
+import { AuthenticatedContext } from '../../AuthenticatedContext';
 import { MessageContext } from '../header/MessageContext';
 import { Fields } from './Fields';
 
@@ -20,17 +20,15 @@ export interface ITransferProps {
 
 export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) => {
   const { authProvider } = useContext(AuthenticatedContext);
-
   const messageContext = useContext(MessageContext);
 
   const azureStorageService = useDependency(IAzureStorageService);
   azureStorageService.messageHandlers = messageContext;
 
   const azureFunctionsService = useDependency(IAzureFunctionsService);
+  const transferDetails = useSubscription(azureFunctionsService.transferDetails);
 
   const containerToken = decodeURIComponent(encodedContainerToken || '');
-
-  const transferDetails = useSubscription(azureFunctionsService.transferDetails);
 
   useEffect(() => {
     azureFunctionsService.getTransferDetails(authProvider, containerToken, messageContext);
@@ -52,7 +50,9 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
         <>
           <Header as='h2' content={`${terms.shared.transfer.header} ${transferDetails.transfer.system.name}`} />
           <Fields />
-          {authProvider && authProvider.authenticationState === AuthenticationState.Authenticated && <Debug />}
+          <AzureAD provider={authProvider}>
+            <Debug />
+          </AzureAD>
         </>
       )}
     </Segment>

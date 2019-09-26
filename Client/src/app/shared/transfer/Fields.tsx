@@ -8,15 +8,13 @@ import { useSubscription } from '../../../utilities/observables';
 import { FieldHolder, IFieldHolderProps } from './FieldHolder';
 
 export const Fields: FC = () => {
-  let fields: IFieldHolderProps[] = [];
-
   const azureFunctionService = useDependency(IAzureFunctionsService);
   const transferDetails = useSubscription(azureFunctionService.transferDetails);
 
-  if (transferDetails) {
-    const maybeJson = `[${transferDetails.transfer.fields}]`;
+  let fields: IFieldHolderProps[] = [];
 
-    fields = JSON.parse(maybeJson);
+  if (transferDetails) {
+    fields = JSON.parse(`[${transferDetails.transfer.fields}]`);
   }
 
   return (

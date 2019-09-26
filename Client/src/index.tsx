@@ -1,4 +1,6 @@
 import './app/app.css';
+import 'react-app-polyfill/ie11';
+import 'react-app-polyfill/stable';
 import 'semantic-ui-less/semantic.less';
 import 'typeface-source-sans-pro';
 
