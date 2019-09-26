@@ -38,7 +38,7 @@ export const Transfers: RoutedFC = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {!transfers ? (
+          {!(transfers && transfers.length > 0) ? (
             <Table.Row>
               <Table.Cell>
                 <Loader active size='massive' />
