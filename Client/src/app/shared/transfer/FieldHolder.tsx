@@ -3,9 +3,11 @@ import React from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
 import { terms } from '../../../appSettings.json';
-import { AzureStorageHelper } from '../../../services/azureStorage/AzureStorageHelper';
-import { AppHeaderContext } from '../header/AppHeaderContext';
-import { TransferContext } from './TransferContext';
+import { completed, getSafePathSegment } from '../../../services/azureStorage/azureStorage';
+import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
+import { useDependency } from '../../../services/dependencyContainer';
+import { useSubscription } from '../../../utilities/observables';
+import { MessageContext } from '../header/MessageContext';
 
 const WriteText = lazy(() => import('./fields/WriteText').then(module => ({ default: module.WriteText })));
 const UploadFile = lazy(() => import('./fields/UploadFile').then(module => ({ default: module.UploadFile })));
@@ -34,14 +36,17 @@ interface Asset {
 export const FieldHolder: FC<IFieldHolderProps> = props => {
   const { name, comment, type } = props;
 
-  const { showInfo } = useContext(AppHeaderContext);
-  const { uploadFiles, blobs } = useContext(TransferContext);
+  const { showInfo } = useContext(MessageContext);
   const [loading, setLoading] = useState(false);
   const [fieldLoading, setFieldLoading] = useState(false);
 
-  const completed =
-    blobs.filter(blob => blob.name === `${AzureStorageHelper.getSafePathSegment(name)}/${AzureStorageHelper.completed}`)
-      .length > 0;
+  const azureStorageService = useDependency(IAzureStorageService);
+  azureStorageService.messageHandlers = useContext(MessageContext);
+
+  const blobs = useSubscription(azureStorageService.blobs);
+
+  const isCompleted =
+    blobs && blobs.filter(blob => blob.name === `${getSafePathSegment(name)}/${completed}`).length > 0;
 
   const getFieldType = (fieldType: FieldType) => {
     switch (fieldType) {
@@ -55,11 +60,11 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   };
 
   const updateCompleted = async () => {
-    const file = new File([], AzureStorageHelper.completed);
+    const file = new File([], completed);
 
     setLoading(true);
 
-    await uploadFiles(file, name, true);
+    await azureStorageService.uploadFiles(file, name, true);
 
     setLoading(false);
     showInfo(terms.shared.transfer.fields.markedCompleted);
@@ -67,13 +72,13 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
 
   return (
     <Suspense fallback={<Loader active size='massive' />}>
-      <Segment loading={loading} disabled={completed} className='inherit color'>
+      <Segment loading={loading} disabled={isCompleted} className='inherit color'>
         <Header floated='right'>
           <Checkbox
             toggle
             label={terms.shared.transfer.fields.markCompleted}
-            checked={completed}
-            disabled={completed}
+            checked={isCompleted}
+            disabled={isCompleted}
             onChange={updateCompleted}
           />
         </Header>
@@ -83,7 +88,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
         {comment}
         <Divider fitted hidden />
         <Divider fitted hidden />
-        <Segment as={getFieldType(type)} {...props} completed={completed} setFieldLoading={setFieldLoading} />
+        <Segment as={getFieldType(type)} {...props} completed={isCompleted} setFieldLoading={setFieldLoading} />
       </Segment>
     </Suspense>
   );

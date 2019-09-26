@@ -7,11 +7,11 @@ export type ShowInfoHandler = (text: string, timeout?: number, type?: SnackType)
 
 export type ShowInfoUntilHandler = <T>(text: string, executor: Promise<T>, update?: UpdateSnackHandler) => void;
 
-export interface IAppHeaderContext extends IShowMessageHandlers {
+export interface IMessageContext extends IMessageHandlers {
   snacks: ISnack[];
 }
 
-export interface IShowMessageHandlers {
+export interface IMessageHandlers {
   showInfo: ShowInfoHandler;
   showInfoUntil: ShowInfoUntilHandler;
   showError: ShowInfoHandler;
@@ -22,7 +22,7 @@ export interface IShowMessageHandlers {
 const defaultShowInfoHandler = (text: string, _timeout?: number, _type?: SnackType) => console.log(text);
 const defaultShowInfoUntilHandler = <T>(text: string, _executor: Promise<T>, _update?: UpdateSnackHandler) =>
   console.log(text);
-export const AppHeaderContext = createContext<IAppHeaderContext>({
+export const MessageContext = createContext<IMessageContext>({
   showInfo: defaultShowInfoHandler,
   showInfoUntil: defaultShowInfoUntilHandler,
   showError: defaultShowInfoHandler,

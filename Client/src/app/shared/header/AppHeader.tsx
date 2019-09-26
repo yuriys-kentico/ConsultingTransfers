@@ -3,7 +3,7 @@ import { Menu, Sidebar } from 'semantic-ui-react';
 
 import { experience } from '../../../appSettings.json';
 import { promiseAfter } from '../../../utilities/promises';
-import { AppHeaderContext, IAppHeaderContext, ShowInfoHandler, ShowInfoUntilHandler } from './AppHeaderContext';
+import { IMessageContext, MessageContext, ShowInfoHandler, ShowInfoUntilHandler } from './MessageContext';
 import { hideSnackAfter, hideSnackWhen, showSnack, SnackBar } from './SnackBar';
 
 export interface IAppHeaderProps {
@@ -28,7 +28,7 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
   const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');
   const showWarning: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'warning');
 
-  const [headerContext, setHeaderContext] = useState<IAppHeaderContext>({
+  const [headerContext, setHeaderContext] = useState<IMessageContext>({
     snacks: [],
     showInfo,
     showInfoUntil,
@@ -44,7 +44,7 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
   };
 
   return (
-    <AppHeaderContext.Provider value={headerContext}>
+    <MessageContext.Provider value={headerContext}>
       <SnackBar />
       <Sidebar.Pushable>
         {props.sidebar && props.sidebar(sidebarOpen, () => toggleSidebar(false))}
@@ -58,6 +58,6 @@ export const AppHeader: FC<IAppHeaderProps> = props => {
           </Sidebar.Pushable>
         </Sidebar.Pusher>
       </Sidebar.Pushable>
-    </AppHeaderContext.Provider>
+    </MessageContext.Provider>
   );
 };

@@ -1,16 +1,19 @@
 import './details.css';
 
 import { navigate } from '@reach/router';
-import React, { ChangeEvent, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Input, Label, List, Loader } from 'semantic-ui-react';
 
 import { experience, kenticoKontent, terms } from '../../../appSettings.json';
-import { AzureFunctions, getTransfersUrl, getTransferUrl } from '../../../connectors/AzureFunctions';
-import { Element, ICustomElement } from '../../../connectors/customElement';
-import { promiseAfter, promiseWhile } from '../../../utilities/promises';
+import { getTransfersUrl, getTransferUrl } from '../../../services/azureFunctions/azureFunctions';
+import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
+import { useDependency } from '../../../services/dependencyContainer';
+import { useSubscription } from '../../../utilities/observables';
+import { promiseAfter } from '../../../utilities/promises';
 import { RoutedFC } from '../../RoutedFC';
-import { AppHeaderContext } from '../../shared/header/AppHeaderContext';
+import { MessageContext } from '../../shared/header/MessageContext';
 import { AuthenticatedContext } from '../AuthenticatedContext';
+import { Element, ICustomElement } from './customElement';
 
 // Expose access to Kentico custom element API
 declare const CustomElement: ICustomElement;
@@ -27,16 +30,20 @@ export const Details: RoutedFC = () => {
     navigate('/');
   }
 
-  const appHeaderContext = useContext(AppHeaderContext);
+  const messageContext = useContext(MessageContext);
   const { authProvider } = useContext(AuthenticatedContext);
 
   const [available, setAvailable] = useState(false);
+  const [codename, setCodename] = useState('');
   const [enabled, setEnabled] = useState(true);
   const [customer, setCustomer] = useState('');
   const [requester, setRequester] = useState('');
-  const [containerToken, setContainerToken] = useState();
+  const [containerToken, setContainerToken] = useState<string>();
 
   const customElementRef = useRef<HTMLDivElement>(null);
+  const customElementKey = useRef<string>();
+
+  const azureFunctionsService = useDependency(IAzureFunctionsService);
 
   useEffect(() => {
     const customElementModule = document.createElement('script');
@@ -48,45 +55,44 @@ export const Details: RoutedFC = () => {
       const elementValue = JSON.parse(element.value || JSON.stringify(defaultDetailsValue)) as IDetailsValue;
 
       setAvailable(true);
-      setCustomer(elementValue.customer);
-      setRequester(elementValue.requester);
+      setCustomer(elementValue.customer || '');
+      setRequester(elementValue.requester || '');
 
       // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
-      const key = (element.config as { key: string }).key;
+      customElementKey.current = (element.config as { key: string }).key;
 
-      setEnabledAndRetrieveToken(!element.disabled, key);
+      setEnabledAndRetrieveToken(!element.disabled);
 
-      CustomElement.onDisabledChanged(disabled => setEnabledAndRetrieveToken(!disabled, key));
+      CustomElement.onDisabledChanged(disabled => setEnabledAndRetrieveToken(!disabled));
     };
 
-    const setEnabledAndRetrieveToken = (enabled: boolean, key: string) => {
+    const setEnabledAndRetrieveToken = (enabled: boolean) => {
       setEnabled(enabled);
 
       if (!enabled) {
         setContainerToken(undefined);
 
-        const checkContainerToken = (codename: string) => () =>
-          AzureFunctions.listTransfers(authProvider, appHeaderContext, key)
-            .then(transfers => {
-              const transfer = transfers && transfers.filter(transfer => transfer.system.codename === codename)[0];
-
-              if (transfer && transfer.containerToken) {
-                setContainerToken(transfer.containerToken);
-                return true;
-              } else {
-                return false;
-              }
-            })
-            .then(promiseAfter(experience.detailsContainerCheckTimeout));
-
-        CustomElement.init((_, context) =>
-          promiseWhile(false, tokenIsSet => tokenIsSet === false, checkContainerToken(context.item.codename))
-        );
+        CustomElement.init((_, context) => {
+          setCodename(context.item.codename);
+          azureFunctionsService.listTransfers(authProvider, messageContext, customElementKey.current);
+        });
       }
     };
 
     document.head.appendChild(customElementModule);
-  }, [authProvider, appHeaderContext]);
+  }, [azureFunctionsService, authProvider, messageContext]);
+
+  const transfers = useSubscription(azureFunctionsService.transfers);
+
+  const transfer = transfers && transfers.filter(transfer => transfer.system.codename === codename)[0];
+
+  if (transfer && transfer.containerToken && !containerToken) {
+    setContainerToken(transfer.containerToken);
+  } else if (customElementKey.current) {
+    promiseAfter(experience.detailsContainerCheckTimeout)(() =>
+      azureFunctionsService.listTransfers(authProvider, messageContext, customElementKey.current)
+    );
+  }
 
   useEffect(() => {
     if (available && customElementRef.current) {
@@ -99,10 +105,6 @@ export const Details: RoutedFC = () => {
       CustomElement.setValue(JSON.stringify({ customer, requester }));
     }
   }, [available, customer, requester]);
-
-  const updateStringField = (setStater: Dispatch<SetStateAction<string>>) => (event: ChangeEvent<HTMLInputElement>) => {
-    setStater(event.target.value);
-  };
 
   const getUrl = (path: string) => {
     return `${window.location.protocol}//${window.location.host}${path}`;
@@ -127,7 +129,7 @@ export const Details: RoutedFC = () => {
                 size='big'
                 fluid
                 value={customer}
-                onChange={updateStringField(setCustomer)}
+                onChange={event => setCustomer(event.target.value)}
                 placeholder={details.placeholder}
                 disabled={!enabled}
               />
@@ -144,7 +146,7 @@ export const Details: RoutedFC = () => {
                 size='big'
                 fluid
                 value={requester}
-                onChange={updateStringField(setRequester)}
+                onChange={event => setRequester(event.target.value)}
                 placeholder={details.placeholder}
                 disabled={!enabled}
               />

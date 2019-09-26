@@ -3,15 +3,15 @@ import { Observable } from 'rxjs';
 
 import { deleteFrom } from '../../../utilities/arrays';
 import { promiseAfter } from '../../../utilities/promises';
-import { AppHeaderContext, IAppHeaderContext } from './AppHeaderContext';
+import { IMessageContext, MessageContext } from './MessageContext';
 import { ISnack, IUpdateMessage, Snack, SnackType } from './Snack';
 
-export type HideSnackHandler = (snack: ISnack, headerContext: Dispatch<SetStateAction<IAppHeaderContext>>) => void;
+export type HideSnackHandler = (snack: ISnack, headerContext: Dispatch<SetStateAction<IMessageContext>>) => void;
 
 export type UpdateSnackHandler = Observable<IUpdateMessage>;
 
 export type ShowSnackHandler = (
-  setHeaderContext: React.Dispatch<React.SetStateAction<IAppHeaderContext>>,
+  setHeaderContext: React.Dispatch<React.SetStateAction<IMessageContext>>,
   text: string,
   type: SnackType,
   hideSnackHandler: HideSnackHandler,
@@ -19,7 +19,7 @@ export type ShowSnackHandler = (
 ) => void;
 
 export const SnackBar: FC = () => {
-  const { snacks } = useContext(AppHeaderContext);
+  const { snacks } = useContext(MessageContext);
 
   return (
     <div className='snack bar'>
@@ -50,7 +50,7 @@ export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSn
 
 export const hideSnackWhen = <T extends {}>(executor: Promise<T>) => (
   snack: ISnack,
-  setHeaderContext: Dispatch<SetStateAction<IAppHeaderContext>>
+  setHeaderContext: Dispatch<SetStateAction<IMessageContext>>
 ) => {
   executor.then(() => {
     setHeaderContext(headerContext => {

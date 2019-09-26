@@ -2,7 +2,8 @@ import { Router } from '@reach/router';
 import React, { lazy, Suspense } from 'react';
 import { boundary, useError } from 'react-boundary';
 import { Loader } from 'semantic-ui-react';
-import { getTransferUrl } from '../connectors/AzureFunctions';
+
+import { getTransferUrl } from '../services/azureFunctions/azureFunctions';
 
 const Authenticated = lazy(() =>
   import('./authenticated/Authenticated').then(module => ({ default: module.Authenticated }))
