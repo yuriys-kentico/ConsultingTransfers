@@ -4,9 +4,10 @@ import { navigate } from '@reach/router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Input, Label, Loader, Table } from 'semantic-ui-react';
 
-import { experience, kenticoKontent, terms } from '../../appSettings.json';
+import { experience, kenticoKontent } from '../../appSettings.json';
 import { IAzureFunctionsService } from '../../services/azureFunctions/AzureFunctionsService';
 import { useDependency } from '../../services/dependencyContainer';
+import { details } from '../../terms.en-us.json';
 import { useSubscription } from '../../utilities/observables';
 import { promiseAfter } from '../../utilities/promises';
 import { getTransferUrl, RoutedFC } from '../../utilities/routing';
@@ -109,8 +110,6 @@ export const Details: RoutedFC = () => {
   const getUrl = (path: string) => {
     return `${window.location.protocol}//${window.location.host}${path}`;
   };
-
-  const { details } = terms;
 
   return (
     <div className={`custom element ${enabled ? '' : 'disabled'}`} ref={customElementRef}>

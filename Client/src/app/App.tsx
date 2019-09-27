@@ -3,7 +3,7 @@ import React, { lazy, Suspense } from 'react';
 import { boundary, useError } from 'react-boundary';
 import { Loader } from 'semantic-ui-react';
 
-import { terms } from '../appSettings.json';
+import { errors } from '../terms.en-us.json';
 import { navigateToError, setTitle } from '../utilities/routing';
 import { routes } from './routes';
 
@@ -12,8 +12,6 @@ const Details = lazy(() => import('./details/Details').then(module => ({ default
 const Error = lazy(() => import('./shared/Error').then(module => ({ default: module.Error })));
 
 export const App = boundary(() => {
-  const { errors } = terms;
-
   const [error, info] = useError();
 
   if (error || info) {

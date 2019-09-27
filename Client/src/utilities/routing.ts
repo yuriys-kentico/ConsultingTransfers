@@ -6,12 +6,12 @@ import { withAuthentication } from 'react-aad-msal';
 import { authProvider } from '../app/authProvider';
 import { routes } from '../app/routes';
 import { IErrorProps } from '../app/shared/Error';
-import { terms } from '../appSettings.json';
+import { errors, header } from '../terms.en-us.json';
 
 Axios.interceptors.response.use(undefined, error => {
   if (error.response && error.response.status === 404) {
     navigateToError({
-      message: terms.errors.genericError,
+      message: errors.genericError,
       stack: error.stack
     });
   }
@@ -33,7 +33,7 @@ export const authenticated = <P extends AuthenticatedProps & {}>(component: FC<R
 export const getTransferUrl = (containerToken: string) => `${routes.transfer}${encodeURIComponent(containerToken)}`;
 
 export const setTitle = (section?: string) => {
-  let title = terms.shared.header.header;
+  let title = header.header;
 
   if (section) {
     title += ` | ${section}`;

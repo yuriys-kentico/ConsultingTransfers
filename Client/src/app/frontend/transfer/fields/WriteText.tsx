@@ -8,16 +8,17 @@ import { Editor as WysiwygEditor } from 'react-draft-wysiwyg';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
-import { experience, terms } from '../../../../appSettings.json';
+import { experience } from '../../../../appSettings.json';
 import { getFieldBlobs, getSafePathSegment } from '../../../../services/azureStorage/azureStorage';
 import { IAzureStorageService } from '../../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../../services/dependencyContainer';
+import { transfer } from '../../../../terms.en-us.json';
 import { useSubscription } from '../../../../utilities/observables';
 import { MessageContext } from '../../header/MessageContext';
 import { IFieldHolderProps } from '../FieldHolder';
 
 export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldLoading, defaultText }) => {
-  const { writeText } = terms.shared.transfer.fields;
+  const { writeText } = transfer.fields;
 
   const [loaded, setLoaded] = useState(false);
   const [editorState, setEditorState] = useState(EditorState.createEmpty());

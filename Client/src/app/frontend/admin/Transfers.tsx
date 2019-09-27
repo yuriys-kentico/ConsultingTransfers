@@ -2,9 +2,9 @@ import { Link } from '@reach/router';
 import React, { useContext, useEffect } from 'react';
 import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
-import { terms } from '../../../appSettings.json';
 import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
 import { useDependency } from '../../../services/dependencyContainer';
+import { admin } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
 import { authenticated, AuthenticatedRoutedFC, getTransferUrl, setTitle } from '../../../utilities/routing';
 import { MessageContext } from '../header/MessageContext';
@@ -20,7 +20,7 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
 
   const transfers = useSubscription(azureFunctionsService.transfers);
 
-  const { header, table } = terms.admin.transfers;
+  const { header, table } = admin.transfers;
 
   setTitle(header);
 

@@ -2,10 +2,10 @@ import React, { lazy, useContext, useEffect } from 'react';
 import AzureAD from 'react-aad-msal';
 import { Header, Loader, Segment } from 'semantic-ui-react';
 
-import { terms } from '../../../appSettings.json';
 import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
 import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../services/dependencyContainer';
+import { transfer } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
 import { RoutedFC, setTitle } from '../../../utilities/routing';
 import { authProvider } from '../../authProvider';
@@ -49,7 +49,7 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
         <Loader active size='massive' />
       ) : (
         <>
-          <Header as='h2' content={`${terms.shared.transfer.header} ${transferDetails.transfer.system.name}`} />
+          <Header as='h2' content={`${transfer.header} ${transferDetails.transfer.system.name}`} />
           <Fields />
           <AzureAD provider={authProvider}>
             <Debug />

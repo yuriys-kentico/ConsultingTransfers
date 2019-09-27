@@ -1,11 +1,12 @@
-import React, { FC, useContext } from 'react';
+import React, { FC } from 'react';
 
-import { MessageContext } from './MessageContext';
-import { Snack } from './Snack';
+import { ISnack, Snack } from './Snack';
 
-export const SnackBar: FC = () => {
-  const { snacks } = useContext(MessageContext);
+interface ISnackBarProps {
+  snacks: ISnack[];
+}
 
+export const SnackBar: FC<ISnackBarProps> = ({ snacks }) => {
   return (
     <div className='snack bar'>
       {snacks.map(snack => (

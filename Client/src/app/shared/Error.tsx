@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Header, Segment } from 'semantic-ui-react';
 
-import { terms } from '../../appSettings.json';
+import { errors } from '../../terms.en-us.json';
 import { RoutedFC } from '../../utilities/routing';
 
 export interface IErrorProps {
@@ -10,7 +10,7 @@ export interface IErrorProps {
 }
 
 export const Error: RoutedFC<IErrorProps> = ({ location, message, stack }) => {
-  let errorMessage: IErrorProps = { message: terms.errors.genericError, stack: terms.errors.genericStack };
+  let errorMessage: IErrorProps = { message: errors.genericError, stack: errors.genericStack };
 
   message && (errorMessage.message = message);
   stack && (errorMessage.stack = stack);

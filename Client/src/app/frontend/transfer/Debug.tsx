@@ -1,5 +1,6 @@
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC, useContext, useState } from 'react';
+import { Subject } from 'rxjs';
 import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-ui-react';
 
 import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
@@ -7,8 +8,11 @@ import { completed } from '../../../services/azureStorage/azureStorage';
 import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../services/dependencyContainer';
 import { deleteFrom } from '../../../utilities/arrays';
+import { toRounded } from '../../../utilities/numbers';
 import { useSubscription } from '../../../utilities/observables';
+import { promiseAfter } from '../../../utilities/promises';
 import { MessageContext } from '../header/MessageContext';
+import { IUpdateMessage } from '../header/Snack';
 import { BlobDetails } from './BlobDetails';
 
 export const Debug: FC = () => {
@@ -35,33 +39,33 @@ export const Debug: FC = () => {
   const azureFunctionService = useDependency(IAzureFunctionsService);
   const transferDetails = useSubscription(azureFunctionService.transferDetails);
 
-  // const { showInfoUntil } = useContext(MessageContext);
+  const { showInfoUntil } = useContext(MessageContext);
 
-  //   const showRandomSnack = () => {
-  //     const getRandomInt = (min: number, max: number) => {
-  //       return toRounded(Math.random() * (max - min) + min);
-  //     };
+  const showRandomSnack = () => {
+    const getRandomInt = (min: number, max: number) => {
+      return toRounded(Math.random() * (max - min) + min);
+    };
 
-  //     const totalTime = getRandomInt(1000, 15000);
-  //     const totalUpdates = 20;
-  //     const updater = new Subject<IUpdateMessage>();
-  //     let progress = 0;
+    const totalTime = getRandomInt(1000, 15000);
+    const totalUpdates = 20;
+    const updater = new Subject<IUpdateMessage>();
+    let progress = 0;
 
-  //     const interval = setInterval(() => {
-  //       progress += 100 / totalUpdates;
+    const interval = setInterval(() => {
+      progress += 100 / totalUpdates;
 
-  //       updater.next({
-  //         current: progress,
-  //         total: 100
-  //       });
+      updater.next({
+        current: progress,
+        total: 100
+      });
 
-  //       if (progress === 100) {
-  //         clearInterval(interval);
-  //       }
-  //     }, totalTime / totalUpdates);
+      if (progress === 100) {
+        clearInterval(interval);
+      }
+    }, totalTime / totalUpdates);
 
-  //     showInfoUntil(`test ${totalTime}`, promiseAfter(totalTime)(''), updater);
-  //   };
+    showInfoUntil(`test ${totalTime}`, promiseAfter(totalTime)(''), updater);
+  };
 
   return !transferDetails ? null : (
     <>
@@ -132,7 +136,7 @@ export const Debug: FC = () => {
         floated='right'
         content={'Create container'}
       />
-      {/* <Button onClick={() => showRandomSnack()} floated='right' content='Show random snack' /> */}
+      <Button onClick={() => showRandomSnack()} floated='right' content='Show random snack' />
     </>
   );
 };

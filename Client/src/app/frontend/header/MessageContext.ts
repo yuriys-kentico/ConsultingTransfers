@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import { ISnack, SnackType } from './Snack';
+import { SnackType } from './Snack';
 import { UpdateSnackHandler } from './snacks';
 
 export type ShowInfoHandler = (text: string, timeout?: number, type?: SnackType) => void;
@@ -8,10 +8,6 @@ export type ShowInfoHandler = (text: string, timeout?: number, type?: SnackType)
 export type ShowErrorHandler = (error: any, timeout?: number) => void;
 
 export type ShowInfoUntilHandler = <T>(text: string, executor: Promise<T>, update?: UpdateSnackHandler) => void;
-
-export interface IMessageContext extends IMessageHandlers {
-  snacks: ISnack[];
-}
 
 export interface IMessageHandlers {
   showSuccess: ShowInfoHandler;
@@ -25,11 +21,10 @@ const defaultShowInfoHandler = (text: any, _timeout?: number, _type?: SnackType)
 const defaultShowInfoUntilHandler = <T>(text: string, _executor: Promise<T>, _update?: UpdateSnackHandler) =>
   console.log(text);
 
-export const MessageContext = createContext<IMessageContext>({
+export const MessageContext = createContext<IMessageHandlers>({
   showSuccess: defaultShowInfoHandler,
   showInfo: defaultShowInfoHandler,
   showInfoUntil: defaultShowInfoUntilHandler,
   showWarning: defaultShowInfoHandler,
-  showError: defaultShowInfoHandler,
-  snacks: []
+  showError: defaultShowInfoHandler
 });

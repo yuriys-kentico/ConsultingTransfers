@@ -3,18 +3,20 @@ import React, { lazy, Suspense, useState } from 'react';
 import AzureAD from 'react-aad-msal';
 import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
-import { experience, terms } from '../../appSettings.json';
+import { experience } from '../../appSettings.json';
+import { admin, errors, header } from '../../terms.en-us.json';
 import { promiseAfter } from '../../utilities/promises';
 import { RoutedFC } from '../../utilities/routing';
 import { authProvider } from '../authProvider';
 import { routes } from '../routes';
 import {
-    IMessageContext,
+    IMessageHandlers,
     MessageContext,
     ShowErrorHandler,
     ShowInfoHandler,
     ShowInfoUntilHandler,
 } from './header/MessageContext';
+import { ISnack } from './header/Snack.js';
 import { SnackBar } from './header/SnackBar';
 import { hideSnackAfter, hideSnackWhen, showSnack } from './header/snacks';
 
@@ -25,18 +27,17 @@ const Error = lazy(() => import('../shared/Error').then(module => ({ default: mo
 
 export const Frontend: RoutedFC = () => {
   const { snackTimeout } = experience;
-  const { admin, shared, errors } = terms;
 
   const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');
 
   const showInfo: ShowInfoHandler = (text, timeout, type = 'info') => {
     timeout = timeout ? timeout : snackTimeout;
 
-    showSnack(setHeaderContext, text, type, hideSnackAfter(timeout));
+    showSnack(setSnacks, text, type, hideSnackAfter(timeout));
   };
 
   const showInfoUntil: ShowInfoUntilHandler = (text, executor, update?) => {
-    showSnack(setHeaderContext, text, 'update', hideSnackWhen(executor.then(promiseAfter(snackTimeout))), update);
+    showSnack(setSnacks, text, 'update', hideSnackWhen(executor.then(promiseAfter(snackTimeout))), update);
   };
 
   const showWarning: ShowErrorHandler = (error, timeout) => {
@@ -55,8 +56,9 @@ export const Frontend: RoutedFC = () => {
     showInfo(text, timeout, 'error');
   };
 
-  const [headerContext, setHeaderContext] = useState<IMessageContext>({
-    snacks: [],
+  const [snacks, setSnacks] = useState<ISnack[]>([]);
+
+  const [headerContext] = useState<IMessageHandlers>({
     showSuccess,
     showInfo,
     showInfoUntil,
@@ -72,7 +74,7 @@ export const Frontend: RoutedFC = () => {
 
   return (
     <MessageContext.Provider value={headerContext}>
-      <SnackBar />
+      <SnackBar snacks={snacks} />
       <Sidebar.Pushable>
         <AzureAD provider={authProvider}>
           <Sidebar
@@ -110,7 +112,7 @@ export const Frontend: RoutedFC = () => {
               <AzureAD provider={authProvider}>
                 <Menu.Item icon='bars' onClick={() => setSidebarOpen(true)} />
               </AzureAD>
-              <Menu.Item header fitted='horizontally' content={shared.header.header} />
+              <Menu.Item header fitted='horizontally' content={header.header} />
             </Menu>
             <Container>
               <Suspense fallback={<Loader active size='massive' />}>

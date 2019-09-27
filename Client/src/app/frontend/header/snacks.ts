@@ -3,22 +3,25 @@ import { Observable } from 'rxjs';
 
 import { deleteFrom } from '../../../utilities/arrays';
 import { promiseAfter } from '../../../utilities/promises';
-import { IMessageContext } from './MessageContext';
 import { ISnack, IUpdateMessage, SnackType } from './Snack';
 
-export type HideSnackHandler = (snack: ISnack, headerContext: Dispatch<SetStateAction<IMessageContext>>) => void;
-
-export type UpdateSnackHandler = Observable<IUpdateMessage>;
-
-export type ShowSnackHandler = (
-  setHeaderContext: Dispatch<SetStateAction<IMessageContext>>,
+type ShowSnackHandler = (
+  setSnacks: Dispatch<SetStateAction<ISnack[]>>,
   text: string,
   type: SnackType,
   hideSnackHandler: HideSnackHandler,
   updateSnackHandler?: UpdateSnackHandler
 ) => void;
 
-export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSnackHandler, updateSnackHandler) => {
+type HideSnackHandler = (snack: ISnack, setSnacks: Dispatch<SetStateAction<ISnack[]>>) => void;
+
+export type UpdateSnackHandler = Observable<IUpdateMessage>;
+
+type HideSnackWhenHandler = <T>(
+  executor: Promise<T>
+) => (snack: ISnack, setSnacks: Dispatch<SetStateAction<ISnack[]>>) => void;
+
+export const showSnack: ShowSnackHandler = (setSnacks, text, type, hideSnackHandler, updateSnackHandler) => {
   const newSnack: ISnack = {
     text: text,
     type: type,
@@ -26,26 +29,17 @@ export const showSnack: ShowSnackHandler = (setHeaderContext, text, type, hideSn
     key: Math.random()
   };
 
-  setHeaderContext(headerContext => {
-    hideSnackHandler(newSnack, setHeaderContext);
+  setSnacks(snacks => {
+    hideSnackHandler(newSnack, setSnacks);
 
-    return {
-      ...headerContext,
-      snacks: [...headerContext.snacks, newSnack]
-    };
+    return [...snacks, newSnack];
   });
 };
 
-export const hideSnackWhen = <T>(executor: Promise<T>) => (
-  snack: ISnack,
-  setHeaderContext: Dispatch<SetStateAction<IMessageContext>>
-) => {
+export const hideSnackWhen: HideSnackWhenHandler = executor => (snack, setSnacks) => {
   executor.then(() => {
-    setHeaderContext(headerContext => {
-      return {
-        ...headerContext,
-        snacks: deleteFrom(snack, headerContext.snacks)
-      };
+    setSnacks(snacks => {
+      return deleteFrom(snack, snacks);
     });
   });
 };

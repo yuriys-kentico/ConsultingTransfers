@@ -2,10 +2,10 @@ import { FC, lazy, useContext, useState } from 'react';
 import React from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
-import { terms } from '../../../appSettings.json';
 import { completed, getSafePathSegment } from '../../../services/azureStorage/azureStorage';
 import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../services/dependencyContainer';
+import { transfer } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
 import { MessageContext } from '../header/MessageContext';
 
@@ -36,7 +36,7 @@ interface Asset {
 export const FieldHolder: FC<IFieldHolderProps> = props => {
   const { name, comment, type } = props;
 
-  const { showInfo } = useContext(MessageContext);
+  const { showInfo, showSuccess } = useContext(MessageContext);
   const [loading, setLoading] = useState(false);
   const [fieldLoading, setFieldLoading] = useState(false);
 
@@ -60,6 +60,8 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   };
 
   const updateCompleted = async () => {
+    showInfo(transfer.fields.markingCompleted);
+
     const file = new File([], completed);
 
     setLoading(true);
@@ -67,7 +69,8 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
     await azureStorageService.uploadFiles(file, name, true);
 
     setLoading(false);
-    showInfo(terms.shared.transfer.fields.markedCompleted);
+
+    showSuccess(transfer.fields.markedCompleted);
   };
 
   return (
@@ -75,7 +78,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
       <Header floated='right'>
         <Checkbox
           toggle
-          label={terms.shared.transfer.fields.markCompleted}
+          label={transfer.fields.markCompleted}
           checked={isCompleted}
           disabled={isCompleted}
           onChange={updateCompleted}

@@ -1,0 +1,70 @@
+{
+  "details": {
+    "customer": {
+      "header": "Customer",
+      "guidelines": "The name of the CRM account."
+    },
+    "requester": {
+      "header": "Requester",
+      "guidelines": "The name of the requester."
+    },
+    "placeholder": "Type your text here...",
+    "container": {
+      "header": "URLs",
+      "publicUrl": "Public URL",
+      "adminUrl": "Admin URL"
+    }
+  },
+  "admin": {
+    "home": {
+      "header": "Home"
+    },
+    "transfers": {
+      "header": "Transfers",
+      "table": {
+        "transfer": "Transfer",
+        "customer": "Customer",
+        "requester": "Requester"
+      }
+    }
+  },
+  "header": {
+    "header": "Caddy"
+  },
+  "transfer": {
+    "header": "Transfer:",
+    "fields": {
+      "markCompleted": "Mark complete",
+      "markingCompleted": "Marking field completed...",
+      "markedCompleted": "Field has been marked completed!",
+      "uploadFile": {
+        "passive": "Drag some files here, or click to select files.",
+        "active": "Drop the files here..."
+      },
+      "writeText": {
+        "placeholder": "Write some text here..."
+      }
+    }
+  },
+  "errors": {
+    "genericError": "A generic error has occurred.",
+    "genericStack": "No error information.",
+    "notFound": "This path does not exist."
+  },
+  "azureStorage": {
+    "done": "Done.",
+    "creatingContainer": "Creating container {0}...",
+    "deletingContainer": "Deleting container {0}...",
+    "noFilesSelected": "No files selected.",
+    "deletingFiles": "Deleting {0}...",
+    "uploadingFiles": "Uploading {0}...",
+    "finishedUploading": "Finished uploading {0}.",
+    "downloadingFile": "Downloading {0}...",
+    "abortDownload": "User navigated away.",
+    "finishedDownloading": "Finished downloading {0}."
+  },
+  "azureFunctions": {
+    "containerNotFound": "Container {0} not found.",
+    "invalidBearer": "Bearer {0} is invalid."
+  }
+}

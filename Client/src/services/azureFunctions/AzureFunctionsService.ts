@@ -18,8 +18,8 @@ export interface IAzureFunctionsService {
 }
 
 export class AzureFunctionsService implements IAzureFunctionsService {
-  transfers: BehaviorSubject<ITransfer[]> = new BehaviorSubject([] as ITransfer[]);
-  transferDetails: BehaviorSubject<IGetTransferDetails> = new BehaviorSubject(null as any);
+  transfers: BehaviorSubject<ITransfer[]> = new BehaviorSubject<ITransfer[]>([]);
+  transferDetails: BehaviorSubject<IGetTransferDetails> = new BehaviorSubject<IGetTransferDetails>(null as any);
 
   async listTransfers(messageHandlers: IMessageHandlers, detailsKey?: string) {
     const { showError } = messageHandlers;
