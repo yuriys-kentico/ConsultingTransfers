@@ -1,8 +1,9 @@
 import Axios from 'axios';
-import { AuthenticationState, MsalAuthProvider } from 'react-aad-msal';
+import { AuthenticationState } from 'react-aad-msal';
 import { BehaviorSubject } from 'rxjs';
 
-import { IMessageHandlers } from '../../app/shared/header/MessageContext';
+import { authProvider } from '../../app/authProvider';
+import { IMessageHandlers } from '../../app/frontend/header/MessageContext';
 import { getTransfer, listTransfers, region } from '../../transfers.json';
 import { IGetTransferDetails, IListTransfers, ITransfer } from './azureFunctions';
 
@@ -12,19 +13,15 @@ export interface IAzureFunctionsService {
   transfers: BehaviorSubject<ITransfer[]>;
   transferDetails: BehaviorSubject<IGetTransferDetails>;
 
-  listTransfers(authProvider: MsalAuthProvider, messageHandlers: IMessageHandlers, detailsKey?: string): Promise<void>;
-  getTransferDetails(
-    authProvider: MsalAuthProvider,
-    containerToken: string,
-    messageHandlers: IMessageHandlers
-  ): Promise<void>;
+  listTransfers(messageHandlers: IMessageHandlers, detailsKey?: string): Promise<void>;
+  getTransferDetails(containerToken: string, messageHandlers: IMessageHandlers): Promise<void>;
 }
 
 export class AzureFunctionsService implements IAzureFunctionsService {
   transfers: BehaviorSubject<ITransfer[]> = new BehaviorSubject([] as ITransfer[]);
   transferDetails: BehaviorSubject<IGetTransferDetails> = new BehaviorSubject(null as any);
 
-  async listTransfers(authProvider: MsalAuthProvider, messageHandlers: IMessageHandlers, detailsKey?: string) {
+  async listTransfers(messageHandlers: IMessageHandlers, detailsKey?: string) {
     const { showError } = messageHandlers;
     const bearerToken = detailsKey ? detailsKey : (await authProvider.getAccessToken()).accessToken;
 
@@ -45,7 +42,7 @@ export class AzureFunctionsService implements IAzureFunctionsService {
     this.transfers.next(transfers);
   }
 
-  async getTransferDetails(authProvider: MsalAuthProvider, containerToken: string, messageHandlers: IMessageHandlers) {
+  async getTransferDetails(containerToken: string, messageHandlers: IMessageHandlers) {
     const { showError } = messageHandlers;
     const bearerToken =
       authProvider.authenticationState === AuthenticationState.Authenticated

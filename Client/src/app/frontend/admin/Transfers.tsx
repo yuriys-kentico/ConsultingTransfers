@@ -3,32 +3,31 @@ import React, { useContext, useEffect } from 'react';
 import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
 import { terms } from '../../../appSettings.json';
-import { getTransfersUrl, getTransferUrl } from '../../../services/azureFunctions/azureFunctions';
 import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
 import { useDependency } from '../../../services/dependencyContainer';
 import { useSubscription } from '../../../utilities/observables';
-import { RoutedFC } from '../../../utilities/routing';
-import { AuthenticatedContext } from '../../AuthenticatedContext';
-import { MessageContext } from '../../shared/header/MessageContext';
+import { authenticated, AuthenticatedRoutedFC, getTransferUrl, setTitle } from '../../../utilities/routing';
+import { MessageContext } from '../header/MessageContext';
 
-export const Transfers: RoutedFC = () => {
+export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
   const messageContext = useContext(MessageContext);
-  const { authProvider } = useContext(AuthenticatedContext);
 
   const azureFunctionsService = useDependency(IAzureFunctionsService);
 
   useEffect(() => {
-    azureFunctionsService.listTransfers(authProvider, messageContext);
-  }, [azureFunctionsService, authProvider, messageContext]);
+    azureFunctionsService.listTransfers(messageContext);
+  }, [azureFunctionsService, messageContext]);
 
   const transfers = useSubscription(azureFunctionsService.transfers);
 
   const { header, table } = terms.admin.transfers;
 
+  setTitle(header);
+
   return (
     <Segment basic>
       <Header as='h2'>{header}</Header>
-      <Table stackable singleLine basic='very'>
+      <Table unstackable singleLine basic='very'>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>{table.transfer}</Table.HeaderCell>
@@ -51,8 +50,7 @@ export const Transfers: RoutedFC = () => {
                 <Table.Cell>{item.customer}</Table.Cell>
                 <Table.Cell>{item.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
-                  <Button circular icon='edit' as={Link} to={getTransfersUrl(item.containerToken)} />
-                  <Button circular icon='share square' as={Link} to={getTransferUrl(item.containerToken)} />
+                  <Button circular icon='edit' as={Link} to={getTransferUrl(item.containerToken)} />
                 </Table.Cell>
               </Table.Row>
             ))
@@ -61,4 +59,4 @@ export const Transfers: RoutedFC = () => {
       </Table>
     </Segment>
   );
-};
+});

@@ -6,7 +6,8 @@
   white-space: pre;
 }
 
-#root {
+#root,
+#root div[role='group'] {
   height: 100%;
 }
 

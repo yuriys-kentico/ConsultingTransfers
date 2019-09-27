@@ -2,17 +2,16 @@ import './details.css';
 
 import { navigate } from '@reach/router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Input, Label, List, Loader } from 'semantic-ui-react';
+import { Input, Label, Loader, Table } from 'semantic-ui-react';
 
-import { experience, kenticoKontent, terms } from '../../../appSettings.json';
-import { getTransfersUrl, getTransferUrl } from '../../../services/azureFunctions/azureFunctions';
-import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
-import { useDependency } from '../../../services/dependencyContainer';
-import { useSubscription } from '../../../utilities/observables';
-import { promiseAfter } from '../../../utilities/promises';
-import { RoutedFC } from '../../../utilities/routing';
-import { AuthenticatedContext } from '../../AuthenticatedContext';
-import { MessageContext } from '../../shared/header/MessageContext';
+import { experience, kenticoKontent, terms } from '../../appSettings.json';
+import { IAzureFunctionsService } from '../../services/azureFunctions/AzureFunctionsService';
+import { useDependency } from '../../services/dependencyContainer';
+import { useSubscription } from '../../utilities/observables';
+import { promiseAfter } from '../../utilities/promises';
+import { getTransferUrl, RoutedFC } from '../../utilities/routing';
+import { MessageContext } from '../frontend/header/MessageContext';
+import { routes } from '../routes';
 import { Element, ICustomElement } from './customElement';
 
 // Expose access to Kentico custom element API
@@ -30,7 +29,6 @@ export const Details: RoutedFC = () => {
     navigate('/');
   }
 
-  const { authProvider } = useContext(AuthenticatedContext);
   const messageContext = useContext(MessageContext);
 
   const [available, setAvailable] = useState(false);
@@ -74,24 +72,24 @@ export const Details: RoutedFC = () => {
 
         CustomElement.init((_, context) => {
           setCodename(context.item.codename);
-          azureFunctionsService.listTransfers(authProvider, messageContext, customElementKey.current);
+          azureFunctionsService.listTransfers(messageContext, customElementKey.current);
         });
       }
     };
 
     document.head.appendChild(customElementModule);
-  }, [azureFunctionsService, authProvider, messageContext]);
+  }, [azureFunctionsService, messageContext]);
 
   const transfers = useSubscription(azureFunctionsService.transfers);
 
   if (transfers) {
     const transfer = transfers.filter(transfer => transfer.system.codename === codename)[0];
 
-    if (transfer.containerToken && !containerToken) {
+    if (transfer && transfer.containerToken && !containerToken) {
       setContainerToken(transfer.containerToken);
     } else if (customElementKey.current) {
       promiseAfter(experience.detailsContainerCheckTimeout)(() =>
-        azureFunctionsService.listTransfers(authProvider, messageContext, customElementKey.current)
+        azureFunctionsService.listTransfers(messageContext, customElementKey.current)
       );
     }
   }
@@ -160,20 +158,30 @@ export const Details: RoutedFC = () => {
             <div className='element'>
               <div className='pane'>
                 <label className='label'>{details.container.header}</label>
-                <List>
-                  <List.Item>
-                    <Label horizontal>{details.container.publicUrl}</Label>
-                    <a href={getUrl(getTransferUrl(containerToken))} target='_blank' rel='noopener noreferrer'>
-                      {getUrl(getTransferUrl(containerToken))}
-                    </a>
-                  </List.Item>
-                  <List.Item>
-                    <Label horizontal>{details.container.adminUrl}</Label>
-                    <a href={getUrl(getTransfersUrl(containerToken))} target='_blank' rel='noopener noreferrer'>
-                      {getUrl(getTransfersUrl(containerToken))}
-                    </a>
-                  </List.Item>
-                </List>
+                <Table unstackable basic='very' compact>
+                  <Table.Body>
+                    <Table.Row>
+                      <Table.Cell collapsing>
+                        <Label horizontal>{details.container.adminUrl}</Label>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <a href={getUrl(routes.transfers)} target='_blank' rel='noopener noreferrer'>
+                          {getUrl(routes.transfers)}
+                        </a>
+                      </Table.Cell>
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell collapsing>
+                        <Label horizontal>{details.container.publicUrl}</Label>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <a href={getUrl(getTransferUrl(containerToken))} target='_blank' rel='noopener noreferrer'>
+                          {getUrl(getTransferUrl(containerToken))}
+                        </a>
+                      </Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                </Table>
               </div>
             </div>
           )}

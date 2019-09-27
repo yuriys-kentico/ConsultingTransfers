@@ -7,19 +7,18 @@ import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFu
 import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../services/dependencyContainer';
 import { useSubscription } from '../../../utilities/observables';
-import { RoutedFC } from '../../../utilities/routing';
-import { AuthenticatedContext } from '../../AuthenticatedContext';
+import { RoutedFC, setTitle } from '../../../utilities/routing';
+import { authProvider } from '../../authProvider';
 import { MessageContext } from '../header/MessageContext';
 import { Fields } from './Fields';
 
-const Debug = lazy(() => import('../../authenticated/admin/Debug').then(module => ({ default: module.Debug })));
+const Debug = lazy(() => import('./Debug').then(module => ({ default: module.Debug })));
 
 export interface ITransferProps {
   encodedContainerToken: string;
 }
 
 export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) => {
-  const { authProvider } = useContext(AuthenticatedContext);
   const messageContext = useContext(MessageContext);
 
   const azureStorageService = useDependency(IAzureStorageService);
@@ -31,12 +30,14 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
   const containerToken = decodeURIComponent(encodedContainerToken || '');
 
   useEffect(() => {
-    azureFunctionsService.getTransferDetails(authProvider, containerToken, messageContext);
-  }, [azureFunctionsService, authProvider, containerToken, messageContext]);
+    azureFunctionsService.getTransferDetails(containerToken, messageContext);
+  }, [azureFunctionsService, containerToken, messageContext]);
 
   useEffect(() => {
     if (transferDetails) {
       const { containerUrl, containerName } = transferDetails;
+
+      setTitle(transferDetails.transfer.system.name);
 
       azureStorageService.initialize(containerName, containerUrl);
     }

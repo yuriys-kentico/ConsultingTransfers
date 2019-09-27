@@ -8,8 +8,8 @@ import { IAzureStorageService } from '../../../services/azureStorage/AzureStorag
 import { useDependency } from '../../../services/dependencyContainer';
 import { deleteFrom } from '../../../utilities/arrays';
 import { useSubscription } from '../../../utilities/observables';
-import { MessageContext } from '../../shared/header/MessageContext';
-import { BlobDetails } from '../../shared/transfer/BlobDetails';
+import { MessageContext } from '../header/MessageContext';
+import { BlobDetails } from './BlobDetails';
 
 export const Debug: FC = () => {
   const [selectedBlobs, setSelectedBlobs] = useState<BlobItem[]>([]);
@@ -85,7 +85,7 @@ export const Debug: FC = () => {
       </Segment>
       <Segment>
         <Header as='h2' content='Files:' />
-        <Table stackable singleLine basic='very' compact>
+        <Table unstackable singleLine basic='very' compact>
           <Table.Body>
             {blobs &&
               blobs.map((file, index) => (

@@ -4,8 +4,8 @@ import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { createWriteStream } from 'streamsaver';
 
-import { IMessageContext, IMessageHandlers } from '../../app/shared/header/MessageContext';
-import { IUpdateMessage } from '../../app/shared/header/Snack';
+import { IMessageContext, IMessageHandlers } from '../../app/frontend/header/MessageContext';
+import { IUpdateMessage } from '../../app/frontend/header/Snack';
 import { azureStorage, terms } from '../../appSettings.json';
 import { ensureArray } from '../../utilities/arrays';
 import { promiseAfter } from '../../utilities/promises';

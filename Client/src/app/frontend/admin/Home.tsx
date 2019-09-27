@@ -2,9 +2,9 @@ import React from 'react';
 import { Header, Segment } from 'semantic-ui-react';
 
 import { terms } from '../../../appSettings.json';
-import { RoutedFC } from '../../../utilities/routing';
+import { authenticated, AuthenticatedRoutedFC } from '../../../utilities/routing';
 
-export const Home: RoutedFC = () => {
+export const Home: AuthenticatedRoutedFC = authenticated(() => {
   const { home } = terms.admin;
 
   return (
@@ -13,4 +13,4 @@ export const Home: RoutedFC = () => {
       This is home
     </Segment>
   );
-};
+});

@@ -19,5 +19,3 @@ export interface IGetTransferDetails {
   transfer: ITransfer;
 }
 
-export const getTransferUrl = (containerToken: string) => `/transfer/${encodeURIComponent(containerToken)}`;
-export const getTransfersUrl = (containerToken: string) => `/transfers/${encodeURIComponent(containerToken)}`;
