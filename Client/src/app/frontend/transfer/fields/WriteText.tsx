@@ -26,7 +26,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldLoad
   const stateStream = useRef(new Subject<ContentState>());
 
   const azureStorageService = useDependency(IAzureStorageService);
-  azureStorageService.messageHandlers = useContext(MessageContext);
+  azureStorageService.messageContext = useContext(MessageContext);
 
   const blobs = useSubscription(azureStorageService.blobs);
 

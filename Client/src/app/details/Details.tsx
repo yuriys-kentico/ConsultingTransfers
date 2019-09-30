@@ -30,8 +30,6 @@ export const Details: RoutedFC = () => {
     navigate('/');
   }
 
-  const messageContext = useContext(MessageContext);
-
   const [available, setAvailable] = useState(false);
   const [customer, setCustomer] = useState('');
   const [requester, setRequester] = useState('');
@@ -43,6 +41,7 @@ export const Details: RoutedFC = () => {
   const customElementKey = useRef<string>();
 
   const azureFunctionsService = useDependency(IAzureFunctionsService);
+  azureFunctionsService.messageContext = useContext(MessageContext);
 
   useEffect(() => {
     const customElementModule = document.createElement('script');
@@ -73,13 +72,13 @@ export const Details: RoutedFC = () => {
 
         CustomElement.init((_, context) => {
           setCodename(context.item.codename);
-          azureFunctionsService.listTransfers(messageContext, customElementKey.current);
+          azureFunctionsService.listTransfers(customElementKey.current);
         });
       }
     };
 
     document.head.appendChild(customElementModule);
-  }, [azureFunctionsService, messageContext]);
+  }, [azureFunctionsService]);
 
   const transfers = useSubscription(azureFunctionsService.transfers);
 
@@ -90,7 +89,7 @@ export const Details: RoutedFC = () => {
       setContainerToken(transfer.containerToken);
     } else if (customElementKey.current) {
       promiseAfter(experience.detailsContainerCheckTimeout)(() =>
-        azureFunctionsService.listTransfers(messageContext, customElementKey.current)
+        azureFunctionsService.listTransfers(customElementKey.current)
       );
     }
   }

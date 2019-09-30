@@ -16,7 +16,7 @@ export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldLoa
   const { uploadFile } = transfer.fields;
 
   const azureStorageService = useDependency(IAzureStorageService);
-  azureStorageService.messageHandlers = useContext(MessageContext);
+  azureStorageService.messageContext = useContext(MessageContext);
 
   const onDrop = useCallback(
     async files => {

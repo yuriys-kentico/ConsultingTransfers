@@ -2,31 +2,20 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 import { Message, Progress, Segment } from 'semantic-ui-react';
 
 import { getSizeText, toRounded } from '../../../utilities/numbers';
-import { UpdateSnackHandler } from './snacks';
+import { ISnack, IUpdateMessage } from './snacks';
 
-export type SnackType = 'success' | 'info' | 'warning' | 'error' | 'update';
-
-export interface ISnack {
-  text: string;
-  type: SnackType;
-  update?: UpdateSnackHandler;
-  key?: number;
-}
-
-export interface IUpdateMessage {
-  current: number;
-  total: number;
-  duration?: number;
-}
-
-export const Snack: FC<ISnack> = ({ type, text, update }) => {
-  const [progress, setProgress] = useState<IUpdateMessage>({ current: 0, total: 0 });
+export const Snack: FC<ISnack> = ({ type, content, update }) => {
   const startStamp = useRef(Date.now());
 
+  const [progress, setProgress] = useState<IUpdateMessage>({ current: 0, total: 0 });
+  const [duration, setDuration] = useState<number>(0);
   useEffect(() => {
     if (update) {
       const subscription = update.subscribe({
-        next: update => setProgress({ ...update, duration: Date.now() - startStamp.current })
+        next: update => {
+          setProgress(update);
+          setDuration(Date.now() - startStamp.current);
+        }
       });
 
       return () => subscription.unsubscribe();
@@ -37,22 +26,22 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
 
   switch (type) {
     case 'success':
-      message = <Message floating compact content={text} success />;
+      message = <Message floating compact content={content} success />;
       break;
     case 'info':
-      message = <Message floating compact content={text} info />;
+      message = <Message floating compact content={content} info />;
       break;
     case 'warning':
-      message = <Message floating compact content={text} warning />;
+      message = <Message floating compact content={content} warning />;
       break;
     case 'error':
-      message = <Message floating compact content={text} error />;
+      message = <Message floating compact content={content} error />;
       break;
     case 'update':
-      const { current, total, duration } = progress;
+      const { current, total } = progress;
       const [sent, unit] = getSizeText(current, 2);
 
-      let content = `${sent} ${unit}`;
+      let updateContent = `${sent} ${unit}`;
 
       if (duration !== undefined && duration > 0) {
         const rate = toRounded(current / duration / 1000, 2);
@@ -76,15 +65,15 @@ export const Snack: FC<ISnack> = ({ type, text, update }) => {
         const remainingSeconds = (remainingMinutesMilliseconds - remainingSecondsMilliseconds) / 1000;
         remainingTimeSegments.push(`${remainingSeconds} seconds`);
 
-        content += ` at ${getSizeText(rate, 2)[0]} ${unit}/s${remainingTimeSegments.join(' ')} to go`;
+        updateContent += ` at ${getSizeText(rate, 2)[0]} ${unit}/s${remainingTimeSegments.join(' ')} to go`;
       }
 
       const percent = toRounded((current / total) * 100);
 
       message = (
         <Message floating compact info>
-          {text}
-          {update && <Progress percent={percent} content={content} progress indicating autoSuccess />}
+          {content}
+          {update && <Progress percent={percent} content={updateContent} progress indicating autoSuccess />}
         </Message>
       );
       break;

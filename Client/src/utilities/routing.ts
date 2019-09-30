@@ -5,19 +5,18 @@ import { withAuthentication } from 'react-aad-msal';
 
 import { authProvider } from '../app/authProvider';
 import { routes } from '../app/routes';
-import { IErrorProps } from '../app/shared/Error';
 import { errors, header } from '../terms.en-us.json';
 
 Axios.interceptors.response.use(undefined, error => {
   if (error.response && error.response.status === 404) {
-    navigateToError({
-      message: errors.genericError,
-      stack: error.stack
+    navigate(routes.error, {
+      state: {
+        message: errors.genericError,
+        stack: error.stack
+      }
     });
   }
 });
-
-export const navigateToError = (errorMessage: IErrorProps) => navigate(routes.error, { state: errorMessage });
 
 interface AuthenticatedProps {
   authenticated?: boolean;

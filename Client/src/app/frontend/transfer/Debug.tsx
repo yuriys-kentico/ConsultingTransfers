@@ -12,7 +12,7 @@ import { toRounded } from '../../../utilities/numbers';
 import { useSubscription } from '../../../utilities/observables';
 import { promiseAfter } from '../../../utilities/promises';
 import { MessageContext } from '../header/MessageContext';
-import { IUpdateMessage } from '../header/Snack';
+import { IUpdateMessage } from '../header/snacks';
 import { BlobDetails } from './BlobDetails';
 
 export const Debug: FC = () => {
@@ -20,13 +20,12 @@ export const Debug: FC = () => {
 
   const toggleSelectedBlob = (blob: BlobItem) => {
     selectedBlobs.indexOf(blob) > -1
-      ? setSelectedBlobs(selectedBlobs => [...deleteFrom(blob, selectedBlobs)])
+      ? setSelectedBlobs(selectedBlobs => deleteFrom(blob, selectedBlobs))
       : setSelectedBlobs(selectedBlobs => [...selectedBlobs, blob]);
   };
 
   const azureStorageService = useDependency(IAzureStorageService);
-  azureStorageService.messageHandlers = useContext(MessageContext);
-
+  azureStorageService.messageContext = useContext(MessageContext);
   const blobs = useSubscription(azureStorageService.blobs);
 
   for (const blob of selectedBlobs) {

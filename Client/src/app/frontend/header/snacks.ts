@@ -1,47 +1,40 @@
-import { Dispatch, SetStateAction } from 'react';
+import { ReactNode } from 'react';
 import { Observable } from 'rxjs';
 
-import { deleteFrom } from '../../../utilities/arrays';
-import { promiseAfter } from '../../../utilities/promises';
-import { ISnack, IUpdateMessage, SnackType } from './Snack';
+export type SnackType = 'success' | 'info' | 'warning' | 'error' | 'update';
 
-type ShowSnackHandler = (
-  setSnacks: Dispatch<SetStateAction<ISnack[]>>,
-  text: string,
+export interface ISnack {
+  content: ReactNode;
+  type: SnackType;
+  update?: UpdateStream;
+  key?: number;
+}
+
+export interface IUpdateMessage {
+  current: number;
+  total: number;
+}
+
+export type UpdateStream = Observable<IUpdateMessage>;
+
+export const showSnack = async <T>(
+  content: React.ReactNode,
   type: SnackType,
-  hideSnackHandler: HideSnackHandler,
-  updateSnackHandler?: UpdateSnackHandler
-) => void;
-
-type HideSnackHandler = (snack: ISnack, setSnacks: Dispatch<SetStateAction<ISnack[]>>) => void;
-
-export type UpdateSnackHandler = Observable<IUpdateMessage>;
-
-type HideSnackWhenHandler = <T>(
-  executor: Promise<T>
-) => (snack: ISnack, setSnacks: Dispatch<SetStateAction<ISnack[]>>) => void;
-
-export const showSnack: ShowSnackHandler = (setSnacks, text, type, hideSnackHandler, updateSnackHandler) => {
+  addSnack: (snack: ISnack) => void,
+  isComplete: Promise<T>,
+  hideSnack: (snack: ISnack) => void,
+  updateStream?: Observable<IUpdateMessage>
+) => {
   const newSnack: ISnack = {
-    text: text,
-    type: type,
-    update: updateSnackHandler,
+    content,
+    type,
+    update: updateStream,
     key: Math.random()
   };
 
-  setSnacks(snacks => {
-    hideSnackHandler(newSnack, setSnacks);
+  addSnack(newSnack);
 
-    return [...snacks, newSnack];
-  });
+  await isComplete;
+
+  hideSnack(newSnack);
 };
-
-export const hideSnackWhen: HideSnackWhenHandler = executor => (snack, setSnacks) => {
-  executor.then(() => {
-    setSnacks(snacks => {
-      return deleteFrom(snack, snacks);
-    });
-  });
-};
-
-export const hideSnackAfter = (timeout: number) => hideSnackWhen(promiseAfter(timeout)({}));

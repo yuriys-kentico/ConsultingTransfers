@@ -22,15 +22,16 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
   const messageContext = useContext(MessageContext);
 
   const azureStorageService = useDependency(IAzureStorageService);
-  azureStorageService.messageHandlers = messageContext;
+  azureStorageService.messageContext = messageContext;
 
   const azureFunctionsService = useDependency(IAzureFunctionsService);
+  azureFunctionsService.messageContext = messageContext;
   const transferDetails = useSubscription(azureFunctionsService.transferDetails);
 
   const containerToken = decodeURIComponent(encodedContainerToken || '');
 
   useEffect(() => {
-    azureFunctionsService.getTransferDetails(containerToken, messageContext);
+    azureFunctionsService.getTransferDetails(containerToken);
   }, [azureFunctionsService, containerToken, messageContext]);
 
   useEffect(() => {

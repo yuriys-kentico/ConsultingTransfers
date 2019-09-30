@@ -1,7 +1,7 @@
 import { AnonymousCredential, ContainerURL, StorageURL } from '@azure/storage-blob';
 import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 
-import { IMessageHandlers } from '../../app/frontend/header/MessageContext';
+import { IMessageContext } from '../../app/frontend/header/MessageContext';
 
 interface IAzureStorageAppOptions {
   uploadBlockMb: number;
@@ -10,7 +10,7 @@ interface IAzureStorageAppOptions {
 
 export interface IAzureStorageOptions {
   appOptions: IAzureStorageAppOptions;
-  messageHandlers: IMessageHandlers;
+  messageHandlers: IMessageContext;
   containerUrl: ContainerURL;
 }
 

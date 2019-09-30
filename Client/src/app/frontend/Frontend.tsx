@@ -1,24 +1,24 @@
 import { Link, LinkGetProps, Router } from '@reach/router';
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useRef, useState } from 'react';
 import AzureAD from 'react-aad-msal';
 import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
 import { experience } from '../../appSettings.json';
 import { admin, errors, header } from '../../terms.en-us.json';
+import { deleteFrom } from '../../utilities/arrays';
 import { promiseAfter } from '../../utilities/promises';
 import { RoutedFC } from '../../utilities/routing';
 import { authProvider } from '../authProvider';
 import { routes } from '../routes';
 import {
-    IMessageHandlers,
+    IMessageContext,
     MessageContext,
     ShowErrorHandler,
     ShowInfoHandler,
     ShowInfoUntilHandler,
 } from './header/MessageContext';
-import { ISnack } from './header/Snack.js';
-import { SnackBar } from './header/SnackBar';
-import { hideSnackAfter, hideSnackWhen, showSnack } from './header/snacks';
+import { Snack } from './header/Snack';
+import { ISnack, showSnack } from './header/snacks';
 
 const Home = lazy(() => import('./admin/Home').then(module => ({ default: module.Home })));
 const Transfers = lazy(() => import('./admin/Transfers').then(module => ({ default: module.Transfers })));
@@ -31,13 +31,24 @@ export const Frontend: RoutedFC = () => {
   const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');
 
   const showInfo: ShowInfoHandler = (text, timeout, type = 'info') => {
-    timeout = timeout ? timeout : snackTimeout;
-
-    showSnack(setSnacks, text, type, hideSnackAfter(timeout));
+    showSnack(
+      text,
+      type,
+      snack => setSnacks(snacks => [...snacks, snack]),
+      promiseAfter(timeout || snackTimeout)({}),
+      snack => setSnacks(snacks => deleteFrom(snack, snacks))
+    );
   };
 
-  const showInfoUntil: ShowInfoUntilHandler = (text, executor, update?) => {
-    showSnack(setSnacks, text, 'update', hideSnackWhen(executor.then(promiseAfter(snackTimeout))), update);
+  const showInfoUntil: ShowInfoUntilHandler = (text, isComplete, update?) => {
+    showSnack(
+      text,
+      'update',
+      snack => setSnacks(snacks => [...snacks, snack]),
+      isComplete.then(promiseAfter(snackTimeout)),
+      snack => setSnacks(snacks => deleteFrom(snack, snacks)),
+      update
+    );
   };
 
   const showWarning: ShowErrorHandler = (error, timeout) => {
@@ -58,7 +69,7 @@ export const Frontend: RoutedFC = () => {
 
   const [snacks, setSnacks] = useState<ISnack[]>([]);
 
-  const [headerContext] = useState<IMessageHandlers>({
+  const headerContext = useRef<IMessageContext>({
     showSuccess,
     showInfo,
     showInfoUntil,
@@ -73,8 +84,12 @@ export const Frontend: RoutedFC = () => {
   });
 
   return (
-    <MessageContext.Provider value={headerContext}>
-      <SnackBar snacks={snacks} />
+    <MessageContext.Provider value={headerContext.current}>
+      <div className='snack bar'>
+        {snacks.map(snack => (
+          <Snack {...snack} />
+        ))}
+      </div>
       <Sidebar.Pushable>
         <AzureAD provider={authProvider}>
           <Sidebar

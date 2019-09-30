@@ -41,8 +41,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   const [fieldLoading, setFieldLoading] = useState(false);
 
   const azureStorageService = useDependency(IAzureStorageService);
-  azureStorageService.messageHandlers = useContext(MessageContext);
-
+  azureStorageService.messageContext = useContext(MessageContext);
   const blobs = useSubscription(azureStorageService.blobs);
 
   const isCompleted =

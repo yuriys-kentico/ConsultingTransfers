@@ -4,8 +4,8 @@ import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { createWriteStream } from 'streamsaver';
 
-import { IMessageHandlers } from '../../app/frontend/header/MessageContext';
-import { IUpdateMessage } from '../../app/frontend/header/Snack';
+import { IMessageContext } from '../../app/frontend/header/MessageContext';
+import { IUpdateMessage } from '../../app/frontend/header/snacks';
 import { azureStorage } from '../../appSettings.json';
 import { azureStorage as azureStorageTerms } from '../../terms.en-us.json';
 import { ensureArray } from '../../utilities/arrays';
@@ -19,11 +19,11 @@ export interface IAzureStorageService {
   blobs: BehaviorSubject<BlobItem[]>;
   containerUrl: ContainerURL;
   containerName: string;
-  messageHandlers: IMessageHandlers;
+  messageContext: IMessageContext;
   initialize(containerName: string, containerUrl: string): Promise<void>;
   createContainer(containerName: string): Promise<void>;
   deleteContainer(containerName: string): Promise<void>;
-  listBlobs(messageHandlers: IMessageHandlers): void;
+  listBlobs(): void;
   deleteBlobs(blobs: BlobItem | BlobItem[]): Promise<void>;
   uploadFiles(files: File[] | File, directory: string, silent?: boolean): Promise<void>;
   downloadBlob(blob: BlobItem): Promise<void>;
@@ -34,7 +34,7 @@ export class AzureStorageService implements IAzureStorageService {
   blobs: BehaviorSubject<BlobItem[]> = new BehaviorSubject([] as BlobItem[]);
   containerUrl!: ContainerURL;
   containerName!: string;
-  messageHandlers!: IMessageHandlers;
+  messageContext!: IMessageContext;
 
   async initialize(containerName: string, containerUrl: string) {
     this.containerName = containerName;
@@ -44,7 +44,7 @@ export class AzureStorageService implements IAzureStorageService {
   }
 
   async createContainer(containerName: string) {
-    const { showInfoUntil, showError, showSuccess } = this.messageHandlers;
+    const { showInfoUntil, showError, showSuccess } = this.messageContext;
 
     try {
       var createPromise = this.containerUrl.create(Aborter.none);
@@ -60,7 +60,7 @@ export class AzureStorageService implements IAzureStorageService {
   }
 
   async deleteContainer(containerName: string) {
-    const { showInfoUntil, showError, showSuccess } = this.messageHandlers;
+    const { showInfoUntil, showError, showSuccess } = this.messageContext;
 
     try {
       var deletePromise = this.containerUrl.delete(Aborter.none);
@@ -78,7 +78,7 @@ export class AzureStorageService implements IAzureStorageService {
   async listBlobs() {
     let blobs: BlobItem[] = [];
 
-    const { showError } = this.messageHandlers;
+    const { showError } = this.messageContext;
 
     try {
       let marker: string | undefined;
@@ -98,7 +98,7 @@ export class AzureStorageService implements IAzureStorageService {
   }
 
   async deleteBlobs(blobs: BlobItem | BlobItem[]) {
-    const { showInfo, showError, showSuccess, showWarning } = this.messageHandlers;
+    const { showInfo, showError, showSuccess, showWarning } = this.messageContext;
 
     let blobsToDelete = ensureArray(blobs);
 
@@ -124,7 +124,7 @@ export class AzureStorageService implements IAzureStorageService {
   }
 
   async uploadFiles(files: File[] | File, directory: string, silent?: boolean) {
-    const { showInfoUntil, showError, showSuccess } = this.messageHandlers;
+    const { showInfoUntil, showError, showSuccess } = this.messageContext;
 
     let filesToUpload = ensureArray(files);
 
@@ -156,7 +156,7 @@ export class AzureStorageService implements IAzureStorageService {
   }
 
   async downloadBlob(blob: BlobItem) {
-    const { showInfoUntil, showError, showSuccess } = this.messageHandlers;
+    const { showInfoUntil, showError, showSuccess } = this.messageContext;
 
     try {
       const blockBlobURL = BlockBlobURL.fromContainerURL(this.containerUrl, blob.name);
@@ -191,7 +191,7 @@ export class AzureStorageService implements IAzureStorageService {
   }
 
   async readBlobString(blob: BlobItem) {
-    const { showError } = this.messageHandlers;
+    const { showError } = this.messageContext;
 
     try {
       const blockBlobURL = BlockBlobURL.fromContainerURL(this.containerUrl, blob.name);

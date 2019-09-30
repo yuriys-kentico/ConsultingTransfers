@@ -10,13 +10,12 @@ import { authenticated, AuthenticatedRoutedFC, getTransferUrl, setTitle } from '
 import { MessageContext } from '../header/MessageContext';
 
 export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
-  const messageContext = useContext(MessageContext);
-
   const azureFunctionsService = useDependency(IAzureFunctionsService);
+  azureFunctionsService.messageContext = useContext(MessageContext);
 
   useEffect(() => {
-    azureFunctionsService.listTransfers(messageContext);
-  }, [azureFunctionsService, messageContext]);
+    azureFunctionsService.listTransfers();
+  }, [azureFunctionsService]);
 
   const transfers = useSubscription(azureFunctionsService.transfers);
 
