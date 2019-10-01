@@ -16,7 +16,7 @@ import { getContainerURL, getSafePathSegment } from './azureStorage';
 export const IAzureStorageService = 'IAzureStorageService';
 
 export interface IAzureStorageService {
-  blobs: BehaviorSubject<BlobItem[]>;
+  blobs: BehaviorSubject<BlobItem[] | undefined>;
   containerUrl: ContainerURL;
   containerName: string;
   messageContext: IMessageContext;
@@ -31,7 +31,7 @@ export interface IAzureStorageService {
 }
 
 export class AzureStorageService implements IAzureStorageService {
-  blobs: BehaviorSubject<BlobItem[]> = new BehaviorSubject([] as BlobItem[]);
+  blobs: BehaviorSubject<BlobItem[] | undefined> = new BehaviorSubject<BlobItem[] | undefined>(undefined);
   containerUrl!: ContainerURL;
   containerName!: string;
   messageContext!: IMessageContext;

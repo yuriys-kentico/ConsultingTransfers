@@ -29,6 +29,7 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
       <Table unstackable singleLine basic='very'>
         <Table.Header>
           <Table.Row>
+            <Table.HeaderCell>{table.region}</Table.HeaderCell>
             <Table.HeaderCell>{table.transfer}</Table.HeaderCell>
             <Table.HeaderCell>{table.customer}</Table.HeaderCell>
             <Table.HeaderCell>{table.requester}</Table.HeaderCell>
@@ -36,7 +37,7 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {!(transfers && transfers.length > 0) ? (
+          {!transfers ? (
             <Table.Row>
               <Table.Cell>
                 <Loader active size='massive' />
@@ -45,11 +46,12 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
           ) : (
             transfers.map((item, index) => (
               <Table.Row key={index}>
+                <Table.Cell>{item.region.toUpperCase()}</Table.Cell>
                 <Table.Cell>{item.system.name}</Table.Cell>
                 <Table.Cell>{item.customer}</Table.Cell>
                 <Table.Cell>{item.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
-                  <Button circular icon='edit' as={Link} to={getTransferUrl(item.containerToken)} />
+                  <Button circular icon='edit' as={Link} to={getTransferUrl(item.transferToken)} />
                 </Table.Cell>
               </Table.Row>
             ))

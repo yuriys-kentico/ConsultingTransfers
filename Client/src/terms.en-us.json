@@ -24,7 +24,8 @@
       "table": {
         "transfer": "Transfer",
         "customer": "Customer",
-        "requester": "Requester"
+        "requester": "Requester",
+        "region": "Region"
       }
     }
   },

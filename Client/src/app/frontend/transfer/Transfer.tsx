@@ -15,10 +15,10 @@ import { Fields } from './Fields';
 const Debug = lazy(() => import('./Debug').then(module => ({ default: module.Debug })));
 
 export interface ITransferProps {
-  encodedContainerToken: string;
+  encodedTransferToken: string;
 }
 
-export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) => {
+export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => {
   const messageContext = useContext(MessageContext);
 
   const azureStorageService = useDependency(IAzureStorageService);
@@ -28,11 +28,11 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedContainerToken }) =>
   azureFunctionsService.messageContext = messageContext;
   const transferDetails = useSubscription(azureFunctionsService.transferDetails);
 
-  const containerToken = decodeURIComponent(encodedContainerToken || '');
+  const transferToken = decodeURIComponent(encodedTransferToken || '');
 
   useEffect(() => {
-    azureFunctionsService.getTransferDetails(containerToken);
-  }, [azureFunctionsService, containerToken, messageContext]);
+    azureFunctionsService.getTransferDetails(transferToken);
+  }, [azureFunctionsService, transferToken, messageContext]);
 
   useEffect(() => {
     if (transferDetails) {

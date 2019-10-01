@@ -4,25 +4,27 @@ import { BehaviorSubject } from 'rxjs';
 
 import { authProvider } from '../../app/authProvider';
 import { IMessageContext } from '../../app/frontend/header/MessageContext';
-import { getTransfer, listTransfers, region } from '../../transfers.json';
+import { getTransfer, listTransfers } from '../../transfers.json';
 import { IGetTransferDetails, IListTransfers, ITransfer } from './azureFunctions';
 
 export const IAzureFunctionsService = 'IAzureFunctionsService';
 
 export interface IAzureFunctionsService {
-  transfers: BehaviorSubject<ITransfer[]>;
-  transferDetails: BehaviorSubject<IGetTransferDetails>;
+  transfers: BehaviorSubject<ITransfer[] | undefined>;
+  transferDetails: BehaviorSubject<IGetTransferDetails | undefined>;
   messageContext: IMessageContext;
-  listTransfers(detailsKey?: string): Promise<void>;
-  getTransferDetails(containerToken: string): Promise<void>;
+  listTransfers(region?: string, detailsKey?: string): Promise<void>;
+  getTransferDetails(transferToken: string): Promise<void>;
 }
 
 export class AzureFunctionsService implements IAzureFunctionsService {
-  transfers: BehaviorSubject<ITransfer[]> = new BehaviorSubject<ITransfer[]>([]);
-  transferDetails: BehaviorSubject<IGetTransferDetails> = new BehaviorSubject<IGetTransferDetails>(null as any);
+  transfers: BehaviorSubject<ITransfer[] | undefined> = new BehaviorSubject<ITransfer[] | undefined>(undefined);
+  transferDetails: BehaviorSubject<IGetTransferDetails | undefined> = new BehaviorSubject<
+    IGetTransferDetails | undefined
+  >(undefined);
   messageContext!: IMessageContext;
 
-  async listTransfers(detailsKey?: string) {
+  async listTransfers(region?: string, detailsKey?: string) {
     const { showError } = this.messageContext;
     const bearerToken = detailsKey ? detailsKey : (await authProvider.getAccessToken()).accessToken;
 
@@ -43,7 +45,7 @@ export class AzureFunctionsService implements IAzureFunctionsService {
     this.transfers.next(transfers);
   }
 
-  async getTransferDetails(containerToken: string) {
+  async getTransferDetails(transferToken: string) {
     const { showError } = this.messageContext;
     const bearerToken =
       authProvider.authenticationState === AuthenticationState.Authenticated
@@ -55,7 +57,7 @@ export class AzureFunctionsService implements IAzureFunctionsService {
     try {
       const response = await Axios.post<IGetTransferDetails>(
         getTransfer.endpoint,
-        { region, containerToken },
+        { transferToken },
         this.getAuthorizationHeaders(getTransfer.key, bearerToken)
       );
 

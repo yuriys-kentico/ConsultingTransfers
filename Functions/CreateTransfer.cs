@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 
 using AzureStorage;
+using AzureStorage.Models;
 
 using Core;
 
@@ -16,6 +17,8 @@ using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
 
 namespace Functions
 {
@@ -48,9 +51,11 @@ namespace Functions
 
                 if (message.Operation == "publish")
                 {
-                    var blobClient = storageService.GetCloudBlobClient(request.Query["region"]);
+                    var region = request.Query["region"];
 
-                    await CreateContainers(data.Items, blobClient);
+                    var blobClient = storageService.GetCloudBlobClient(region);
+
+                    await CreateContainers(data.Items, blobClient, region);
                 }
 
                 return new OkResult();
@@ -61,7 +66,7 @@ namespace Functions
             }
         }
 
-        private async Task CreateContainers(Item[] items, CloudBlobClient blobClient)
+        private async Task CreateContainers(Item[] items, CloudBlobClient blobClient, string region)
         {
             foreach (var item in items)
             {
@@ -70,7 +75,13 @@ namespace Functions
 
                 await container.CreateIfNotExistsAsync();
 
-                container.Metadata.Add(storageService.ContainerToken, encryptionService.Encrypt(item.Codename));
+                var transferToken = new TransferToken
+                {
+                    Region = region,
+                    ItemName = item.Codename
+                };
+
+                container.Metadata.Add(storageService.TransferToken, encryptionService.Encrypt(JsonConvert.SerializeObject(transferToken)));
 
                 await container.SetMetadataAsync();
             }

@@ -23,6 +23,11 @@ interface IDetailsValue {
   requester: string;
 }
 
+interface IDetailsConfig {
+  key: string;
+  region: string;
+}
+
 const defaultDetailsValue: IDetailsValue = { customer: '', requester: '' };
 
 export const Details: RoutedFC = () => {
@@ -34,11 +39,11 @@ export const Details: RoutedFC = () => {
   const [customer, setCustomer] = useState('');
   const [requester, setRequester] = useState('');
   const [enabled, setEnabled] = useState(true);
-  const [containerToken, setContainerToken] = useState<string>();
+  const [transferToken, setTransferToken] = useState<string>();
   const [codename, setCodename] = useState('');
 
   const customElementRef = useRef<HTMLDivElement>(null);
-  const customElementKey = useRef<string>();
+  const customElementConfig = useRef<IDetailsConfig>({ key: '', region: '' });
 
   const azureFunctionsService = useDependency(IAzureFunctionsService);
   azureFunctionsService.messageContext = useContext(MessageContext);
@@ -57,7 +62,7 @@ export const Details: RoutedFC = () => {
       setRequester(elementValue.requester || '');
 
       // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
-      customElementKey.current = (element.config as { key: string }).key;
+      customElementConfig.current = element.config as IDetailsConfig;
 
       setEnabledAndRetrieveToken(!element.disabled);
 
@@ -68,11 +73,11 @@ export const Details: RoutedFC = () => {
       setEnabled(enabled);
 
       if (!enabled) {
-        setContainerToken(undefined);
+        setTransferToken(undefined);
 
         CustomElement.init((_, context) => {
           setCodename(context.item.codename);
-          azureFunctionsService.listTransfers(customElementKey.current);
+          azureFunctionsService.listTransfers(customElementConfig.current.region, customElementConfig.current.key);
         });
       }
     };
@@ -85,11 +90,11 @@ export const Details: RoutedFC = () => {
   if (transfers) {
     const transfer = transfers.filter(transfer => transfer.system.codename === codename)[0];
 
-    if (transfer && transfer.containerToken && !containerToken) {
-      setContainerToken(transfer.containerToken);
-    } else if (customElementKey.current) {
+    if (transfer && transfer.transferToken && !transferToken) {
+      setTransferToken(transfer.transferToken);
+    } else if (customElementConfig.current.key) {
       promiseAfter(experience.detailsContainerCheckTimeout)(() =>
-        azureFunctionsService.listTransfers(customElementKey.current)
+        azureFunctionsService.listTransfers(customElementConfig.current.region, customElementConfig.current.key)
       );
     }
   }
@@ -150,7 +155,7 @@ export const Details: RoutedFC = () => {
               />
             </div>
           </div>
-          {enabled ? null : !containerToken ? (
+          {enabled ? null : !transferToken ? (
             <Loader active size='massive' />
           ) : (
             <div className='element'>
@@ -173,8 +178,8 @@ export const Details: RoutedFC = () => {
                         <Label horizontal>{details.container.publicUrl}</Label>
                       </Table.Cell>
                       <Table.Cell>
-                        <a href={getUrl(getTransferUrl(containerToken))} target='_blank' rel='noopener noreferrer'>
-                          {getUrl(getTransferUrl(containerToken))}
+                        <a href={getUrl(getTransferUrl(transferToken))} target='_blank' rel='noopener noreferrer'>
+                          {getUrl(getTransferUrl(transferToken))}
                         </a>
                       </Table.Cell>
                     </Table.Row>

@@ -12,19 +12,22 @@ namespace KenticoKontent.Models
 
         public string Requester { get; set; }
 
-        public string ContainerToken { get; set; }
+        public string Region { get; set; }
+
+        public string TransferToken { get; set; }
 
         public string Fields { get; set; }
 
         public ContentItemSystemAttributes System { get; set; }
 
-        public Transfer(TransferItem transfer, string containerToken)
+        public Transfer(TransferItem transfer, string transferToken, string region)
         {
             dynamic details = JsonConvert.DeserializeObject(transfer.Details);
 
             Customer = details.customer;
             Requester = details.requester;
-            ContainerToken = containerToken;
+            Region = region;
+            TransferToken = transferToken;
 
             Fields = Regex
                 .Replace(transfer.Fields, "<.*?>|\n", string.Empty)

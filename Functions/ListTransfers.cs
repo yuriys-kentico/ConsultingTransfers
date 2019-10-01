@@ -61,13 +61,24 @@ namespace Functions
 
         private async Task<OkObjectResult> GetTransfers(HttpRequest request)
         {
-            var (region, _) = await AzureFunctionHelper.GetPayloadAsync<RequestsRequest>(request);
-            var response = await KenticoKontentHelper
-                .GetDeliveryClient(region)
-                .GetItemsAsync<TransferItem>();
+            var specificRegion = (await AzureFunctionHelper.GetPayloadAsync<TransfersRequest>(request)).Region;
 
-            var blobClient = storageService.GetCloudBlobClient(region);
-            var transfers = GetTransfers(response.Items, blobClient);
+            var regions = string.IsNullOrEmpty(specificRegion)
+                ? AzureFunctionHelper.GetSetting("regions").Split(';', StringSplitOptions.RemoveEmptyEntries)
+                : new[] { specificRegion };
+
+            List<Transfer> transfers = new List<Transfer>();
+
+            foreach (var region in regions)
+            {
+                var response = await KenticoKontentHelper
+                    .GetDeliveryClient(region)
+                    .GetItemsAsync<TransferItem>();
+
+                var blobClient = storageService.GetCloudBlobClient(region);
+
+                transfers.AddRange(GetTransfers(response.Items, blobClient, region));
+            }
 
             return new OkObjectResult(new
             {
@@ -75,20 +86,20 @@ namespace Functions
             });
         }
 
-        private IEnumerable<Transfer> GetTransfers(IReadOnlyList<TransferItem> transferItems, CloudBlobClient blobClient)
+        private IEnumerable<Transfer> GetTransfers(IReadOnlyList<TransferItem> transferItems, CloudBlobClient blobClient, string region)
         {
             foreach (var transferItem in transferItems)
             {
                 var containerName = storageService.GetSafeStorageName(transferItem.System.Codename);
-                string containerToken = null;
+                string transferToken = null;
 
                 blobClient.ListContainers(containerName, ContainerListingDetails.Metadata)
                     .FirstOrDefault(container => container.Name == containerName)?
-                    .Metadata.TryGetValue(storageService.ContainerToken, out containerToken);
+                    .Metadata.TryGetValue(storageService.TransferToken, out transferToken);
 
-                if (!string.IsNullOrEmpty(containerToken))
+                if (!string.IsNullOrEmpty(transferToken))
                 {
-                    yield return new Transfer(transferItem, containerToken);
+                    yield return new Transfer(transferItem, transferToken, region);
                 }
             }
         }

@@ -57,7 +57,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldLoad
     });
 
     return () => subscription.unsubscribe();
-  }, [completed, name, setFieldLoading, defaultText, azureStorageService, blobs]);
+  }, [name, setFieldLoading, defaultText, azureStorageService, blobs]);
 
   const updateEditorState = (draftState: EditorState) => {
     setEditorState(draftState);

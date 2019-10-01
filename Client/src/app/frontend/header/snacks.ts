@@ -18,7 +18,7 @@ export interface IUpdateMessage {
 export type UpdateStream = Observable<IUpdateMessage>;
 
 export const showSnack = async <T>(
-  content: React.ReactNode,
+  content: ReactNode,
   type: SnackType,
   addSnack: (snack: ISnack) => void,
   isComplete: Promise<T>,

@@ -5,7 +5,7 @@ namespace AzureStorage
 {
     public interface IStorageService
     {
-        string ContainerToken { get; }
+        string TransferToken { get; }
 
         CloudStorageAccount GetStorageAccount(string region);
 

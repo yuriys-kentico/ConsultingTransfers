@@ -1,7 +1,8 @@
 export interface ITransfer {
   customer: string;
   requester: string;
-  containerToken: string;
+  region: string;
+  transferToken: string;
   fields: string;
   system: {
     name: string;
@@ -18,4 +19,3 @@ export interface IGetTransferDetails {
   containerName: string;
   transfer: ITransfer;
 }
-

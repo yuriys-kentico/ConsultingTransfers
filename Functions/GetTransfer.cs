@@ -20,6 +20,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
+using Newtonsoft.Json;
+
 namespace Functions
 {
     public class GetTransfer
@@ -43,8 +45,9 @@ namespace Functions
         {
             try
             {
-                var (region, containerToken) = await AzureFunctionHelper.GetPayloadAsync<RequestsRequest>(request);
-                var itemName = encryptionService.Decrypt(containerToken);
+                var transferToken = encryptionService.Decrypt((await AzureFunctionHelper.GetPayloadAsync<TransferRequest>(request)).TransferToken);
+                var (region, itemName) = JsonConvert.DeserializeObject<TransferToken>(transferToken);
+
                 var containerName = storageService.GetSafeStorageName(itemName);
                 var tokenResult = await tokenProvider.ValidateTokenAsync(request);
 
@@ -68,7 +71,7 @@ namespace Functions
                     .GetDeliveryClient(region)
                     .GetItemAsync<TransferItem>(itemName);
 
-                var transfer = new Transfer(response.Item, containerToken);
+                var transfer = new Transfer(response.Item, transferToken, region);
 
                 return new OkObjectResult(new
                 {

@@ -39,10 +39,8 @@ export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldLoa
     fieldBlobs = getFieldBlobs(blobs, name);
   }
 
-  const getClassName = ['drop zone', isDragActive ? 'active' : '', completed ? 'disabled' : ''].join(' ');
-
   return (
-    <div {...getRootProps({ className: getClassName })}>
+    <div {...getRootProps({ className: `drop zone ${isDragActive ? 'active' : ''} ${completed ? 'disabled' : ''}` })}>
       <Container>
         {fieldBlobs.map((file, index) => (
           <List.Content key={index} className='padding bottom'>

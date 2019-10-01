@@ -134,7 +134,7 @@ export const Frontend: RoutedFC = () => {
                 <Router>
                   <Home path={routes.home} authenticated />
                   <Transfers path={routes.transfers} authenticated />
-                  <Transfer path={`${routes.transfer}:encodedContainerToken`} />
+                  <Transfer path={`${routes.transfer}:encodedTransferToken`} />
                   <Error path={routes.error} default message={errors.notFound} />
                 </Router>
               </Suspense>

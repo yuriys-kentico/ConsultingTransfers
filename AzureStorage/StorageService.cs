@@ -9,7 +9,7 @@ namespace AzureStorage
 {
     public class StorageService : IStorageService
     {
-        public string ContainerToken => "ContainerToken";
+        public string TransferToken => nameof(TransferToken);
 
         public CloudStorageAccount GetStorageAccount(string region)
         {
