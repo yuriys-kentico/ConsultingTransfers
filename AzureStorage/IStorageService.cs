@@ -1,5 +1,7 @@
-﻿using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using AzureStorage.Models;
 
 namespace AzureStorage
 {
@@ -7,14 +9,20 @@ namespace AzureStorage
     {
         string TransferToken { get; }
 
-        CloudStorageAccount GetStorageAccount(string region);
+        string GetAdminContainerUrl(GetContainerParameters getContainerParameters);
 
-        CloudBlobClient GetCloudBlobClient(string region);
+        string GetPublicContainerUrl(GetContainerParameters getContainerParameters);
 
-        string GetAdminContainerUrl(string region, string containerName);
+        Task<string> GetContainerTransferToken(GetContainerParameters getContainerParameters);
 
-        string GetPublicContainerUrl(string region, string containerName);
+        Task<IDictionary<string, File>> GetContainerFiles(GetContainerParameters getContainerParameters);
 
-        string GetSafeStorageName(string itemCodeName);
+        string GetSafeContainerName(string codename);
+
+        string GetSafePathSegment(string fieldName);
+
+        Task<string> CreateContainer(CreateContainerParameters createContainerParameters);
+
+        Task DeleteContainer(GetContainerParameters deleteContainerParameters);
     }
 }

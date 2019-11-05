@@ -36,7 +36,7 @@ export const Debug: FC = () => {
   }
 
   const azureFunctionService = useDependency(IAzureFunctionsService);
-  const transferDetails = useSubscription(azureFunctionService.transferDetails);
+  const transfer = useSubscription(azureFunctionService.transfer);
 
   const { showInfoUntil } = useContext(MessageContext);
 
@@ -66,7 +66,7 @@ export const Debug: FC = () => {
     showInfoUntil(`test ${totalTime}`, promiseAfter(totalTime)(''), updater);
   };
 
-  return !transferDetails ? null : (
+  return !transfer ? null : (
     <>
       <Divider />
       <Segment>
@@ -74,15 +74,15 @@ export const Debug: FC = () => {
         <List>
           <List.Item>
             <Label horizontal content={'Container name:'} />
-            {transferDetails.containerName}
+            {transfer.containerName}
           </List.Item>
           <List.Item>
             <Label horizontal content={'Customer:'} />
-            {transferDetails.transfer.customer}
+            {transfer.customer}
           </List.Item>
           <List.Item>
             <Label horizontal content={'Requester:'} />
-            {transferDetails.transfer.requester}
+            {transfer.requester}
           </List.Item>
         </List>
       </Segment>
@@ -91,26 +91,32 @@ export const Debug: FC = () => {
         <Table unstackable singleLine basic='very' compact>
           <Table.Body>
             {blobs &&
-              blobs.map((file, index) => (
+              blobs.map((blob, index) => (
                 <Table.Row key={index}>
                   <Table.Cell collapsing>
                     <Button
+                      onClick={() => toggleSelectedBlob(blob)}
+                      icon={selectedBlobs.indexOf(blob) > -1 ? 'check circle outline' : 'circle outline'}
                       circular
-                      icon={selectedBlobs.indexOf(file) > -1 ? 'check circle outline' : 'circle outline'}
                       compact
-                      onClick={() => toggleSelectedBlob(file)}
+                      basic
                     />
                   </Table.Cell>
                   <Table.Cell>
                     <BlobDetails
-                      file={file}
-                      fileName={file.name}
-                      color={file.name.endsWith(completed) ? 'green' : 'black'}
+                      file={blob}
+                      fileName={blob.name}
+                      color={blob.name.endsWith(completed) ? 'green' : 'black'}
                     />
                   </Table.Cell>
                   <Table.Cell textAlign='right'>
-                    <Button circular icon='download' onClick={() => azureStorageService.downloadBlob(file)} />
-                    <Button circular icon='trash' onClick={() => azureStorageService.deleteBlobs(file)} />
+                    <Button
+                      onClick={() => azureStorageService.downloadBlob(blob)}
+                      icon='download'
+                      color='green'
+                      circular
+                    />
+                    <Button onClick={() => azureStorageService.deleteBlobs(blob)} icon='trash' negative circular />
                   </Table.Cell>
                 </Table.Row>
               ))}
@@ -119,22 +125,37 @@ export const Debug: FC = () => {
       </Segment>
       <Divider hidden />
       <Button
+        onClick={() => azureStorageService.downloadBlobs(selectedBlobs)}
+        disabled={selectedBlobs.length === 0}
+        icon='download'
+        color='green'
+      />
+      <Button
         onClick={() => azureStorageService.deleteBlobs(selectedBlobs)}
         disabled={selectedBlobs.length === 0}
+        icon='trash'
         negative
-        content={'Delete selected files'}
       />
       <Button
-        onClick={() => azureStorageService.deleteContainer(transferDetails.containerName)}
-        negative
-        floated='right'
-        content={'Delete container'}
+        onClick={() => blobs && setSelectedBlobs(blobs)}
+        disabled={blobs && selectedBlobs.length === blobs.length}
+        content='Select all'
       />
       <Button
-        onClick={() => azureStorageService.createContainer(transferDetails.containerName)}
+        onClick={() =>
+          window.confirm('Are you sure you want to delete the container?') &&
+          azureStorageService.deleteContainer(transfer.containerName)
+        }
         floated='right'
-        content={'Create container'}
+        icon='trash'
+        negative
+        content='Container'
       />
+      {/* <Button
+        onClick={() => azureStorageService.createContainer(transfer.containerName)}
+        floated='right'
+        content='Create container'
+      /> */}
       <Button onClick={() => showRandomSnack()} floated='right' content='Show random snack' />
     </>
   );

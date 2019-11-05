@@ -2,7 +2,7 @@
 
 using Newtonsoft.Json;
 
-namespace KenticoKontent.Models
+namespace KenticoKontent.Models.Webhook
 {
     public class Webhook
     {

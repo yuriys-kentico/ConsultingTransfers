@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Observable } from 'rxjs';
+import { useMemo } from 'react';
+import { BehaviorSubject } from 'rxjs';
+import { useSubscription as useS } from 'use-subscription';
 
-export const useSubscription = <T>(observable: Observable<T>, initialValue?: T) => {
-  const [value, setValue] = useState(initialValue);
+export const useSubscription = <T>(behaviorSubject: BehaviorSubject<T>) =>
+  useS<T>(
+    useMemo(
+      () => ({
+        getCurrentValue: () => behaviorSubject.getValue(),
+        subscribe: callback => {
+          const subscription = behaviorSubject.subscribe({ next: callback });
+          return () => subscription.unsubscribe();
+        }
+      }),
 
-  useEffect(() => {
-    const subscription = observable.subscribe({ next: newValue => setValue(newValue) });
-    return () => subscription.unsubscribe();
-  }, [observable]);
-
-  return value;
-};
+      [behaviorSubject]
+    )
+  );

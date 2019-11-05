@@ -88,7 +88,7 @@ export const Details: RoutedFC = () => {
   const transfers = useSubscription(azureFunctionsService.transfers);
 
   if (transfers) {
-    const transfer = transfers.filter(transfer => transfer.system.codename === codename)[0];
+    const transfer = transfers.filter(transfer => transfer.codename === codename)[0];
 
     if (transfer && transfer.transferToken && !transferToken) {
       setTransferToken(transfer.transferToken);

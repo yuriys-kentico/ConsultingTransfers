@@ -1,10 +1,14 @@
 {
   "getTransfer": {
-    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/api/GetTransfer",
-    "key": "5AkNlfj6MVMWlN1HFBl4VI9RMam9juLXG8WYdXIbsSyeFW3z2IwLuQ=="
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/client/get",
+    "key": "a3St6wqK1fSoIArRe5ct6PkMCzKcQ4I3tl3UMugywceH6DxPj8W9Rg=="
   },
   "listTransfers": {
-    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/api/ListTransfers",
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/list",
     "key": "GfH7H8ufdtb/dL3htMnX7/oe1YNIt4Dv/NP/uEx6IfCgk8EITUZb5g=="
+  },
+  "updateTransfer": {
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/update",
+    "key": "O72eQvlrR68UJtf5QdcAj4xgyJwoNyCfq7aPYgGywLH2cD0nQ50NLQ=="
   }
 }

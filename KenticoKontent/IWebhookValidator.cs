@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
-using KenticoKontent.Models;
-
-using Microsoft.AspNetCore.Http;
+using KenticoKontent.Models.Webhook;
 
 namespace KenticoKontent
 {
     public interface IWebhookValidator
     {
-        Task<(bool valid, Func<Webhook> getWebhook)> ValidateWebhook(HttpRequest request, string identifier);
+        (bool valid, Func<Webhook> getWebhook) ValidateWebhook(string body, IDictionary<string, string> headers, string region);
     }
 }

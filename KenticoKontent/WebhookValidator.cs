@@ -1,13 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 using Core;
 
-using KenticoKontent.Models;
-
-using Microsoft.AspNetCore.Http;
+using KenticoKontent.Models.Webhook;
 
 using Newtonsoft.Json;
 
@@ -17,15 +15,14 @@ namespace KenticoKontent
     {
         private const string WebhookSignatureHeaderName = "X-Kc-Signature";
 
-        public async Task<(bool valid, Func<Webhook> getWebhook)> ValidateWebhook(HttpRequest request, string identifier)
+        public (bool valid, Func<Webhook> getWebhook) ValidateWebhook(string body, IDictionary<string, string> headers, string region)
         {
-            request.Headers.TryGetValue(WebhookSignatureHeaderName, out var signatureFromRequest);
+            headers.TryGetValue(WebhookSignatureHeaderName, out var signatureFromRequest);
 
-            var requestBody = await AzureFunctionHelper.GetBodyAsync(request);
-            var secret = AzureFunctionHelper.GetSetting(request.Query["region"], "webhookSecret", identifier);
-            var generatedSignature = GetHashForWebhook(requestBody, secret);
+            var secret = CoreHelper.GetSetting(region, "webhookSecret");
+            var generatedSignature = GetHashForWebhook(body, secret);
 
-            return (generatedSignature == signatureFromRequest, () => JsonConvert.DeserializeObject<Webhook>(requestBody));
+            return (generatedSignature == signatureFromRequest, () => JsonConvert.DeserializeObject<Webhook>(body));
         }
 
         private static string GetHashForWebhook(string content, string secret)

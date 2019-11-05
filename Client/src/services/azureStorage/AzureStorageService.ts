@@ -24,9 +24,10 @@ export interface IAzureStorageService {
   createContainer(containerName: string): Promise<void>;
   deleteContainer(containerName: string): Promise<void>;
   listBlobs(): void;
-  deleteBlobs(blobs: BlobItem | BlobItem[]): Promise<void>;
+  deleteBlobs(blobs: BlobItem | BlobItem[], silent?: boolean): Promise<void>;
   uploadFiles(files: File[] | File, directory: string, silent?: boolean): Promise<void>;
   downloadBlob(blob: BlobItem): Promise<void>;
+  downloadBlobs(blobs: BlobItem | BlobItem[]): Promise<void>;
   readBlobString(blob: BlobItem): Promise<string | undefined>;
 }
 
@@ -97,24 +98,24 @@ export class AzureStorageService implements IAzureStorageService {
     this.blobs.next(blobs);
   }
 
-  async deleteBlobs(blobs: BlobItem | BlobItem[]) {
+  async deleteBlobs(blobs: BlobItem | BlobItem[], silent?: boolean) {
     const { showInfo, showError, showSuccess, showWarning } = this.messageContext;
 
     let blobsToDelete = ensureArray(blobs);
-
-    const blobNames = blobsToDelete.map(blob => `${blob.name}`).join(', ');
 
     try {
       if (blobsToDelete.length === 0) {
         showWarning(azureStorageTerms.noFilesSelected);
       } else {
-        showInfo(format(azureStorageTerms.deletingFiles, blobNames));
+        const blobNames = blobsToDelete.map(blob => `${blob.name}`).join(', ');
+
+        !silent && showInfo(format(azureStorageTerms.deletingFiles, blobNames));
 
         for (const blob of blobsToDelete) {
           await BlobURL.fromContainerURL(this.containerUrl, blob.name).delete(Aborter.none);
         }
 
-        showSuccess(azureStorageTerms.done);
+        !silent && showSuccess(azureStorageTerms.done);
       }
     } catch (error) {
       showError(error);
@@ -185,6 +186,54 @@ export class AzureStorageService implements IAzureStorageService {
 
         showSuccess(format(azureStorageTerms.finishedDownloading, blob.name));
       }
+    } catch (error) {
+      showError(error);
+    }
+  }
+
+  async downloadBlobs(blobs: BlobItem | BlobItem[]) {
+    const { showInfoUntil, showError, showSuccess } = this.messageContext;
+
+    let blobsToDownload = ensureArray(blobs);
+
+    try {
+      const promises: { [key: string]: Promise<Blob> } = {};
+
+      for (const blob of blobsToDownload) {
+        const blockBlobURL = BlockBlobURL.fromContainerURL(this.containerUrl, blob.name);
+        const progressSubject = new Subject<IUpdateMessage>();
+        const downloadPromise = this.getDownloadPromise(blockBlobURL, progressSubject, blob);
+
+        const response = await downloadPromise;
+
+        if (response.blobBody) {
+          showInfoUntil(format(azureStorageTerms.downloadingFile, blob.name), response.blobBody, progressSubject);
+
+          promises[blob.name] = response.blobBody;
+        }
+      }
+
+      for (const blobName in promises) {
+        const promise = promises[blobName];
+
+        const stream = await promise;
+
+        const readableStream = new Response(stream).body;
+
+        if (readableStream) {
+          const fileStream = createWriteStream(blobName);
+          const downloadStream = readableStream.pipeTo(fileStream);
+
+          window.onunload = () => {
+            fileStream.abort(azureStorageTerms.abortDownload);
+          };
+
+          await downloadStream;
+        }
+      }
+
+      const fileNames = blobsToDownload.map(blob => `${blob.name}`).join(', ');
+      showSuccess(format(azureStorageTerms.finishedDownloading, fileNames));
     } catch (error) {
       showError(error);
     }

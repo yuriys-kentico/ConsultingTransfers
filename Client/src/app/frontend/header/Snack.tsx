@@ -26,16 +26,16 @@ export const Snack: FC<ISnack> = ({ type, content, update }) => {
 
   switch (type) {
     case 'success':
-      message = <Message floating compact content={content} success />;
+      message = <Message floating compact content={content} size='big' success />;
       break;
     case 'info':
-      message = <Message floating compact content={content} info />;
+      message = <Message floating compact content={content} size='big' info />;
       break;
     case 'warning':
-      message = <Message floating compact content={content} warning />;
+      message = <Message floating compact content={content} size='big' warning />;
       break;
     case 'error':
-      message = <Message floating compact content={content} error />;
+      message = <Message floating compact content={content} size='big' error />;
       break;
     case 'update':
       const { current, total } = progress;
@@ -71,7 +71,7 @@ export const Snack: FC<ISnack> = ({ type, content, update }) => {
       const percent = toRounded((current / total) * 100);
 
       message = (
-        <Message floating compact info>
+        <Message floating compact size='big' info>
           {content}
           {update && <Progress percent={percent} content={updateContent} progress indicating autoSuccess />}
         </Message>

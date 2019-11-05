@@ -1,11 +1,12 @@
 import { FC, lazy, useContext, useState } from 'react';
 import React from 'react';
-import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
+import { Checkbox, CheckboxProps, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
+import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
 import { completed, getSafePathSegment } from '../../../services/azureStorage/azureStorage';
 import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../services/dependencyContainer';
-import { transfer } from '../../../terms.en-us.json';
+import { transfer as transferTerms } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
 import { MessageContext } from '../header/MessageContext';
 
@@ -40,6 +41,9 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   const [loading, setLoading] = useState(false);
   const [fieldLoading, setFieldLoading] = useState(false);
 
+  const azureFunctionService = useDependency(IAzureFunctionsService);
+  const transfer = useSubscription(azureFunctionService.transfer);
+
   const azureStorageService = useDependency(IAzureStorageService);
   azureStorageService.messageContext = useContext(MessageContext);
   const blobs = useSubscription(azureStorageService.blobs);
@@ -47,7 +51,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
   const isCompleted =
     blobs && blobs.filter(blob => blob.name === `${getSafePathSegment(name)}/${completed}`).length > 0;
 
-  const getFieldType = (fieldType: FieldType) => {
+  const getFieldComponent = (fieldType: FieldType) => {
     switch (fieldType) {
       case 'write_text':
         return WriteText;
@@ -58,18 +62,40 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
     }
   };
 
-  const updateCompleted = async () => {
-    showInfo(transfer.fields.markingCompleted);
+  const updateCompleted = async (data: CheckboxProps) => {
+    if (data.checked) {
+      showInfo(transferTerms.fields.markingCompleted);
 
-    const file = new File([], completed);
+      setLoading(true);
 
-    setLoading(true);
+      await azureStorageService.uploadFiles(new File([], completed), name, true);
 
-    await azureStorageService.uploadFiles(file, name, true);
+      if (transfer) {
+        await azureFunctionService.sendTeamsMessage({
+          transferToken: transfer.transferToken,
+          fieldName: name,
+          messageItemCodename: 'field_updated'
+        });
+      }
 
-    setLoading(false);
+      setLoading(false);
 
-    showSuccess(transfer.fields.markedCompleted);
+      showSuccess(transferTerms.fields.markedCompleted);
+    } else if (window.confirm(transferTerms.fields.confirmMarkIncomplete)) {
+      showInfo(transferTerms.fields.markingIncomplete);
+
+      setLoading(true);
+
+      blobs &&
+        (await azureStorageService.deleteBlobs(
+          blobs.filter(blob => blob.name === `${getSafePathSegment(name)}/${completed}`),
+          true
+        ));
+
+      setLoading(false);
+
+      showSuccess(transferTerms.fields.markedIncomplete);
+    }
   };
 
   return (
@@ -77,10 +103,9 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
       <Header floated='right'>
         <Checkbox
           toggle
-          label={transfer.fields.markCompleted}
+          label={isCompleted ? transferTerms.fields.markIncomplete : transferTerms.fields.markCompleted}
           checked={isCompleted}
-          disabled={isCompleted}
-          onChange={updateCompleted}
+          onChange={(_, data) => updateCompleted(data)}
         />
       </Header>
       <Header floated='right' content={<Loader active={fieldLoading} inline size='tiny' />} />
@@ -89,7 +114,7 @@ export const FieldHolder: FC<IFieldHolderProps> = props => {
       {comment}
       <Divider fitted hidden />
       <Divider fitted hidden />
-      <Segment as={getFieldType(type)} {...props} completed={isCompleted} setFieldLoading={setFieldLoading} />
+      <Segment as={getFieldComponent(type)} {...props} completed={isCompleted} setFieldLoading={setFieldLoading} />
     </Segment>
   );
 };

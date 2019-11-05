@@ -1,32 +1,45 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using AzureStorage.Models;
 
 using Core;
 
+using Encryption;
+
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
+
+using Newtonsoft.Json;
 
 namespace AzureStorage
 {
     public class StorageService : IStorageService
     {
+        private readonly IEncryptionService encryptionService;
+
         public string TransferToken => nameof(TransferToken);
 
-        public CloudStorageAccount GetStorageAccount(string region)
+        public SharedAccessBlobPolicy PublicSharedAccessBlobPolicy => new SharedAccessBlobPolicy
         {
-            var storageConnectionString = AzureFunctionHelper.GetSetting(region);
+            Permissions = SharedAccessBlobPermissions.Read
+                    | SharedAccessBlobPermissions.Write
+                    | SharedAccessBlobPermissions.List,
+            SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5),
+            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(12)
+        };
 
-            return CloudStorageAccount.Parse(storageConnectionString);
+        public StorageService(IEncryptionService encryptionService)
+        {
+            this.encryptionService = encryptionService;
         }
 
-        public CloudBlobClient GetCloudBlobClient(string region)
+        public string GetAdminContainerUrl(GetContainerParameters getContainerParameters)
         {
-            var storageAccount = GetStorageAccount(region);
+            var (region, _) = getContainerParameters;
 
-            return storageAccount.CreateCloudBlobClient();
-        }
-
-        public string GetAdminContainerUrl(string region, string containerName)
-        {
             var storageAccount = GetStorageAccount(region);
 
             var policy = new SharedAccessAccountPolicy
@@ -44,38 +57,126 @@ namespace AzureStorage
                 Protocols = SharedAccessProtocol.HttpsOnly
             };
 
-            return GetContainerUrl(region, containerName, storageAccount.GetSharedAccessSignature(policy));
+            var container = GetContainer(getContainerParameters);
+
+            return container.Uri + storageAccount.GetSharedAccessSignature(policy);
         }
 
-        public string GetPublicContainerUrl(string region, string containerName)
+        public string GetPublicContainerUrl(GetContainerParameters getContainerParameters)
         {
-            var blobClient = GetCloudBlobClient(region);
+            var container = GetContainer(getContainerParameters);
 
-            var container = blobClient.GetContainerReference(containerName);
+            // The policy is saved to the container's shared access policies.
+            return container.Uri + container.GetSharedAccessSignature(PublicSharedAccessBlobPolicy);
+        }
 
-            // The SharedAccessBlobPolicy class is saved to the container's shared access policies.
-            var policy = new SharedAccessBlobPolicy
+        public string GetSafeContainerName(string codename)
+        {
+            return codename.Replace("_", "");
+        }
+
+        public string GetSafePathSegment(string fieldName)
+        {
+            return Regex.Replace(fieldName.ToLower(), "[^a-zA-Z0-9-_]", "");
+        }
+
+        public async Task<string> GetContainerTransferToken(GetContainerParameters getContainerParameters)
+        {
+            var container = GetContainer(getContainerParameters);
+
+            await container.FetchAttributesAsync();
+
+            string transferToken = null;
+
+            container?.Metadata.TryGetValue(TransferToken, out transferToken);
+
+            return transferToken;
+        }
+
+        public async Task<IDictionary<string, File>> GetContainerFiles(GetContainerParameters getContainerParameters)
+        {
+            var container = GetContainer(getContainerParameters);
+
+            string getBlobItemName(string prefix)
             {
-                Permissions = SharedAccessBlobPermissions.Read
-                    | SharedAccessBlobPermissions.Write
-                    | SharedAccessBlobPermissions.List,
-                SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5),
-                SharedAccessExpiryTime = DateTime.UtcNow.AddHours(12)
-            };
+                var parts = prefix.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-            return GetContainerUrl(region, containerName, container.GetSharedAccessSignature(policy, null));
+                return parts[parts.Length - 1];
+            }
+
+            IDictionary<string, File> files = new Dictionary<string, File>();
+
+            BlobContinuationToken continuationToken;
+
+            do
+            {
+                BlobResultSegment resultSegment = await container
+                    .ListBlobsSegmentedAsync(string.Empty, true, BlobListingDetails.None, null, null, null, null);
+
+                foreach (var blobItem in resultSegment.Results)
+                {
+                    if (blobItem is CloudBlob cloudBlob)
+                    {
+                        files.Add(cloudBlob.Name, new File
+                        {
+                            Url = cloudBlob.Uri + cloudBlob.GetSharedAccessSignature(PublicSharedAccessBlobPolicy),
+                            Name = getBlobItemName(cloudBlob.Name),
+                            SizeBytes = cloudBlob.Properties.Length,
+                            Created = cloudBlob.Properties.Created,
+                            Modified = cloudBlob.Properties.LastModified
+                        });
+                    }
+                }
+
+                continuationToken = resultSegment.ContinuationToken;
+            } while (continuationToken != null);
+
+            return files;
         }
 
-        private string GetContainerUrl(string region, string containerName, string sasToken)
+        public async Task<string> CreateContainer(CreateContainerParameters createContainerParameters)
         {
-            var accountName = AzureFunctionHelper.GetSetting(region, "accountName");
+            var (region, containerName, transferToken) = createContainerParameters;
 
-            return $"https://{accountName}.blob.core.windows.net/{containerName}{sasToken}";
+            var container = GetContainer(new GetContainerParameters
+            {
+                Region = region,
+                ContainerName = containerName
+            });
+
+            await container.CreateIfNotExistsAsync();
+
+            string encodedTransferToken = encryptionService.Encrypt(JsonConvert.SerializeObject(transferToken));
+
+            container.Metadata.Add(TransferToken, encodedTransferToken);
+
+            await container.SetMetadataAsync();
+
+            return encodedTransferToken;
         }
 
-        public string GetSafeStorageName(string itemCodeName)
+        public async Task DeleteContainer(GetContainerParameters getContainerParameters)
         {
-            return itemCodeName.Replace("_", "");
+            var container = GetContainer(getContainerParameters);
+
+            await container.DeleteAsync();
+        }
+
+        private CloudBlobContainer GetContainer(GetContainerParameters getContainerParameters)
+        {
+            var (region, containerName) = getContainerParameters;
+
+            var storageAccount = GetStorageAccount(region);
+            var blobClient = storageAccount.CreateCloudBlobClient();
+
+            return blobClient.GetContainerReference(containerName);
+        }
+
+        private CloudStorageAccount GetStorageAccount(string region)
+        {
+            var storageConnectionString = CoreHelper.GetSetting(region);
+
+            return CloudStorageAccount.Parse(storageConnectionString);
         }
     }
 }

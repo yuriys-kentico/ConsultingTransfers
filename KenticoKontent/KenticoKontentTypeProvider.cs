@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using KenticoCloud.Delivery;
+using Kentico.Kontent.Delivery;
 
-using KenticoKontent.Models;
+using KenticoKontent.Models.Delivery;
 
 namespace KenticoKontent
 {

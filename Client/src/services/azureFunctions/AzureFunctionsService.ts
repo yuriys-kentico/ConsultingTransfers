@@ -4,69 +4,85 @@ import { BehaviorSubject } from 'rxjs';
 
 import { authProvider } from '../../app/authProvider';
 import { IMessageContext } from '../../app/frontend/header/MessageContext';
-import { getTransfer, listTransfers } from '../../transfers.json';
-import { IGetTransferDetails, IListTransfers, ITransfer } from './azureFunctions';
+import { getTransfer, listTransfers, updateTransfer } from '../../transfers.json';
+import { ITeamsMessage, ITransfer } from './azureFunctions';
 
 export const IAzureFunctionsService = 'IAzureFunctionsService';
 
 export interface IAzureFunctionsService {
   transfers: BehaviorSubject<ITransfer[] | undefined>;
-  transferDetails: BehaviorSubject<IGetTransferDetails | undefined>;
+  transfer: BehaviorSubject<ITransfer | undefined>;
   messageContext: IMessageContext;
   listTransfers(region?: string, detailsKey?: string): Promise<void>;
-  getTransferDetails(transferToken: string): Promise<void>;
+  getTransfer(transferToken: string): Promise<void>;
+  sendTeamsMessage(teamsMessage: ITeamsMessage): Promise<void>;
 }
 
 export class AzureFunctionsService implements IAzureFunctionsService {
   transfers: BehaviorSubject<ITransfer[] | undefined> = new BehaviorSubject<ITransfer[] | undefined>(undefined);
-  transferDetails: BehaviorSubject<IGetTransferDetails | undefined> = new BehaviorSubject<
-    IGetTransferDetails | undefined
-  >(undefined);
+  transfer: BehaviorSubject<ITransfer | undefined> = new BehaviorSubject<ITransfer | undefined>(undefined);
   messageContext!: IMessageContext;
 
   async listTransfers(region?: string, detailsKey?: string) {
     const { showError } = this.messageContext;
     const bearerToken = detailsKey ? detailsKey : (await authProvider.getAccessToken()).accessToken;
 
-    let transfers!: ITransfer[];
+    const specificRegion = region ? region : '';
 
     try {
-      const response = await Axios.post<IListTransfers>(
-        listTransfers.endpoint,
-        { region },
+      const response = await Axios.post<ITransfer[]>(
+        `${listTransfers.endpoint}/${specificRegion}`,
+        null,
         this.getAuthorizationHeaders(listTransfers.key, bearerToken)
       );
 
-      transfers = response.data.transfers;
+      this.transfers.next(response.data);
     } catch (error) {
       showError(error);
     }
-
-    this.transfers.next(transfers);
   }
 
-  async getTransferDetails(transferToken: string) {
+  async getTransfer(transferToken: string) {
     const { showError } = this.messageContext;
+
     const bearerToken =
       authProvider.authenticationState === AuthenticationState.Authenticated
         ? (await authProvider.getAccessToken()).accessToken
         : undefined;
 
-    let getTransferResponse!: IGetTransferDetails;
-
     try {
-      const response = await Axios.post<IGetTransferDetails>(
+      const response = await Axios.post<ITransfer>(
         getTransfer.endpoint,
         { transferToken },
         this.getAuthorizationHeaders(getTransfer.key, bearerToken)
       );
 
-      getTransferResponse = response && response.data;
+      if (response && response.data) {
+        response.data.transferToken = transferToken;
+        this.transfer.next(response.data);
+      }
     } catch (error) {
       showError(error);
     }
+  }
 
-    this.transferDetails.next(getTransferResponse);
+  async sendTeamsMessage(teamsMessage: ITeamsMessage): Promise<void> {
+    const { showError } = this.messageContext;
+
+    const bearerToken =
+      authProvider.authenticationState === AuthenticationState.Authenticated
+        ? (await authProvider.getAccessToken()).accessToken
+        : undefined;
+
+    try {
+      await Axios.post(
+        updateTransfer.endpoint,
+        teamsMessage,
+        this.getAuthorizationHeaders(updateTransfer.key, bearerToken)
+      );
+    } catch (error) {
+      showError(error);
+    }
   }
 
   private getAuthorizationHeaders(key: string, bearerToken?: string) {

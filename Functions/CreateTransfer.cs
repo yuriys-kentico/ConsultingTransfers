@@ -1,89 +1,73 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using AzureStorage;
-using AzureStorage.Models;
+using Authorization;
+using Authorization.Models;
 
-using Core;
+using Functions.Models;
 
-using Encryption;
-
-using KenticoKontent;
-using KenticoKontent.Models;
-
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
-using Newtonsoft.Json;
+using Transfers;
+using Transfers.Models;
 
 namespace Functions
 {
-    public class CreateTransfer
+    public class CreateTransfer : AbstractFunction
     {
-        private readonly IEncryptionService encryptionService;
-        private readonly IWebhookValidator webhookValidator;
-        private readonly IStorageService storageService;
+        private readonly IAccessTokenValidator accessTokenValidator;
+        private readonly ITransfersService transfersService;
 
-        public CreateTransfer(IEncryptionService encryptionService, IWebhookValidator webhookValidator, IStorageService storageService)
+        public CreateTransfer(IAccessTokenValidator accessTokenValidator, ITransfersService transfersService)
         {
-            this.encryptionService = encryptionService;
-            this.webhookValidator = webhookValidator;
-            this.storageService = storageService;
+            this.accessTokenValidator = accessTokenValidator;
+            this.transfersService = transfersService;
         }
 
         [FunctionName(nameof(CreateTransfer))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
+            [HttpTrigger(
+                AuthorizationLevel.Function,
+                "post",
+                Route = transfers + "/create/{region:alpha:length(2)}"
+            )] CreateTransferRequest createTransferRequest,
+            IDictionary<string, string> headers,
+            string region,
             ILogger log
             )
         {
             try
             {
-                var (valid, getWebhook) = await webhookValidator.ValidateWebhook(request, "create");
+                var tokenResult = await accessTokenValidator.ValidateTokenAsync(headers);
 
-                if (!valid) return new UnauthorizedResult();
-
-                var (data, message) = getWebhook();
-
-                if (message.Operation == "publish")
+                switch (tokenResult)
                 {
-                    var region = request.Query["region"];
+                    case ValidAccessTokenResult _:
+                        var (name, customer, requester, template, localization) = createTransferRequest;
 
-                    var blobClient = storageService.GetCloudBlobClient(region);
+                        var transfer = await transfersService.CreateTransfer(new CreateTransferParameters
+                        {
+                            Region = region,
+                            Name = name,
+                            Customer = customer,
+                            Requester = requester,
+                            TemplateItemCodename = template,
+                            Localization = localization
+                        });
 
-                    await CreateContainers(data.Items, blobClient, region);
+                        return LogOkObject(log, transfer);
+
+                    default:
+                        return LogUnauthorized(log);
                 }
-
-                return new OkResult();
             }
             catch (Exception ex)
             {
-                return AzureFunctionHelper.LogException(request, log, ex);
-            }
-        }
-
-        private async Task CreateContainers(Item[] items, CloudBlobClient blobClient, string region)
-        {
-            foreach (var item in items)
-            {
-                var containerName = storageService.GetSafeStorageName(item.Codename);
-                var container = blobClient.GetContainerReference(containerName);
-
-                await container.CreateIfNotExistsAsync();
-
-                var transferToken = new TransferToken
-                {
-                    Region = region,
-                    ItemName = item.Codename
-                };
-
-                container.Metadata.Add(storageService.TransferToken, encryptionService.Encrypt(JsonConvert.SerializeObject(transferToken)));
-
-                await container.SetMetadataAsync();
+                return LogException(log, ex);
             }
         }
     }

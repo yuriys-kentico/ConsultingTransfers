@@ -44,14 +44,14 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
               </Table.Cell>
             </Table.Row>
           ) : (
-            transfers.map((item, index) => (
+            transfers.map((transfer, index) => (
               <Table.Row key={index}>
-                <Table.Cell>{item.region.toUpperCase()}</Table.Cell>
-                <Table.Cell>{item.system.name}</Table.Cell>
-                <Table.Cell>{item.customer}</Table.Cell>
-                <Table.Cell>{item.requester}</Table.Cell>
+                <Table.Cell>{transfer.region.toUpperCase()}</Table.Cell>
+                <Table.Cell>{transfer.name}</Table.Cell>
+                <Table.Cell>{transfer.customer}</Table.Cell>
+                <Table.Cell>{transfer.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
-                  <Button circular icon='edit' as={Link} to={getTransferUrl(item.transferToken)} />
+                  <Button circular icon='edit' as={Link} to={getTransferUrl(transfer.transferToken)} />
                 </Table.Cell>
               </Table.Row>
             ))

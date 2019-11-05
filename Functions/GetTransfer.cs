@@ -1,88 +1,71 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Authorization;
 using Authorization.Models;
 
-using AzureStorage;
-using AzureStorage.Models;
+using Functions.Models;
 
-using Core;
-
-using Encryption;
-
-using KenticoKontent;
-using KenticoKontent.Models;
-
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
-using Newtonsoft.Json;
+using Transfers;
+using Transfers.Models;
 
 namespace Functions
 {
-    public class GetTransfer
+    public class GetTransfer : AbstractFunction
     {
-        private readonly IAccessTokenValidator tokenProvider;
-        private readonly IEncryptionService encryptionService;
-        private readonly IStorageService storageService;
+        private readonly IAccessTokenValidator accessTokenValidator;
+        private readonly ITransfersService transfersService;
 
-        public GetTransfer(IAccessTokenValidator tokenProvider, IEncryptionService encryptionService, IStorageService storageService)
+        public GetTransfer(
+            IAccessTokenValidator accessTokenValidator,
+            ITransfersService transfersService
+            )
         {
-            this.tokenProvider = tokenProvider;
-            this.encryptionService = encryptionService;
-            this.storageService = storageService;
+            this.accessTokenValidator = accessTokenValidator;
+            this.transfersService = transfersService;
         }
 
         [FunctionName(nameof(GetTransfer))]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
+            [HttpTrigger(
+                AuthorizationLevel.Function,
+                "post",
+                Route = transfers + "/get"
+            )] GetTransferRequest getTransferRequest,
+            IDictionary<string, string> headers,
             ILogger log
             )
         {
             try
             {
-                var transferToken = encryptionService.Decrypt((await AzureFunctionHelper.GetPayloadAsync<TransferRequest>(request)).TransferToken);
-                var (region, itemName) = JsonConvert.DeserializeObject<TransferToken>(transferToken);
-
-                var containerName = storageService.GetSafeStorageName(itemName);
-                var tokenResult = await tokenProvider.ValidateTokenAsync(request);
-
-                string containerUrl;
+                var tokenResult = await accessTokenValidator.ValidateTokenAsync(headers);
 
                 switch (tokenResult)
                 {
                     case ValidAccessTokenResult _:
-                        containerUrl = storageService.GetAdminContainerUrl(region, containerName);
-                        break;
+                        var (region, codename) = transfersService.DecryptTransferToken(getTransferRequest.TransferToken);
 
-                    case NoAccessTokenResult _:
-                        containerUrl = storageService.GetPublicContainerUrl(region, containerName);
-                        break;
+                        var transfer = await transfersService.GetTransfer(new GetTransferParameters
+                        {
+                            Region = region,
+                            Codename = codename
+                        });
+
+                        return LogOkObject(log, transfer);
 
                     default:
-                        return new NotFoundResult();
+                        return LogUnauthorized(log);
                 }
-
-                var response = await KenticoKontentHelper
-                    .GetDeliveryClient(region)
-                    .GetItemAsync<TransferItem>(itemName);
-
-                var transfer = new Transfer(response.Item, transferToken, region);
-
-                return new OkObjectResult(new
-                {
-                    containerUrl,
-                    containerName,
-                    transfer
-                });
             }
             catch (Exception ex)
             {
-                return AzureFunctionHelper.LogException(request, log, ex);
+                return LogException(log, ex);
             }
         }
     }

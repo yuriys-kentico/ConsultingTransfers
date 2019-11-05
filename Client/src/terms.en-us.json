@@ -2,11 +2,11 @@
   "details": {
     "customer": {
       "header": "Customer",
-      "guidelines": "The name of the CRM account."
+      "guidelines": "The name of the CRM account or company."
     },
     "requester": {
       "header": "Requester",
-      "guidelines": "The name of the requester."
+      "guidelines": "The name of the Consultant or Support Engineer that is requesting the transfer."
     },
     "placeholder": "Type your text here...",
     "container": {
@@ -36,11 +36,16 @@
     "header": "Transfer:",
     "fields": {
       "markCompleted": "Mark complete",
+      "markIncomplete": "Mark incomplete",
+      "confirmMarkIncomplete": "Do you want to mark this field incomplete?",
       "markingCompleted": "Marking field completed...",
+      "markingIncomplete": "Marking field incomplete...",
       "markedCompleted": "Field has been marked completed!",
+      "markedIncomplete": "Field has been marked incomplete!",
       "uploadFile": {
         "passive": "Drag some files here, or click to select files.",
-        "active": "Drop the files here..."
+        "active": "Drop the files here...",
+        "rejectedExtensions": "Please upload only the following extensions: {0}."
       },
       "writeText": {
         "placeholder": "Write some text here..."

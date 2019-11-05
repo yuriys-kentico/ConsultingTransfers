@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent", "KenticoKo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{0C402DAA-C70D-4E56-8735-773CFFD3846B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transfers", "Transfers\Transfers.csproj", "{147D23D1-FB63-468F-BBD2-52EB62E82CBC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teams", "Teams\Teams.csproj", "{02DFC380-EF33-4E98-A53E-7353D2DEBF61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{0C402DAA-C70D-4E56-8735-773CFFD3846B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C402DAA-C70D-4E56-8735-773CFFD3846B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C402DAA-C70D-4E56-8735-773CFFD3846B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{147D23D1-FB63-468F-BBD2-52EB62E82CBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{147D23D1-FB63-468F-BBD2-52EB62E82CBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{147D23D1-FB63-468F-BBD2-52EB62E82CBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{147D23D1-FB63-468F-BBD2-52EB62E82CBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02DFC380-EF33-4E98-A53E-7353D2DEBF61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02DFC380-EF33-4E98-A53E-7353D2DEBF61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02DFC380-EF33-4E98-A53E-7353D2DEBF61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02DFC380-EF33-4E98-A53E-7353D2DEBF61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

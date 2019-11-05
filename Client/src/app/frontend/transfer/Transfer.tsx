@@ -5,7 +5,7 @@ import { Header, Loader, Segment } from 'semantic-ui-react';
 import { IAzureFunctionsService } from '../../../services/azureFunctions/AzureFunctionsService';
 import { IAzureStorageService } from '../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../services/dependencyContainer';
-import { transfer } from '../../../terms.en-us.json';
+import { transfer as transferTerms } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
 import { RoutedFC, setTitle } from '../../../utilities/routing';
 import { authProvider } from '../../authProvider';
@@ -26,31 +26,31 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
 
   const azureFunctionsService = useDependency(IAzureFunctionsService);
   azureFunctionsService.messageContext = messageContext;
-  const transferDetails = useSubscription(azureFunctionsService.transferDetails);
+  const transfer = useSubscription(azureFunctionsService.transfer);
 
   const transferToken = decodeURIComponent(encodedTransferToken || '');
 
   useEffect(() => {
-    azureFunctionsService.getTransferDetails(transferToken);
+    azureFunctionsService.getTransfer(transferToken);
   }, [azureFunctionsService, transferToken, messageContext]);
 
   useEffect(() => {
-    if (transferDetails) {
-      const { containerUrl, containerName } = transferDetails;
+    if (transfer) {
+      const { containerUrl, containerName, name } = transfer;
 
-      setTitle(transferDetails.transfer.system.name);
+      setTitle(name);
 
       azureStorageService.initialize(containerName, containerUrl);
     }
-  }, [transferDetails, azureStorageService]);
+  }, [transfer, azureStorageService]);
 
   return (
     <Segment basic>
-      {!transferDetails ? (
+      {!transfer ? (
         <Loader active size='massive' />
       ) : (
         <>
-          <Header as='h2' content={`${transfer.header} ${transferDetails.transfer.system.name}`} />
+          <Header as='h2' content={`${transferTerms.header} ${transfer.name}`} />
           <Fields />
           <AzureAD provider={authProvider}>
             <Debug />

@@ -1,9 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 
 using Authorization.Models;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -33,14 +33,16 @@ namespace Authorization
             this.detailsKey = detailsKey;
         }
 
-        public async Task<IAccessTokenResult> ValidateTokenAsync(HttpRequest request)
+        public async Task<IAccessTokenResult> ValidateTokenAsync(IDictionary<string, string> headers)
         {
             try
             {
-                if (request.Headers.TryGetValue(Authorization, out var bearerToken) && bearerToken.ToString().StartsWith(BearerSpace))
+                if (headers.TryGetValue(Authorization, out var accessToken) && accessToken.StartsWith(BearerSpace))
                 {
+                    var accessTokenValue = accessToken.Substring(BearerSpace.Length);
+
                     // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
-                    if (bearerToken.ToString().Substring(BearerSpace.Length) == detailsKey)
+                    if (accessTokenValue == detailsKey)
                         return new ValidAccessTokenResult(null);
 
                     var config = await configManager.GetConfigurationAsync().ConfigureAwait(false);
@@ -48,7 +50,7 @@ namespace Authorization
                     tokenValidationParameters.IssuerSigningKeys = config.SigningKeys;
 
                     var result = new JwtSecurityTokenHandler()
-                        .ValidateToken(bearerToken.ToString().Substring(BearerSpace.Length), tokenValidationParameters, out _);
+                        .ValidateToken(accessTokenValue, tokenValidationParameters, out _);
 
                     return new ValidAccessTokenResult(result);
                 }

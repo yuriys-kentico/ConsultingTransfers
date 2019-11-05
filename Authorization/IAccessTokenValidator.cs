@@ -1,13 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using Authorization.Models;
-
-using Microsoft.AspNetCore.Http;
 
 namespace Authorization
 {
     public interface IAccessTokenValidator
     {
-        Task<IAccessTokenResult> ValidateTokenAsync(HttpRequest request);
+        Task<IAccessTokenResult> ValidateTokenAsync(IDictionary<string, string> headers);
     }
 }

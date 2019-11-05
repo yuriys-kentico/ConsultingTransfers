@@ -1,106 +1,73 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 using Authorization;
 using Authorization.Models;
 
-using AzureStorage;
-using AzureStorage.Models;
-
 using Core;
-
-using KenticoKontent;
-using KenticoKontent.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
+using Transfers;
+using Transfers.Models;
+
 namespace Functions
 {
-    public class ListTransfers
+    public class ListTransfers : AbstractFunction
     {
-        private readonly IAccessTokenValidator tokenProvider;
-        private readonly IStorageService storageService;
+        private readonly IAccessTokenValidator accessTokenValidator;
+        private readonly ITransfersService transfersService;
 
-        public ListTransfers(IAccessTokenValidator tokenProvider, IStorageService storageService)
+        public ListTransfers(IAccessTokenValidator accessTokenValidator, ITransfersService transfersService)
         {
-            this.tokenProvider = tokenProvider;
-            this.storageService = storageService;
+            this.accessTokenValidator = accessTokenValidator;
+            this.transfersService = transfersService;
         }
 
         [FunctionName(nameof(ListTransfers))]
         public async Task<IActionResult> Run(
-                [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
+                [HttpTrigger(
+                    AuthorizationLevel.Function,
+                    "post",
+                    Route = transfers + "/list/{specificRegion:alpha:length(2)?}"
+                )] HttpRequest request,
+                IDictionary<string, string> headers,
+                string specificRegion,
                 ILogger log
                 )
         {
             try
             {
-                var tokenResult = await tokenProvider.ValidateTokenAsync(request);
+                var tokenResult = await accessTokenValidator.ValidateTokenAsync(headers);
 
                 switch (tokenResult)
                 {
                     case ValidAccessTokenResult _:
-                        return await GetTransfers(request);
+                        var regions = string.IsNullOrWhiteSpace(specificRegion)
+                            ? CoreHelper.GetSetting("regions").Split(';', StringSplitOptions.RemoveEmptyEntries)
+                            : new[] { specificRegion };
+
+                        List<Transfer> transfers = new List<Transfer>();
+
+                        foreach (var region in regions)
+                        {
+                            transfers.AddRange(await transfersService.ListTransfers(region));
+                        }
+
+                        return LogOkObject(log, transfers);
 
                     default:
-                        return new NotFoundResult();
+                        return LogUnauthorized(log);
                 }
             }
             catch (Exception ex)
             {
-                return AzureFunctionHelper.LogException(request, log, ex);
-            }
-        }
-
-        private async Task<OkObjectResult> GetTransfers(HttpRequest request)
-        {
-            var specificRegion = (await AzureFunctionHelper.GetPayloadAsync<TransfersRequest>(request)).Region;
-
-            var regions = string.IsNullOrEmpty(specificRegion)
-                ? AzureFunctionHelper.GetSetting("regions").Split(';', StringSplitOptions.RemoveEmptyEntries)
-                : new[] { specificRegion };
-
-            List<Transfer> transfers = new List<Transfer>();
-
-            foreach (var region in regions)
-            {
-                var response = await KenticoKontentHelper
-                    .GetDeliveryClient(region)
-                    .GetItemsAsync<TransferItem>();
-
-                var blobClient = storageService.GetCloudBlobClient(region);
-
-                transfers.AddRange(GetTransfers(response.Items, blobClient, region));
-            }
-
-            return new OkObjectResult(new
-            {
-                transfers
-            });
-        }
-
-        private IEnumerable<Transfer> GetTransfers(IReadOnlyList<TransferItem> transferItems, CloudBlobClient blobClient, string region)
-        {
-            foreach (var transferItem in transferItems)
-            {
-                var containerName = storageService.GetSafeStorageName(transferItem.System.Codename);
-                string transferToken = null;
-
-                blobClient.ListContainers(containerName, ContainerListingDetails.Metadata)
-                    .FirstOrDefault(container => container.Name == containerName)?
-                    .Metadata.TryGetValue(storageService.TransferToken, out transferToken);
-
-                if (!string.IsNullOrEmpty(transferToken))
-                {
-                    yield return new Transfer(transferItem, transferToken, region);
-                }
+                return LogException(log, ex);
             }
         }
     }
