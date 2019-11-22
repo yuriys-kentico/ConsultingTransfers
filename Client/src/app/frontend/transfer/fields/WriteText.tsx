@@ -9,37 +9,36 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
 import { experience } from '../../../../appSettings.json';
-import { getFieldBlobs, getSafePathSegment } from '../../../../services/azureStorage/azureStorage';
-import { IAzureStorageService } from '../../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../../services/dependencyContainer';
+import { ITransferFilesService } from '../../../../services/TransferFilesService';
 import { transfer } from '../../../../terms.en-us.json';
 import { useSubscription } from '../../../../utilities/observables';
 import { MessageContext } from '../../header/MessageContext';
 import { IFieldHolderProps } from '../FieldHolder';
 
-export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldLoading, defaultText }) => {
+export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldReady, defaultText }) => {
   const { writeText } = transfer.fields;
 
-  const [loaded, setLoaded] = useState(false);
+  const [ready, setReady] = useState(false);
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
 
   const stateStream = useRef(new Subject<ContentState>());
 
-  const azureStorageService = useDependency(IAzureStorageService);
-  azureStorageService.messageContext = useContext(MessageContext);
+  const transferFilesService = useDependency(ITransferFilesService);
+  transferFilesService.messageContext = useContext(MessageContext);
 
-  const blobs = useSubscription(azureStorageService.blobs);
+  const files = useSubscription(transferFilesService.files);
 
   useEffect(() => {
-    const fieldBlobs = blobs && getFieldBlobs(blobs, name);
+    const fieldFiles = files && transferFilesService.getFieldFiles(files, name);
 
     const updateEditorState = (text?: string) => {
       text && setEditorState(EditorState.createWithContent(convertFromRaw(markdownToDraft(text))));
-      setLoaded(true);
+      setReady(true);
     };
 
-    if (fieldBlobs && fieldBlobs.length > 0) {
-      azureStorageService.readBlobString(fieldBlobs[0]).then(blobString => {
+    if (fieldFiles && fieldFiles.length > 0) {
+      transferFilesService.readFileAsText(fieldFiles[0]).then(blobString => {
         updateEditorState(blobString);
       });
     } else {
@@ -50,18 +49,18 @@ export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldLoad
       next: (update: ContentState) => {
         const content = draftToMarkdown(convertToRaw(update));
 
-        const file = new File([content], `${getSafePathSegment(name)}.md`, { type: 'text/plain' });
+        const file = transferFilesService.getFile(content, name, 'md', 'text/plain');
 
-        azureStorageService.uploadFiles(file, name, true).then(() => setFieldLoading(false));
+        transferFilesService.uploadFiles(file, name, true).then(() => setFieldReady(true));
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [name, setFieldLoading, defaultText, azureStorageService, blobs]);
+  }, [name, defaultText, transferFilesService, setFieldReady, files]);
 
   const updateEditorState = (draftState: EditorState) => {
     setEditorState(draftState);
-    setFieldLoading(true);
+    setFieldReady(false);
 
     stateStream.current.next(draftState.getCurrentContent());
   };
@@ -90,7 +89,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldLoad
 
   return (
     <>
-      {!loaded ? null : (
+      {ready && (
         <WysiwygEditor
           editorState={editorState}
           onEditorStateChange={updateEditorState}

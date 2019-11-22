@@ -2,8 +2,8 @@
 {
     public class ContentItemResponse
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string Codename { get; set; }
+        public string? Codename { get; set; }
     }
 }

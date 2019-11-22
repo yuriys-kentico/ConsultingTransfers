@@ -1,6 +1,6 @@
-using System.Text.RegularExpressions;
-
 using Kentico.Kontent.Delivery;
+
+using System.Text.RegularExpressions;
 
 namespace KenticoKontent.Models.Delivery
 {
@@ -8,9 +8,9 @@ namespace KenticoKontent.Models.Delivery
     {
         public const string Codename = "teams_message";
 
-        public ContentItemSystemAttributes System { get; set; }
+        public ContentItemSystemAttributes System { get; set; } = null!;
 
-        public string CardJSON { get; set; }
+        public string? CardJSON { get; set; }
 
         public string GetCardJson()
         {

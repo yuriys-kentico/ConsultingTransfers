@@ -1,19 +1,33 @@
 ﻿using Authorization.Models;
 
+using System;
+
 namespace Transfers.Models
 {
     public class GetTransferParameters
     {
-        public string Region { get; set; }
+        public string? TransferToken { get; set; }
 
-        public string Codename { get; set; }
+        public bool Files { get; set; }
 
-        public IAccessTokenResult AccessTokenResult { get; set; }
+        public bool Fields { get; set; }
 
-        public void Deconstruct(out string region, out string containerName, out IAccessTokenResult accessTokenResult)
+        public bool ContainerUrl { get; set; }
+
+        public IAccessTokenResult? AccessTokenResult { get; set; }
+
+        public void Deconstruct(
+            out string transferToken,
+            out bool files,
+            out bool fields,
+            out bool containerUrl,
+            out IAccessTokenResult? accessTokenResult
+            )
         {
-            region = Region;
-            containerName = Codename;
+            transferToken = TransferToken ?? throw new ArgumentNullException(nameof(transferToken));
+            files = Files;
+            fields = Fields;
+            containerUrl = ContainerUrl;
             accessTokenResult = AccessTokenResult;
         }
     }

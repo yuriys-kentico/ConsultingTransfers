@@ -1,23 +1,34 @@
-﻿namespace Transfers.Models
+﻿using System;
+
+namespace Transfers.Models
 {
+    public enum UpdateType
+    {
+        Unknown,
+        FieldComplete,
+        FieldIncomplete
+    }
+
     public class UpdateTransferParameters
     {
-        public string Region { get; set; }
+        public string? TransferToken { get; set; }
 
-        public string Codename { get; set; }
+        public string? Field { get; set; }
 
-        public string TransferToken { get; set; }
+        public UpdateType Type { get; set; }
 
-        public string FieldName { get; set; }
+        public string? MessageItemCodename { get; set; }
 
-        public string MessageItemCodename { get; set; }
-
-        public void Deconstruct(out string region, out string containerName, out string transferToken, out string fieldName, out string messageItemCodename)
+        public void Deconstruct(
+            out string transferToken,
+            out string? field,
+            out UpdateType type,
+            out string? messageItemCodename
+            )
         {
-            region = Region;
-            containerName = Codename;
-            transferToken = TransferToken;
-            fieldName = FieldName;
+            transferToken = TransferToken ?? throw new ArgumentNullException(nameof(transferToken));
+            field = Field;
+            type = Type;
             messageItemCodename = MessageItemCodename;
         }
     }

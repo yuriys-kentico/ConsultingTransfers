@@ -1,39 +1,42 @@
-﻿using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Threading.Tasks;
+﻿using Authorization.Models;
 
-using Authorization.Models;
+using Core;
 
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Threading.Tasks;
+
 namespace Authorization
 {
     public class AccessTokenValidator : IAccessTokenValidator
     {
-        private const string Authorization = "Authorization";
+        private const string Authorization = nameof(Authorization);
         private const string BearerSpace = "Bearer ";
 
         private readonly ConfigurationManager<OpenIdConnectConfiguration> configManager;
         private readonly TokenValidationParameters tokenValidationParameters;
-        private readonly string detailsKey;
 
-        public AccessTokenValidator(string metadataAddress, string audiences, string issuer, string detailsKey)
+        public AccessTokenValidator()
         {
+            var metadataAddress = CoreHelper.GetSetting("Authorization", "MetadataAddress");
+            var audiences = CoreHelper.GetSetting("Authorization", "Audiences");
+            var issuer = CoreHelper.GetSetting("Authorization", "Issuer");
+
             configManager = new ConfigurationManager<OpenIdConnectConfiguration>(metadataAddress, new OpenIdConnectConfigurationRetriever());
 
             tokenValidationParameters = new TokenValidationParameters
             {
-                ValidAudiences = audiences.Split(';'),
+                ValidAudiences = audiences?.Split(';'),
                 ValidIssuer = issuer,
                 ValidateIssuerSigningKey = true
             };
-
-            this.detailsKey = detailsKey;
         }
 
-        public async Task<IAccessTokenResult> ValidateTokenAsync(IDictionary<string, string> headers)
+        public async Task<IAccessTokenResult> ValidateToken(IDictionary<string, string> headers)
         {
             try
             {
@@ -42,10 +45,10 @@ namespace Authorization
                     var accessTokenValue = accessToken.Substring(BearerSpace.Length);
 
                     // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
-                    if (accessTokenValue == detailsKey)
+                    if (accessTokenValue == CoreHelper.GetSetting("Authorization", "DetailsKey"))
                         return new ValidAccessTokenResult(null);
 
-                    var config = await configManager.GetConfigurationAsync().ConfigureAwait(false);
+                    var config = await configManager.GetConfigurationAsync();
 
                     tokenValidationParameters.IssuerSigningKeys = config.SigningKeys;
 

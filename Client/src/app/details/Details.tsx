@@ -1,15 +1,17 @@
 import './details.css';
 
-import { navigate } from '@reach/router';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Input, Label, Loader, Table } from 'semantic-ui-react';
 
+import { navigate } from '@reach/router';
+
 import { experience, kenticoKontent } from '../../appSettings.json';
-import { IAzureFunctionsService } from '../../services/azureFunctions/AzureFunctionsService';
 import { useDependency } from '../../services/dependencyContainer';
+import { ITransfersService } from '../../services/TransfersService';
 import { details } from '../../terms.en-us.json';
+import { loadModule } from '../../utilities/modules';
 import { useSubscription } from '../../utilities/observables';
-import { promiseAfter } from '../../utilities/promises';
+import { wait } from '../../utilities/promises';
 import { getTransferUrl, RoutedFC } from '../../utilities/routing';
 import { MessageContext } from '../frontend/header/MessageContext';
 import { routes } from '../routes';
@@ -25,35 +27,36 @@ interface IDetailsValue {
 
 interface IDetailsConfig {
   key: string;
+}
+
+interface IDetailsProps {
   region: string;
 }
 
 const defaultDetailsValue: IDetailsValue = { customer: '', requester: '' };
 
-export const Details: RoutedFC = () => {
+export const Details: RoutedFC<IDetailsProps> = ({ region }) => {
   if (window.self === window.top) {
     navigate('/');
   }
 
+  const [ready, setReady] = useState(false);
   const [available, setAvailable] = useState(false);
   const [customer, setCustomer] = useState('');
   const [requester, setRequester] = useState('');
   const [enabled, setEnabled] = useState(true);
-  const [transferToken, setTransferToken] = useState<string>();
+  const [transferToken, setTransferToken] = useState('');
   const [codename, setCodename] = useState('');
+  const [retry, setRetry] = useState(experience.detailsContainerCheckRetry);
 
   const customElementRef = useRef<HTMLDivElement>(null);
-  const customElementConfig = useRef<IDetailsConfig>({ key: '', region: '' });
+  const customElementConfig = useRef<IDetailsConfig>({ key: '' });
 
-  const azureFunctionsService = useDependency(IAzureFunctionsService);
-  azureFunctionsService.messageContext = useContext(MessageContext);
+  const transfersService = useDependency(ITransfersService);
+  transfersService.messageContext = useContext(MessageContext);
+  const transfers = useSubscription(transfersService.transfers);
 
   useEffect(() => {
-    const customElementModule = document.createElement('script');
-
-    customElementModule.src = kenticoKontent.customElementScriptEndpoint;
-    customElementModule.onload = () => CustomElement.init(initCustomElement);
-
     const initCustomElement = (element: Element) => {
       const elementValue = JSON.parse(element.value || JSON.stringify(defaultDetailsValue)) as IDetailsValue;
 
@@ -64,40 +67,39 @@ export const Details: RoutedFC = () => {
       // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
       customElementConfig.current = element.config as IDetailsConfig;
 
-      setEnabledAndRetrieveToken(!element.disabled);
+      setEnabledAndListTransfers(!element.disabled);
 
-      CustomElement.onDisabledChanged(disabled => setEnabledAndRetrieveToken(!disabled));
+      CustomElement.onDisabledChanged(disabled => setEnabledAndListTransfers(!disabled));
     };
 
-    const setEnabledAndRetrieveToken = (enabled: boolean) => {
+    const setEnabledAndListTransfers = (enabled: boolean) => {
       setEnabled(enabled);
+      setReady(false);
 
       if (!enabled) {
-        setTransferToken(undefined);
-
         CustomElement.init((_, context) => {
           setCodename(context.item.codename);
-          azureFunctionsService.listTransfers(customElementConfig.current.region, customElementConfig.current.key);
+          transfersService.listTransfers({ region, detailsKey: customElementConfig.current.key });
         });
       }
     };
 
-    document.head.appendChild(customElementModule);
-  }, [azureFunctionsService]);
+    loadModule(kenticoKontent.customElementScriptEndpoint, () => CustomElement.init(initCustomElement));
+  }, [region, transfersService]);
 
-  const transfers = useSubscription(azureFunctionsService.transfers);
+  useEffect(() => {
+    const transfer = transfers && transfers.find(transfer => transfer.codename === codename);
 
-  if (transfers) {
-    const transfer = transfers.filter(transfer => transfer.codename === codename)[0];
-
-    if (transfer && transfer.transferToken && !transferToken) {
+    if (transfer && transfer.transferToken) {
       setTransferToken(transfer.transferToken);
-    } else if (customElementConfig.current.key) {
-      promiseAfter(experience.detailsContainerCheckTimeout)(() =>
-        azureFunctionsService.listTransfers(customElementConfig.current.region, customElementConfig.current.key)
+      setReady(true);
+    } else if (retry > 0) {
+      wait(experience.detailsContainerCheckTimeout).then(() =>
+        transfersService.listTransfers({ region, detailsKey: customElementConfig.current.key })
       );
+      setRetry(retry => retry--);
     }
-  }
+  }, [codename, region, transfers, transfersService, retry]);
 
   useEffect(() => {
     if (available && customElementRef.current) {
@@ -117,9 +119,8 @@ export const Details: RoutedFC = () => {
 
   return (
     <div className={`custom element ${enabled ? '' : 'disabled'}`} ref={customElementRef}>
-      {!available ? (
-        <Loader active size='massive' />
-      ) : (
+      {!available && <Loader active size='massive' />}
+      {available && (
         <>
           <div className='text element'>
             <div className='pane'>
@@ -155,38 +156,49 @@ export const Details: RoutedFC = () => {
               />
             </div>
           </div>
-          {enabled ? null : !transferToken ? (
-            <Loader active size='massive' />
-          ) : (
-            <div className='element'>
-              <div className='pane'>
-                <label className='label'>{details.container.header}</label>
-                <Table unstackable basic='very' compact>
-                  <Table.Body>
-                    <Table.Row>
-                      <Table.Cell collapsing>
-                        <Label horizontal>{details.container.adminUrl}</Label>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <a href={getUrl(routes.transfers)} target='_blank' rel='noopener noreferrer'>
-                          {getUrl(routes.transfers)}
-                        </a>
-                      </Table.Cell>
-                    </Table.Row>
-                    <Table.Row>
-                      <Table.Cell collapsing>
-                        <Label horizontal>{details.container.publicUrl}</Label>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <a href={getUrl(getTransferUrl(transferToken))} target='_blank' rel='noopener noreferrer'>
-                          {getUrl(getTransferUrl(transferToken))}
-                        </a>
-                      </Table.Cell>
-                    </Table.Row>
-                  </Table.Body>
-                </Table>
-              </div>
-            </div>
+          {!enabled && (
+            <>
+              {!ready && <Loader active size='massive' />}
+              {ready && (
+                <div className='element'>
+                  <div className='pane'>
+                    <label className='label'>{details.container.header}</label>
+                    <Table unstackable basic='very' compact>
+                      <Table.Body>
+                        <Table.Row>
+                          <Table.Cell collapsing>
+                            <Label horizontal>{details.container.adminUrl}</Label>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <a href={getUrl(routes.transfers)} target='_blank' rel='noopener noreferrer'>
+                              {getUrl(routes.transfers)}
+                            </a>
+                          </Table.Cell>
+                        </Table.Row>
+                        <Table.Row>
+                          <Table.Cell collapsing>
+                            <Label horizontal>{details.container.publicUrl}</Label>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <a href={getUrl(getTransferUrl(transferToken))} target='_blank' rel='noopener noreferrer'>
+                              {getUrl(getTransferUrl(transferToken))}
+                            </a>
+                          </Table.Cell>
+                        </Table.Row>
+                      </Table.Body>
+                    </Table>
+                  </div>
+                </div>
+              )}
+              {!ready && retry === 0 && (
+                <div className='element'>
+                  <div className='pane'>
+                    <label className='label'>{details.invalid.header}</label>
+                    {details.invalid.explanation}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

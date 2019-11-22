@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Authorization.Models;
 
-using Authorization.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Authorization
 {
     public interface IAccessTokenValidator
     {
-        Task<IAccessTokenResult> ValidateTokenAsync(IDictionary<string, string> headers);
+        Task<IAccessTokenResult> ValidateToken(IDictionary<string, string> headers);
     }
 }

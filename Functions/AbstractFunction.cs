@@ -1,36 +1,37 @@
-﻿using System;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
+using System;
 
 namespace Functions
 {
     public abstract class AbstractFunction
     {
-        protected const string transfers = "transfers";
+        protected const string transfers = nameof(transfers);
+        protected const string webhook = nameof(webhook);
 
-        protected IActionResult LogOk(ILogger log)
+        protected static IActionResult LogOk(ILogger log)
         {
             log.LogInformation("Ok");
 
             return new OkResult();
         }
 
-        protected IActionResult LogOkObject(ILogger log, object response)
+        protected static IActionResult LogOkObject(ILogger log, object? response)
         {
             log.LogInformation("Ok object");
 
             return new OkObjectResult(response);
         }
 
-        protected IActionResult LogUnauthorized(ILogger log)
+        protected static IActionResult LogUnauthorized(ILogger log)
         {
             log.LogWarning("Unauthorized");
 
             return new UnauthorizedResult();
         }
 
-        protected IActionResult LogException(ILogger log, Exception ex)
+        protected static IActionResult LogException(ILogger log, Exception ex)
         {
             var message = ex.Message;
 

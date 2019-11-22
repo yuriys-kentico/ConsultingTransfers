@@ -1,16 +1,17 @@
-﻿using System;
-using System.Linq;
+﻿using Newtonsoft.Json;
 
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace KenticoKontent.Models.ContentManagement
 {
     public class APIErrorResponse
     {
-        public string Message { get; set; }
+        public string? Message { get; set; }
 
         [JsonProperty("validation_errors")]
-        public ValidationError[] ValidationErrors { get; set; }
+        public IEnumerable<ValidationError>? ValidationErrors { get; set; }
 
         public Exception GetException()
         {
@@ -27,8 +28,8 @@ namespace KenticoKontent.Models.ContentManagement
 
     public class ValidationError
     {
-        public string Message { get; set; }
+        public string? Message { get; set; }
 
-        public string Path { get; set; }
+        public string? Path { get; set; }
     }
 }

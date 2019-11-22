@@ -22,9 +22,9 @@ namespace Authorization.Models
 
     public sealed class ValidAccessTokenResult : IAccessTokenResult
     {
-        public ClaimsPrincipal Principal { get; }
+        public ClaimsPrincipal? Principal { get; }
 
-        internal ValidAccessTokenResult(ClaimsPrincipal principal)
+        internal ValidAccessTokenResult(ClaimsPrincipal? principal)
         {
             Principal = principal;
         }

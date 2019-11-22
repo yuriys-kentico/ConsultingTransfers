@@ -1,42 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
-
-using Core;
+﻿using Core;
 
 using KenticoKontent.Models.Webhook;
 
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace KenticoKontent
 {
     public class WebhookValidator : IWebhookValidator
     {
+        private readonly ICoreContext coreContext;
+
         private const string WebhookSignatureHeaderName = "X-Kc-Signature";
+
+        public WebhookValidator(ICoreContext coreContext)
+        {
+            this.coreContext = coreContext;
+        }
 
         public (bool valid, Func<Webhook> getWebhook) ValidateWebhook(string body, IDictionary<string, string> headers, string region)
         {
             headers.TryGetValue(WebhookSignatureHeaderName, out var signatureFromRequest);
 
-            var secret = CoreHelper.GetSetting(region, "webhookSecret");
-            var generatedSignature = GetHashForWebhook(body, secret);
+            var generatedSignature = GetHashForWebhook(body, coreContext.WebhookSecret);
 
-            return (generatedSignature == signatureFromRequest, () => JsonConvert.DeserializeObject<Webhook>(body));
+            return (generatedSignature == signatureFromRequest, () => CoreHelper.Deserialize<Webhook>(body));
         }
 
-        private static string GetHashForWebhook(string content, string secret)
+        private static string GetHashForWebhook(string content, string? secret)
         {
+            secret = secret ?? throw new ArgumentNullException(nameof(secret));
+
             var safeUTF8 = new UTF8Encoding(false, true);
             byte[] keyBytes = safeUTF8.GetBytes(secret);
             byte[] messageBytes = safeUTF8.GetBytes(content);
 
-            using (var hmacsha256 = new HMACSHA256(keyBytes))
-            {
-                byte[] hashMessage = hmacsha256.ComputeHash(messageBytes);
+            using var hmacsha256 = new HMACSHA256(keyBytes);
 
-                return Convert.ToBase64String(hashMessage);
-            }
+            return Convert.ToBase64String(hmacsha256.ComputeHash(messageBytes));
         }
     }
 }

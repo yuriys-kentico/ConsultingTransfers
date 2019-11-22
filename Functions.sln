@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions", "Functions\Functions.csproj", "{3E58EDBE-CA54-48F4-9422-E587E1455847}"
+	ProjectSection(ProjectDependencies) = postProject
+		{02DFC380-EF33-4E98-A53E-7353D2DEBF61} = {02DFC380-EF33-4E98-A53E-7353D2DEBF61}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Authorization", "Authorization\Authorization.csproj", "{3A409D8D-7788-4487-A844-76E40A90C5F2}"
 EndProject
@@ -15,9 +18,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KenticoKontent", "KenticoKo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{0C402DAA-C70D-4E56-8735-773CFFD3846B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transfers", "Transfers\Transfers.csproj", "{147D23D1-FB63-468F-BBD2-52EB62E82CBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Transfers", "Transfers\Transfers.csproj", "{147D23D1-FB63-468F-BBD2-52EB62E82CBC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teams", "Teams\Teams.csproj", "{02DFC380-EF33-4E98-A53E-7353D2DEBF61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftTeams", "MicrosoftTeams\MicrosoftTeams.csproj", "{02DFC380-EF33-4E98-A53E-7353D2DEBF61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

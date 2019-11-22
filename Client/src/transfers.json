@@ -1,7 +1,7 @@
 {
   "getTransfer": {
-    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/client/get",
-    "key": "a3St6wqK1fSoIArRe5ct6PkMCzKcQ4I3tl3UMugywceH6DxPj8W9Rg=="
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/get",
+    "key": "5AkNlfj6MVMWlN1HFBl4VI9RMam9juLXG8WYdXIbsSyeFW3z2IwLuQ=="
   },
   "listTransfers": {
     "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/list",
@@ -10,5 +10,13 @@
   "updateTransfer": {
     "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/update",
     "key": "O72eQvlrR68UJtf5QdcAj4xgyJwoNyCfq7aPYgGywLH2cD0nQ50NLQ=="
+  },
+  "suspendTransfer": {
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/suspend",
+    "key": "mO4j9zXqafFawhsa/2eG7alm9IDlmcsfmQmHMpHph4STPuaBBxuozQ=="
+  },
+  "resumeTransfer": {
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/resume",
+    "key": "h1KiaI3V8lcHooge/nQthfhlWm2d1dXTVu4eNLT9CFgRJyDtS53deg=="
   }
 }

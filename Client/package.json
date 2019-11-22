@@ -1,15 +1,16 @@
 {
-  "name": "consulting-transfers",
+  "name": "caddy",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@azure/storage-blob": "10.5.0",
+    "@azure/storage-blob": "12.0.0",
     "@reach/router": "^1.2.1",
     "@types/jest": "^24.0.21",
     "@types/reach__router": "^1.2.6",
     "@types/react": "^16.9.11",
     "@types/react-dom": "^16.9.3",
     "@types/react-draft-wysiwyg": "^1.12.3",
+    "@types/react-helmet": "^5.0.14",
     "@types/use-subscription": "^1.0.0",
     "axios": "^0.19.0",
     "draft-js": "^0.11.2",
@@ -21,10 +22,12 @@
     "react-dom": "^16.11.0",
     "react-draft-wysiwyg": "^1.13.2",
     "react-dropzone": "^10.1.10",
+    "react-helmet": "^5.2.1",
     "react-scripts": "^3.2.0",
     "rxjs": "^6.5.3",
     "semantic-ui-react": "^0.88.1",
     "streamsaver": "^2.0.3",
+    "tslint": "^5.20.1",
     "typed-inject": "^2.1.1",
     "typeface-source-sans-pro": "^0.0.75",
     "use-subscription": "^1.2.0",
@@ -55,13 +58,7 @@
   "devDependencies": {
     "@craco/craco": "^5.4.0",
     "@semantic-ui-react/craco-less": "^1.1.0",
-    "eslint": "^6.2.2",
-    "eslint-config-airbnb": "^18.0.1",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-react": "^7.14.3",
-    "eslint-plugin-react-hooks": "^1.7.0",
-    "prettier-eslint": "^9.0.0",
+    "prettier": "^1.19.1",
     "semantic-ui-less": "^2.4.1"
   }
 }

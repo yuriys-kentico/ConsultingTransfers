@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Authorization\Authorization.csproj" />
     <ProjectReference Include="..\AzureStorage\AzureStorage.csproj" />
     <ProjectReference Include="..\KenticoKontent\KenticoKontent.csproj" />
-    <ProjectReference Include="..\Teams\Teams.csproj" />
+    <ProjectReference Include="..\MicrosoftTeams\MicrosoftTeams.csproj" />
   </ItemGroup>
-
 </Project>

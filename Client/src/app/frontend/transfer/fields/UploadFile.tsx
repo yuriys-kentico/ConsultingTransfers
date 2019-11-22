@@ -1,12 +1,11 @@
-import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
-import React, { FC, useCallback, useContext } from 'react';
+import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button, Container, Table } from 'semantic-ui-react';
 
 import { experience } from '../../../../appSettings.json';
-import { getFieldBlobs, getSafePathSegment } from '../../../../services/azureStorage/azureStorage';
-import { IAzureStorageService } from '../../../../services/azureStorage/AzureStorageService';
 import { useDependency } from '../../../../services/dependencyContainer';
+import { IFile } from '../../../../services/models/IFile.js';
+import { ITransferFilesService } from '../../../../services/TransferFilesService';
 import { transfer } from '../../../../terms.en-us.json';
 import { useSubscription } from '../../../../utilities/observables';
 import { format } from '../../../../utilities/strings';
@@ -14,24 +13,27 @@ import { MessageContext } from '../../header/MessageContext';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';
 
-export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldLoading }) => {
+export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldReady }) => {
   const { uploadFile } = transfer.fields;
   const { uploadExtensions } = experience;
 
-  const azureStorageService = useDependency(IAzureStorageService);
   const messageContext = useContext(MessageContext);
 
-  azureStorageService.messageContext = messageContext;
+  const transferFilesService = useDependency(ITransferFilesService);
+  transferFilesService.messageContext = messageContext;
+
+  const [ready, setReady] = useState(false);
+  const [filesList, setFilesList] = useState<IFile[]>([]);
 
   const onDropAccepted = useCallback(
     async files => {
-      setFieldLoading(true);
+      setFieldReady(false);
 
-      await azureStorageService.uploadFiles(files, name);
+      await transferFilesService.uploadFiles(files, name);
 
-      setFieldLoading(false);
+      setFieldReady(true);
     },
-    [name, setFieldLoading, azureStorageService]
+    [name, setFieldReady, transferFilesService]
   );
 
   const onDropRejected = useCallback(
@@ -50,39 +52,42 @@ export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldLoa
     accept: uploadExtensions
   });
 
-  let fieldBlobs: BlobItem[] = [];
+  const files = useSubscription(transferFilesService.files);
 
-  const blobs = useSubscription(azureStorageService.blobs);
-
-  if (blobs) {
-    fieldBlobs = getFieldBlobs(blobs, name);
-  }
+  useEffect(() => {
+    if (files) {
+      setFilesList(transferFilesService.getFieldFiles(files, name));
+      setReady(true);
+    }
+  }, [files, transferFilesService, name]);
 
   return (
     <div {...getRootProps({ className: `drop zone ${isDragActive ? 'active' : ''} ${completed ? 'disabled' : ''}` })}>
       <Container>
-        <Table unstackable singleLine basic='very' compact>
-          <Table.Body>
-            {fieldBlobs.map((blob, index) => (
-              <Table.Row key={index}>
-                <Table.Cell>
-                  <BlobDetails file={blob} fileName={blob.name.split(`${getSafePathSegment(name)}/`)[1]} />
-                </Table.Cell>
-                <Table.Cell textAlign='right'>
-                  <Button
-                    onClick={event => {
-                      event.stopPropagation();
-                      azureStorageService.deleteBlobs(blob);
-                    }}
-                    disabled={completed}
-                    icon='trash'
-                    circular
-                  />
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
+        {ready && (
+          <Table unstackable singleLine basic='very' compact>
+            <Table.Body>
+              {filesList.map((file, index) => (
+                <Table.Row key={index}>
+                  <Table.Cell>
+                    <BlobDetails file={file} />
+                  </Table.Cell>
+                  <Table.Cell textAlign='right'>
+                    <Button
+                      onClick={event => {
+                        event.stopPropagation();
+                        transferFilesService.deleteFiles(file);
+                      }}
+                      disabled={completed}
+                      icon='trash'
+                      circular
+                    />
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        )}
       </Container>
       <input {...getInputProps()} />
       {!completed && (isDragActive ? uploadFile.active : uploadFile.passive)}

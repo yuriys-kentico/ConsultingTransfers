@@ -1,14 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Authorization.Models;
+﻿using Authorization.Models;
 
 using AzureStorage;
 using AzureStorage.Models;
 
-using Encryption;
-using Encryption.Models;
+using Core;
 
 using KenticoKontent;
 using KenticoKontent.Models;
@@ -16,10 +11,13 @@ using KenticoKontent.Models.Delivery;
 
 using Microsoft.Bot.Schema.Teams;
 
-using Newtonsoft.Json;
+using MicrosoftTeams;
+using MicrosoftTeams.Models;
 
-using Teams;
-using Teams.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 using Transfers.Models;
 
@@ -27,218 +25,223 @@ namespace Transfers
 {
     public class TransfersService : ITransfersService
     {
-        private readonly IEncryptionService encryptionService;
-        private readonly IStorageService storageService;
-        private readonly IKontentService kontentService;
+        private readonly IStorageRepository storageRepository;
+        private readonly IKontentRepository kontentRepository;
         private readonly ITeamsService teamsService;
+        private readonly ICoreContext coreContext;
 
         public TransfersService(
-            IEncryptionService encryptionService,
-            IKontentService kontentService,
-            IStorageService storageService,
-            ITeamsService teamsService
+            IKontentRepository kontentRepository,
+            IStorageRepository storageRepository,
+            ITeamsService teamsService,
+            ICoreContext coreContext
             )
         {
-            this.encryptionService = encryptionService;
-            this.kontentService = kontentService;
-            this.storageService = storageService;
+            this.kontentRepository = kontentRepository;
+            this.storageRepository = storageRepository;
             this.teamsService = teamsService;
-        }
-
-        public TransferToken DecryptTransferToken(string transferToken)
-        {
-            var transferTokenJson = encryptionService.Decrypt(transferToken);
-            return JsonConvert.DeserializeObject<TransferToken>(transferTokenJson);
+            this.coreContext = coreContext;
         }
 
         public async Task<Transfer> CreateTransfer(CreateTransferParameters createTransferParameters)
         {
-            var (region, name, customer, requester, templateItemCodename, localization) = createTransferParameters;
+            var (name, customer, requester, templateItemCodename) = createTransferParameters;
 
-            TemplateItem templateItem = null;
+            TemplateItem? templateItem = null;
 
             if (!string.IsNullOrWhiteSpace(templateItemCodename))
             {
-                templateItem = await kontentService.GetKontentItem<TemplateItem>(new GetKontentParameters
+                templateItem = await kontentRepository.GetKontentItem<TemplateItem>(new GetKontentParameters
                 {
-                    Region = region,
-                    Codename = templateItemCodename,
-                    Localization = localization
+                    Codename = templateItemCodename
                 });
             }
 
-            var transferItem = await kontentService.CreateTransfer(new CreateTransferItemParameters
+            var transferItem = await kontentRepository.CreateTransferItem(new CreateTransferItemParameters
             {
-                Region = region,
                 Name = name,
                 Customer = customer,
                 Requester = requester,
                 Fields = templateItem?.GetFields(),
-                Localization = localization
             });
 
-            var containerName = storageService.GetSafeContainerName(transferItem.System.Codename);
-
-            var transferToken = await storageService.CreateContainer(new CreateContainerParameters
+            var container = await storageRepository.GetContainer(new GetContainerParameters
             {
-                Region = region,
-                ContainerName = containerName,
-                TransferToken = new TransferToken
-                {
-                    Region = region,
-                    Codename = transferItem.System.Codename
-                }
+                ContainerName = storageRepository.GetSafeContainerName(transferItem.System.Codename)
             });
 
-            TemplateItem resolvedTemplateItem = null;
+            container.DeleteWhen = DateTime.MaxValue;
 
-            if (!string.IsNullOrWhiteSpace(templateItemCodename))
+            container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
             {
-                resolvedTemplateItem = kontentService.ResolveItem(templateItem, new
+                Codename = transferItem.System.Codename,
+                Localization = transferItem.System.Language
+            });
+
+            await container.Update();
+
+            TemplateItem? resolvedTemplateItem = null;
+
+            if (!string.IsNullOrWhiteSpace(templateItemCodename) && templateItem != null)
+            {
+                resolvedTemplateItem = kontentRepository.ResolveItem(templateItem, new
                 {
                     TransferName = transferItem.System.Name,
-                    TransferPublicUrl = Transfer.GetUrl(transferToken)
+                    TransferUrl = Transfer.GetUrl(container.TransferToken)
                 },
                 nameof(TemplateItem.Message));
             }
 
             return new Transfer
             {
-                Region = region,
+                Region = coreContext.Region,
                 Name = transferItem.System.Name,
                 Customer = transferItem.GetInfo().Customer,
                 Requester = transferItem.GetInfo().Requester,
-                TransferToken = transferToken,
+                TransferToken = container.TransferToken,
                 Template = resolvedTemplateItem?.Message
             };
         }
 
-        public async Task<Transfer> GetTransfer(GetTransferParameters getTransferParameters)
+        public async Task<Transfer?> GetTransfer(GetTransferParameters getTransferParameters)
         {
-            var (region, codename, _) = getTransferParameters;
+            var (transferToken, files, fields, containerUrl, accessTokenResult) = getTransferParameters;
+            var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
 
-            var containerName = storageService.GetSafeContainerName(codename);
+            coreContext.Region = region;
+            coreContext.Localization = localization;
 
-            var transferItem = await kontentService.GetKontentItem<TransferItem>(new GetKontentParameters
+            var transferItem = await kontentRepository.GetKontentItem<TransferItem>(new GetKontentParameters
             {
-                Region = region,
                 Codename = codename
             });
 
-            var files = await storageService.GetContainerFiles(new GetContainerParameters
+            if (transferItem == null)
             {
-                Region = region,
-                ContainerName = containerName
-            });
-
-            return new Transfer
-            {
-                Region = region,
-                Name = transferItem.System.Name,
-                Customer = transferItem.GetInfo().Customer,
-                Requester = transferItem.GetInfo().Requester,
-                Files = files
-            };
-        }
-
-        public async Task<Transfer> GetTransferForClient(GetTransferParameters getTransferParameters)
-        {
-            var (region, codename, accessTokenResult) = getTransferParameters;
-
-            var containerName = storageService.GetSafeContainerName(codename);
-
-            string containerUrl = string.Empty;
-
-            switch (accessTokenResult)
-            {
-                case ValidAccessTokenResult _:
-                    containerUrl = storageService.GetAdminContainerUrl(new GetContainerParameters
-                    {
-                        Region = region,
-                        ContainerName = containerName
-                    });
-                    break;
-
-                case NoAccessTokenResult _:
-                    containerUrl = storageService.GetPublicContainerUrl(new GetContainerParameters
-                    {
-                        Region = region,
-                        ContainerName = containerName
-                    });
-                    break;
+                return null;
             }
 
-            var transferItem = await kontentService.GetKontentItem<TransferItem>(new GetKontentParameters
+            var getContainerParameters = new GetContainerParameters
             {
-                Region = region,
-                Codename = codename
-            });
+                ContainerName = storageRepository.GetSafeContainerName(codename)
+            };
 
-            return new Transfer
+            var container = await storageRepository.GetContainer(getContainerParameters);
+
+            return (files, fields, containerUrl, accessTokenResult)
+            switch
             {
-                Region = region,
-                Name = transferItem.System.Name,
-                Customer = transferItem.GetInfo().Customer,
-                Requester = transferItem.GetInfo().Requester,
-                ContainerName = containerName,
-                ContainerUrl = containerUrl,
-                Fields = transferItem.GetFields()
+                (false, true, true, _) when accessTokenResult is NoAccessTokenResult => new Transfer
+                {
+                    Region = coreContext.Region,
+                    Name = transferItem.System.Name,
+                    Customer = transferItem.GetInfo().Customer,
+                    Requester = transferItem.GetInfo().Requester,
+                    ContainerUrl = storageRepository.GetPublicContainerUrl(getContainerParameters),
+                    Fields = transferItem.GetFields(container.CompletedFields)
+                },
+                (false, true, true, _) when accessTokenResult is ValidAccessTokenResult => new Transfer
+                {
+                    Region = coreContext.Region,
+                    Name = transferItem.System.Name,
+                    Customer = transferItem.GetInfo().Customer,
+                    Requester = transferItem.GetInfo().Requester,
+                    ContainerUrl = storageRepository.GetAdminContainerUrl(getContainerParameters),
+                    Fields = transferItem.GetFields(container.CompletedFields)
+                },
+                (true, false, false, _) => new Transfer
+                {
+                    Region = region,
+                    Name = transferItem.System.Name,
+                    Customer = transferItem.GetInfo().Customer,
+                    Requester = transferItem.GetInfo().Requester,
+                    Files = await storageRepository.GetContainerFiles(new GetContainerParameters
+                    {
+                        ContainerName = storageRepository.GetSafeContainerName(codename)
+                    })
+                },
+                _ => throw new ArgumentException()
             };
         }
 
         public async Task UpdateTransfer(UpdateTransferParameters updateTransferParameters)
         {
-            var (region, codename, transferToken, fieldName, messageItemCodename) = updateTransferParameters;
+            var (transferToken, field, type, messageItemCodename) = updateTransferParameters;
+            var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
 
-            var teamsMessageItem = await kontentService.GetKontentItem<TeamsMessageItem>(new GetKontentParameters
+            coreContext.Region = region;
+            coreContext.Localization = localization;
+
+            var container = await storageRepository.GetContainer(new GetContainerParameters
             {
-                Region = region,
-                Codename = messageItemCodename
+                ContainerName = storageRepository.GetSafeContainerName(codename),
             });
 
-            var transferItem = await kontentService.GetKontentItem<TransferItem>(new GetKontentParameters
+            switch (type)
             {
-                Region = region,
+                case UpdateType.FieldComplete:
+                    if (field != null)
+                    {
+                        container.CompletedFields.Add(field);
+                    }
+
+                    await container.Update();
+                    break;
+
+                case UpdateType.FieldIncomplete:
+                    if (field != null)
+                    {
+                        container.CompletedFields.Remove(field);
+                    }
+
+                    await container.Update();
+                    return;
+
+                default:
+                    return;
+            }
+
+            var transferItem = await kontentRepository.GetKontentItem<TransferItem>(new GetKontentParameters
+            {
                 Codename = codename
             });
 
-            var resolvedTeamsMessageItem = kontentService.ResolveItem(teamsMessageItem, new
+            var teamsMessageItem = await kontentRepository.GetKontentItem<TeamsMessageItem>(new GetKontentParameters
             {
-                TransferRegion = region.ToUpper(),
+                Codename = messageItemCodename
+            });
+
+            var resolvedTeamsMessageItem = kontentRepository.ResolveItem(teamsMessageItem, new
+            {
+                TransferRegion = coreContext.Region.ToUpper(),
                 TransferName = transferItem.System.Name,
                 TransferCustomer = transferItem.GetInfo().Customer,
                 TransferRequester = transferItem.GetInfo().Requester,
-                TransferPublicUrl = $"[Caddy | {transferItem.System.Name}]({Transfer.GetUrl(transferToken)})",
-                FieldName = fieldName,
+                TransferUrl = Transfer.GetUrl(transferToken),
+                TransfersUrl = CoreHelper.GetSetting("ClientTransfersUrl"),
+                Field = transferItem.GetFields(container.CompletedFields)
+                    .Single(completedField => completedField.Codename == field).Name,
             }, nameof(TeamsMessageItem.CardJSON));
 
-            var card = JsonConvert.DeserializeObject<O365ConnectorCard>(resolvedTeamsMessageItem.GetCardJson());
+            var card = CoreHelper.Deserialize<O365ConnectorCard>(resolvedTeamsMessageItem.GetCardJson());
 
-            var containerName = storageService.GetSafeContainerName(codename);
-
-            var files = await storageService.GetContainerFiles(new GetContainerParameters
+            var files = await storageRepository.GetContainerFiles(new GetContainerParameters
             {
-                Region = region,
-                ContainerName = containerName
+                ContainerName = storageRepository.GetSafeContainerName(codename)
             });
 
-            var completedFieldPaths = files
-                .Where(filePair => filePair.Value.Name == "completed")
-                .Select(filePair => filePair.Key.ToLower());
+            var completedFields = transferItem.GetFields(container.CompletedFields)
+                .Where(field => field.Completed);
 
-            var folderFields = transferItem
-                .GetFields()
-                .ToDictionary(field => storageService.GetSafePathSegment(field.Name), field => field);
-
-            var completedFieldFacts = folderFields
-                .Where(folderField => completedFieldPaths.Any(path => path.Contains(folderField.Key)))
-                .Select(folderField => new O365ConnectorCardFact
+            var completedFieldFacts = completedFields
+                .Select(field => new O365ConnectorCardFact
                 {
-                    Name = folderField.Value.Name,
+                    Name = field.Name,
                     Value = string.Join(", ", files
-                        .Where(filePair => filePair.Key.ToLower().Contains(folderField.Key))
-                        .Where(filePair => filePair.Value.Name != "completed")
-                        .Select(filePair => $"[{filePair.Value.Name}]({filePair.Value.Url.Replace(" ", "%20")})"))
+                        .Where(filePair => filePair.Key.ToLower()
+                            .Contains(storageRepository.GetSafePathSegment(field.Name)))
+                        .Select(filePair => filePair.Value.GetMarkdownUrl())
+                    )
                 })
                 .ToList();
 
@@ -250,32 +253,57 @@ namespace Transfers
             });
         }
 
-        public async Task<IEnumerable<Transfer>> ListTransfers(string region)
+        public async Task SuspendTransfer(GetTransferParameters getTransferParameters)
         {
-            var transferItems = await kontentService.GetTransfers(region);
+            var (transferToken, _, _, _, _) = getTransferParameters;
+            var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
+
+            coreContext.Region = region;
+            coreContext.Localization = localization;
+
+            await kontentRepository.UnpublishLanguageVariant(new GetKontentParameters
+            {
+                Codename = codename
+            });
+        }
+
+        public async Task ResumeTransfer(GetTransferParameters getTransferParameters)
+        {
+            var (transferToken, _, _, _, _) = getTransferParameters;
+            var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
+
+            coreContext.Region = region;
+            coreContext.Localization = localization;
+
+            await kontentRepository.PublishLanguageVariant(new GetKontentParameters
+            {
+                Codename = codename
+            });
+        }
+
+        public async Task<IEnumerable<Transfer>> ListTransfers()
+        {
+            var transferItems = await kontentRepository.GetTransfers();
 
             IList<Transfer> transfers = new List<Transfer>();
 
             foreach (var transferItem in transferItems)
             {
-                var containerName = storageService.GetSafeContainerName(transferItem.System.Codename);
-
-                string transferToken = await storageService.GetContainerTransferToken(new GetContainerParameters
+                var container = await storageRepository.GetContainer(new GetContainerParameters
                 {
-                    Region = region,
-                    ContainerName = containerName
+                    ContainerName = storageRepository.GetSafeContainerName(transferItem.System.Codename)
                 });
 
-                if (!string.IsNullOrWhiteSpace(transferToken))
+                if (!string.IsNullOrWhiteSpace(container.TransferToken))
                 {
                     transfers.Add(new Transfer
                     {
-                        Region = region,
+                        Region = coreContext.Region,
                         Name = transferItem.System.Name,
                         Codename = transferItem.System.Codename,
                         Customer = transferItem.GetInfo().Customer,
                         Requester = transferItem.GetInfo().Requester,
-                        TransferToken = transferToken
+                        TransferToken = container.TransferToken
                     });
                 }
             }

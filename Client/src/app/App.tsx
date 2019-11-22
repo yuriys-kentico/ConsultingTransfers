@@ -1,10 +1,11 @@
-import { Router } from '@reach/router';
 import React, { lazy, Suspense } from 'react';
 import { boundary, useError } from 'react-boundary';
+import { Helmet } from 'react-helmet';
 import { Loader } from 'semantic-ui-react';
 
-import { errors } from '../terms.en-us.json';
-import { setTitle } from '../utilities/routing';
+import { Router } from '@reach/router';
+
+import { errors, header } from '../terms.en-us.json';
 import { routes } from './routes';
 
 const Frontend = lazy(() => import('./frontend/Frontend').then(module => ({ default: module.Frontend })));
@@ -18,15 +19,18 @@ export const App = boundary(() => {
     return <Error stack={`${error && error.stack}${info && info.componentStack}`} />;
   }
 
-  setTitle();
-
   return (
-    <Suspense fallback={<Loader active size='massive' />}>
-      <Router>
-        <Frontend path='*' />
-        <Details path={routes.details} />
-        <Error path={routes.error} default message={errors.notFound} />
-      </Router>
-    </Suspense>
+    <>
+      <Helmet titleTemplate={`%s | ${header.header}`} defaultTitle={header.header}>
+        <meta name='description' content={header.description} />
+      </Helmet>
+      <Suspense fallback={<Loader active size='massive' />}>
+        <Router>
+          <Frontend path='*' />
+          <Details path={routes.details} />
+          <Error path={routes.error} default message={errors.notFound} />
+        </Router>
+      </Suspense>
+    </>
   );
 });

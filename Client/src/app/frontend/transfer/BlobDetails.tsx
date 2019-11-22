@@ -1,25 +1,23 @@
-import { BlobItem } from '@azure/storage-blob/typings/src/generated/src/models';
 import React, { FC } from 'react';
-import { Header, Label, SemanticCOLORS } from 'semantic-ui-react';
+import { Header, Label } from 'semantic-ui-react';
 
+import { IFile } from '../../../services/models/IFile';
 import { getSizeText } from '../../../utilities/numbers';
 
 interface IBlobDetailsProps {
-  file: BlobItem;
-  fileName: string;
-  color?: SemanticCOLORS;
+  file: IFile;
 }
 
-export const BlobDetails: FC<IBlobDetailsProps> = ({ file, fileName, color }) => {
-  const { contentLength, lastModified } = file.properties;
+export const BlobDetails: FC<IBlobDetailsProps> = ({ file }) => {
+  const { name, sizeBytes, modified } = file;
 
-  const [size, unit] = getSizeText(contentLength);
+  const [size, unit] = getSizeText(sizeBytes);
 
   return (
     <>
-      <Header as='h5' sub content={fileName} color={color} />
+      <Header as='h5' sub content={name} />
       <Label content={`${size} ${unit}`} icon='save' size='tiny' />
-      <Label content={`${lastModified.toLocaleString()}`} icon='calendar check outline' size='tiny' />
+      <Label content={`${modified.toLocaleString()}`} icon='calendar check outline' size='tiny' />
     </>
   );
 };

@@ -1,7 +1,7 @@
 declare module 'streamsaver' {
-  import { WritableStream } from 'web-streams-polyfill/ponyfill';
+import { WritableStream } from 'web-streams-polyfill/ponyfill';
 
-  export function createWriteStream(
+    export function createWriteStream(
     filename: string,
     options?: {
       size: number | null;

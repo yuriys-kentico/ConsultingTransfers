@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using Core;
 
 using Kentico.Kontent.Delivery;
 
-using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace KenticoKontent.Models.Delivery
 {
@@ -11,11 +11,11 @@ namespace KenticoKontent.Models.Delivery
     {
         public const string Codename = "template";
 
-        public ContentItemSystemAttributes System { get; set; }
+        public ContentItemSystemAttributes System { get; set; } = null!;
 
-        public string Message { get; set; }
+        public string? Message { get; set; }
 
-        public string Fields { get; set; }
+        public string? Fields { get; set; }
 
         public IEnumerable<ResolvedField> GetFields()
         {
@@ -23,7 +23,7 @@ namespace KenticoKontent.Models.Delivery
                 .Replace(Fields, "<.*?>|\n", string.Empty)
                 .Replace("}{", "},{")}]";
 
-            return JsonConvert.DeserializeObject<IEnumerable<ResolvedField>>(fieldsJson);
+            return CoreHelper.Deserialize<IEnumerable<ResolvedField>>(fieldsJson);
         }
     }
 }

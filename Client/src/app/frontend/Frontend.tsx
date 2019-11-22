@@ -1,12 +1,13 @@
-import { Link, LinkGetProps, Router } from '@reach/router';
 import React, { lazy, Suspense, useRef, useState } from 'react';
 import AzureAD from 'react-aad-msal';
 import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
+import { Link, LinkGetProps, Router } from '@reach/router';
+
 import { experience } from '../../appSettings.json';
 import { admin, errors, header } from '../../terms.en-us.json';
 import { deleteFrom } from '../../utilities/arrays';
-import { promiseAfter } from '../../utilities/promises';
+import { wait } from '../../utilities/promises';
 import { RoutedFC } from '../../utilities/routing';
 import { authProvider } from '../authProvider';
 import { routes } from '../routes';
@@ -15,7 +16,7 @@ import {
     MessageContext,
     ShowErrorHandler,
     ShowInfoHandler,
-    ShowInfoUntilHandler,
+    ShowInfoUntilHandler
 } from './header/MessageContext';
 import { Snack } from './header/Snack';
 import { ISnack, showSnack } from './header/snacks';
@@ -35,7 +36,7 @@ export const Frontend: RoutedFC = () => {
       text,
       type,
       snack => setSnacks(snacks => [...snacks, snack]),
-      promiseAfter(timeout || snackTimeout)({}),
+      wait(timeout || snackTimeout),
       snack => setSnacks(snacks => deleteFrom(snack, snacks))
     );
   };
@@ -45,7 +46,7 @@ export const Frontend: RoutedFC = () => {
       text,
       'update',
       snack => setSnacks(snacks => [...snacks, snack]),
-      isComplete.then(promiseAfter(snackTimeout)),
+      isComplete.then(() => wait(snackTimeout)),
       snack => setSnacks(snacks => deleteFrom(snack, snacks)),
       update
     );

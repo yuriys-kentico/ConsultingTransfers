@@ -13,6 +13,10 @@
       "header": "URLs",
       "publicUrl": "Public URL",
       "adminUrl": "Admin URL"
+    },
+    "invalid": {
+      "header": "Transfer container not available",
+      "explanation": "Something went wrong with getting the transfer container. Please contact the admin for help."
     }
   },
   "admin": {
@@ -26,11 +30,19 @@
         "customer": "Customer",
         "requester": "Requester",
         "region": "Region"
+      },
+      "actions": {
+        "suspendTransfer": "Do you want to suspend transfer {0}?"
+      },
+      "invalid": {
+        "header": "Transfers not available",
+        "explanation": "Something went wrong with getting all transfers. Please contact the admin for help."
       }
     }
   },
   "header": {
-    "header": "Caddy"
+    "header": "Caddy",
+    "description": "Caddy provides transfer services between Kentico and its customers."
   },
   "transfer": {
     "header": "Transfer:",
@@ -50,6 +62,10 @@
       "writeText": {
         "placeholder": "Write some text here..."
       }
+    },
+    "invalid": {
+      "header": "Transfer not available",
+      "explanation": "The URL you used to access this is not valid. Please contact us for help."
     }
   },
   "errors": {
@@ -57,7 +73,7 @@
     "genericStack": "No error information.",
     "notFound": "This path does not exist."
   },
-  "azureStorage": {
+  "services": {
     "done": "Done.",
     "creatingContainer": "Creating container {0}...",
     "deletingContainer": "Deleting container {0}...",
@@ -68,9 +84,5 @@
     "downloadingFile": "Downloading {0}...",
     "abortDownload": "User navigated away.",
     "finishedDownloading": "Finished downloading {0}."
-  },
-  "azureFunctions": {
-    "containerNotFound": "Container {0} not found.",
-    "invalidBearer": "Bearer {0} is invalid."
   }
 }

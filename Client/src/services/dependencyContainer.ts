@@ -1,10 +1,10 @@
 import { rootInjector } from 'typed-inject';
 
-import { AzureFunctionsService, IAzureFunctionsService } from './azureFunctions/AzureFunctionsService';
-import { AzureStorageService, IAzureStorageService } from './azureStorage/AzureStorageService';
+import { ITransferFilesService, TransferFilesService } from './TransferFilesService';
+import { ITransfersService, TransfersService } from './TransfersService';
 
 const dependencies = rootInjector
-  .provideClass(IAzureStorageService, AzureStorageService)
-  .provideClass(IAzureFunctionsService, AzureFunctionsService);
+  .provideClass(ITransferFilesService, TransferFilesService)
+  .provideClass(ITransfersService, TransfersService);
 
 export const useDependency = dependencies.resolve.bind(dependencies);

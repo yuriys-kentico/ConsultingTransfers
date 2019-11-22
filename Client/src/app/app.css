@@ -188,3 +188,8 @@ ol.ui.list ol,
 .ui.cards {
   margin: 0 !important;
 }
+
+.ui.header {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
