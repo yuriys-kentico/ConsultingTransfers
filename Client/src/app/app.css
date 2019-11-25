@@ -65,9 +65,12 @@ table .basic.icon.button {
   border-style: dashed;
 }
 
-.drop.zone.active,
 .drop.zone:hover {
   border-color: #cacbcd;
+}
+
+.drop.zone.active {
+  border-color: #21ba45;
 }
 
 .editor .view {

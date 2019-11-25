@@ -16,7 +16,13 @@ import { useSubscription } from '../../../../utilities/observables';
 import { MessageContext } from '../../header/MessageContext';
 import { IFieldHolderProps } from '../FieldHolder';
 
-export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldReady, defaultText }) => {
+export const WriteText: FC<IFieldHolderProps> = ({
+  completed,
+  name,
+  defaultText,
+  setFieldReady,
+  setFieldCanBeCompleted
+}) => {
   const { writeText } = transfer.fields;
 
   const [ready, setReady] = useState(false);
@@ -30,19 +36,21 @@ export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldRead
   const files = useSubscription(transferFilesService.files);
 
   useEffect(() => {
-    const fieldFiles = files && transferFilesService.getFieldFiles(files, name);
+    if (files) {
+      const fieldFiles = transferFilesService.getFieldFiles(files, name);
 
-    const updateEditorState = (text?: string) => {
-      text && setEditorState(EditorState.createWithContent(convertFromRaw(markdownToDraft(text))));
-      setReady(true);
-    };
+      const updateEditorState = (text?: string) => {
+        text && setEditorState(EditorState.createWithContent(convertFromRaw(markdownToDraft(text))));
+        setReady(true);
+      };
 
-    if (fieldFiles && fieldFiles.length > 0) {
-      transferFilesService.readFileAsText(fieldFiles[0]).then(blobString => {
-        updateEditorState(blobString);
-      });
-    } else {
-      updateEditorState(defaultText);
+      if (fieldFiles.length > 0) {
+        transferFilesService.readFileAsText(fieldFiles[0]).then(blobString => {
+          updateEditorState(blobString);
+        });
+      } else {
+        updateEditorState(defaultText);
+      }
     }
 
     const subscription = stateStream.current.pipe(debounceTime(experience.writeTextUpdateTimeout)).subscribe({
@@ -60,6 +68,7 @@ export const WriteText: FC<IFieldHolderProps> = ({ completed, name, setFieldRead
 
   const updateEditorState = (draftState: EditorState) => {
     setEditorState(draftState);
+    setFieldCanBeCompleted(true);
     setFieldReady(false);
 
     stateStream.current.next(draftState.getCurrentContent());

@@ -14,6 +14,7 @@ const DownloadAsset = lazy(() => import('./fields/DownloadAsset').then(module =>
 
 export interface IFieldHolderProps extends IField {
   setFieldReady: (ready: boolean) => void;
+  setFieldCanBeCompleted: (completed: boolean) => void;
 }
 
 export const FieldHolder: FC<IField> = props => {
@@ -22,6 +23,7 @@ export const FieldHolder: FC<IField> = props => {
   const { showInfo, showSuccess } = useContext(MessageContext);
   const [ready, setReady] = useState(true);
   const [fieldReady, setFieldReady] = useState(true);
+  const [fieldCanBeCompleted, setFieldCanBeCompleted] = useState(false);
 
   const transfersService = useDependency(ITransfersService);
   const transfer = useSubscription(transfersService.transfer);
@@ -38,33 +40,31 @@ export const FieldHolder: FC<IField> = props => {
   };
 
   const updateCompleted = async (data: CheckboxProps) => {
-    if (transfer && data.checked) {
+    if (transfer) {
       const { transferToken } = transfer;
 
-      showInfo(transferTerms.fields.markingCompleted);
+      if (data.checked) {
+        showInfo(transferTerms.fields.markingCompleted);
 
-      setReady(false);
+        setReady(false);
 
-      await transfersService.updateTransfer({
-        transferToken,
-        field: codename,
-        type: 'fieldComplete',
-        messageItemCodename: 'field_updated'
-      });
+        await transfersService.updateTransfer({
+          transferToken,
+          field: codename,
+          type: 'fieldComplete',
+          messageItemCodename: 'field_updated'
+        });
 
-      await transfersService.getTransfer({ transferToken });
+        await transfersService.getTransfer({ transferToken });
 
-      setReady(true);
+        setReady(true);
 
-      showSuccess(transferTerms.fields.markedCompleted);
-    } else if (transfer && window.confirm(transferTerms.fields.confirmMarkIncomplete)) {
-      const { transferToken } = transfer;
+        showSuccess(transferTerms.fields.markedCompleted);
+      } else if (window.confirm(transferTerms.fields.confirmMarkIncomplete)) {
+        showInfo(transferTerms.fields.markingIncomplete);
 
-      showInfo(transferTerms.fields.markingIncomplete);
+        setReady(false);
 
-      setReady(false);
-
-      if (transfer) {
         await transfersService.updateTransfer({
           transferToken,
           field: codename,
@@ -72,23 +72,25 @@ export const FieldHolder: FC<IField> = props => {
         });
 
         await transfersService.getTransfer({ transferToken });
+
+        setReady(true);
+
+        showSuccess(transferTerms.fields.markedIncomplete);
       }
-
-      setReady(true);
-
-      showSuccess(transferTerms.fields.markedIncomplete);
     }
   };
 
   return (
     <Segment loading={!ready} disabled={completed} className='inherit color'>
       <Header floated='right'>
-        <Checkbox
-          toggle
-          label={completed ? transferTerms.fields.markIncomplete : transferTerms.fields.markCompleted}
-          checked={completed}
-          onChange={(_, data) => updateCompleted(data)}
-        />
+        {fieldCanBeCompleted && (
+          <Checkbox
+            toggle
+            label={completed ? transferTerms.fields.markIncomplete : transferTerms.fields.markCompleted}
+            checked={completed}
+            onChange={(_, data) => updateCompleted(data)}
+          />
+        )}
       </Header>
       <Header floated='right' content={<Loader active={!fieldReady} inline size='tiny' />} />
       <Header as='h3' content={name} />
@@ -96,7 +98,13 @@ export const FieldHolder: FC<IField> = props => {
       {comment}
       <Divider fitted hidden />
       <Divider fitted hidden />
-      <Segment as={getFieldComponent(type)} {...props} completed={completed} setFieldReady={setFieldReady} />
+      <Segment
+        as={getFieldComponent(type)}
+        {...props}
+        completed={completed}
+        setFieldReady={setFieldReady}
+        setFieldCanBeCompleted={setFieldCanBeCompleted}
+      />
     </Segment>
   );
 };

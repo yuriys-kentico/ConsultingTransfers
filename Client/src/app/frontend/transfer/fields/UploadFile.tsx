@@ -13,7 +13,7 @@ import { MessageContext } from '../../header/MessageContext';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';
 
-export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldReady }) => {
+export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldReady, setFieldCanBeCompleted }) => {
   const { uploadFile } = transfer.fields;
   const { uploadExtensions } = experience;
 
@@ -31,9 +31,10 @@ export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldRea
 
       await transferFilesService.uploadFiles(files, name);
 
+      setFieldCanBeCompleted(true);
       setFieldReady(true);
     },
-    [name, setFieldReady, transferFilesService]
+    [name, setFieldReady, transferFilesService, setFieldCanBeCompleted]
   );
 
   const onDropRejected = useCallback(
@@ -56,13 +57,26 @@ export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldRea
 
   useEffect(() => {
     if (files) {
-      setFilesList(transferFilesService.getFieldFiles(files, name));
+      const fieldFiles = transferFilesService.getFieldFiles(files, name);
+
+      setFilesList(fieldFiles);
+
+      if (fieldFiles.length > 0) {
+        setFieldCanBeCompleted(true);
+      } else {
+        setFieldCanBeCompleted(false);
+      }
+
       setReady(true);
     }
-  }, [files, transferFilesService, name]);
+  }, [files, transferFilesService, name, setFieldCanBeCompleted]);
 
   return (
-    <div {...getRootProps({ className: `drop zone ${isDragActive ? 'active' : ''} ${completed ? 'disabled' : ''}` })}>
+    <div
+      {...getRootProps({
+        className: `drop zone ${isDragActive ? 'active' : ''} ${completed ? 'disabled' : ''}`
+      })}
+    >
       <Container>
         {ready && (
           <Table unstackable singleLine basic='very' compact>

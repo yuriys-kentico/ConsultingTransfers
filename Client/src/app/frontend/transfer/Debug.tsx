@@ -72,12 +72,8 @@ export const Debug: FC = () => {
         <>
           <Divider />
           <Segment>
-            <Header as='h2' content={'Details:'} />
+            <Header as='h2' content={'Info:'} />
             <List>
-              <List.Item>
-                <Label horizontal content={'Container name:'} />
-                {transferFilesService.containerClient.containerName}
-              </List.Item>
               <List.Item>
                 <Label horizontal content={'Customer:'} />
                 {transfer.customer}
@@ -85,6 +81,10 @@ export const Debug: FC = () => {
               <List.Item>
                 <Label horizontal content={'Requester:'} />
                 {transfer.requester}
+              </List.Item>
+              <List.Item>
+                <Label horizontal content={'Container name:'} />
+                {transferFilesService.containerClient.containerName}
               </List.Item>
             </List>
           </Segment>
@@ -109,9 +109,9 @@ export const Debug: FC = () => {
                     <Table.Cell>
                       <BlobDetails file={fileListItem.file} />
                     </Table.Cell>
-                    <Table.Cell>{fileListItem.file.field.name}</Table.Cell>
-                    <Table.Cell>{fileListItem.file.field.type}</Table.Cell>
-                    <Table.Cell>{fileListItem.file.field.completed ? 'COMPLETE' : 'INCOMPLETE'}</Table.Cell>
+                    <Table.Cell>{`${fileListItem.file.field.name} (${fileListItem.file.field.type}) ${
+                      fileListItem.file.field.completed ? ': completed' : ''
+                    }`}</Table.Cell>
                     <Table.Cell textAlign='right'>
                       <Button
                         onClick={() => transferFilesService.downloadFiles(fileListItem.file)}
