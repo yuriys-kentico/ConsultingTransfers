@@ -19,17 +19,18 @@ using Transfers.Models;
 
 namespace Functions.Transfers
 {
-    public class UpdateTransfer : AbstractFunction
+    public class UpdateTransfer : BaseFunction
     {
         private readonly IAccessTokenValidator accessTokenValidator;
         private readonly ITransfersService transfersService;
         private readonly ICoreContext coreContext;
 
         public UpdateTransfer(
+            ILogger<UpdateTransfer> logger,
             IAccessTokenValidator accessTokenValidator,
             ITransfersService transfersService,
             ICoreContext coreContext
-            )
+            ) : base(logger)
         {
             this.accessTokenValidator = accessTokenValidator;
             this.transfersService = transfersService;
@@ -43,15 +44,14 @@ namespace Functions.Transfers
                 "post",
                 Route = transfers + "/update"
             )] UpdateTransferRequest updateTransferRequest,
-            IDictionary<string, string> headers,
-            ILogger log
+            IDictionary<string, string> headers
             )
         {
             try
             {
-                var tokenResult = await accessTokenValidator.ValidateToken(headers);
+                AccessTokenResult = await accessTokenValidator.ValidateToken(headers);
 
-                switch (tokenResult)
+                switch (AccessTokenResult)
                 {
                     case ValidAccessTokenResult _:
                     case NoAccessTokenResult _:
@@ -69,15 +69,15 @@ namespace Functions.Transfers
                             MessageItemCodename = messageItemCodename
                         });
 
-                        return LogOk(log);
+                        return LogOk();
 
                     default:
-                        return LogUnauthorized(log);
+                        return LogUnauthorized();
                 }
             }
             catch (Exception ex)
             {
-                return LogException(log, ex);
+                return LogException(ex);
             }
         }
     }

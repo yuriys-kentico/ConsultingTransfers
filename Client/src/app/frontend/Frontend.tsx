@@ -23,6 +23,7 @@ import { ISnack, showSnack } from './header/snacks';
 
 const Home = lazy(() => import('./admin/Home').then(module => ({ default: module.Home })));
 const Transfers = lazy(() => import('./admin/Transfers').then(module => ({ default: module.Transfers })));
+const NewTransfer = lazy(() => import('./admin/NewTransfer').then(module => ({ default: module.NewTransfer })));
 const Transfer = lazy(() => import('./transfer/Transfer').then(module => ({ default: module.Transfer })));
 const Error = lazy(() => import('../shared/Error').then(module => ({ default: module.Error })));
 
@@ -120,6 +121,15 @@ export const Frontend: RoutedFC = () => {
               <Icon name='sync' />
               {admin.transfers.header}
             </Menu.Item>
+            <Menu.Item
+              onClick={() => setSidebarOpen(false)}
+              as={Link}
+              to={routes.newTransfer}
+              getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
+            >
+              <Icon name='send' />
+              {admin.newTransfer.header}
+            </Menu.Item>
           </Sidebar>
         </AzureAD>
         <Sidebar.Pusher className='full height app' dimmed={sidebarOpen}>
@@ -135,6 +145,7 @@ export const Frontend: RoutedFC = () => {
                 <Router>
                   <Home path={routes.home} authenticated />
                   <Transfers path={routes.transfers} authenticated />
+                  <NewTransfer path={routes.newTransfer} authenticated />
                   <Transfer path={`${routes.transfer}:encodedTransferToken`} />
                   <Error path={routes.error} default message={errors.notFound} />
                 </Router>

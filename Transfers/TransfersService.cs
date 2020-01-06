@@ -144,6 +144,7 @@ namespace Transfers
                 {
                     Region = coreContext.Region,
                     Name = transferItem.System.Name,
+                    Codename = transferItem.System.Codename,
                     Customer = transferItem.GetInfo().Customer,
                     Requester = transferItem.GetInfo().Requester,
                     ContainerUrl = storageRepository.GetAdminContainerUrl(getContainerParameters),

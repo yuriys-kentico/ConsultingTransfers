@@ -15,19 +15,20 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Functions.Webhook
+namespace Functions.Webhooks
 {
-    public class KontentWebhook : AbstractFunction
+    public class KontentWebhook : BaseFunction
     {
         private readonly IWebhookValidator webhookValidator;
         private readonly IStorageRepository storageRepository;
         private readonly ICoreContext coreContext;
 
         public KontentWebhook(
+            ILogger<KontentWebhook> logger,
             IWebhookValidator webhookValidator,
             IStorageRepository storageRepository,
             ICoreContext coreContext
-            )
+            ) : base(logger)
         {
             this.webhookValidator = webhookValidator;
             this.storageRepository = storageRepository;
@@ -42,8 +43,7 @@ namespace Functions.Webhook
                 Route = webhook + "/{region:alpha:length(2)}"
             )] string body,
             IDictionary<string, string> headers,
-            string region,
-            ILogger log
+            string region
             )
         {
             try
@@ -52,60 +52,80 @@ namespace Functions.Webhook
 
                 var (valid, getWebhook) = webhookValidator.ValidateWebhook(body, headers, region);
 
-                if (!valid) return LogUnauthorized(log);
+                if (!valid) return LogUnauthorized();
 
                 var (data, message) = getWebhook();
 
                 var (items, _) = data;
 
-                switch (message.Operation)
+                switch (message.Type)
                 {
-                    case "publish":
-                        foreach (var item in items)
+                    case "content_item_variant":
+                        switch (message.Operation)
                         {
-                            if (item.Type == TransferItem.Codename)
-                            {
-                                var container = await storageRepository.GetContainer(new GetContainerParameters
+                            case "publish":
+                                foreach (var item in items)
                                 {
-                                    ContainerName = storageRepository.GetSafeContainerName(item.Codename)
-                                });
+                                    if (item.Type == TransferItem.Codename)
+                                    {
+                                        var container = await storageRepository.GetContainer(new GetContainerParameters
+                                        {
+                                            ContainerName = storageRepository.GetSafeContainerName(item.Codename)
+                                        });
 
-                                container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
+                                        container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
+                                        {
+                                            Codename = item.Codename,
+                                            Localization = item.Language
+                                        });
+
+                                        container.DeleteWhen = DateTime.MaxValue;
+
+                                        await container.Update();
+                                    }
+                                }
+                                break;
+
+                            case "unpublish":
+                                foreach (var item in items)
                                 {
-                                    Codename = item.Codename,
-                                    Localization = item.Language
-                                });
+                                    if (item.Type == TransferItem.Codename)
+                                    {
+                                        var container = await storageRepository.GetContainer(new GetContainerParameters
+                                        {
+                                            ContainerName = storageRepository.GetSafeContainerName(item.Codename)
+                                        });
 
-                                container.DeleteWhen = DateTime.MaxValue;
+                                        container.DeleteWhen = DateTime.UtcNow.AddMonths(1);
 
-                                await container.Update();
-                            }
-                        }
-                        break;
+                                        await container.Update();
+                                    }
+                                }
+                                break;
 
-                    case "unpublish":
-                        foreach (var item in items)
-                        {
-                            if (item.Type == TransferItem.Codename)
-                            {
-                                var container = await storageRepository.GetContainer(new GetContainerParameters
+                            case "archive":
+                                foreach (var item in items)
                                 {
-                                    ContainerName = storageRepository.GetSafeContainerName(item.Codename)
-                                });
+                                    if (item.Type == TransferItem.Codename)
+                                    {
+                                        var container = await storageRepository.GetContainer(new GetContainerParameters
+                                        {
+                                            ContainerName = storageRepository.GetSafeContainerName(item.Codename)
+                                        });
 
-                                container.DeleteWhen = DateTime.UtcNow.AddMonths(1);
-
-                                await container.Update();
-                            }
+                                        await container.Delete();
+                                    }
+                                }
+                                break;
                         }
                         break;
                 }
 
-                return LogOk(log);
+                return LogOk();
             }
             catch (Exception ex)
             {
-                return LogException(log, ex);
+                return LogException(ex);
             }
         }
     }

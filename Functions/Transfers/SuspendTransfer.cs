@@ -17,15 +17,16 @@ using Transfers.Models;
 
 namespace Functions.Transfers
 {
-    public class SuspendTransfer : AbstractFunction
+    public class SuspendTransfer : BaseFunction
     {
         private readonly IAccessTokenValidator accessTokenValidator;
         private readonly ITransfersService transfersService;
 
         public SuspendTransfer(
+            ILogger<SuspendTransfer> logger,
             IAccessTokenValidator accessTokenValidator,
             ITransfersService transfersService
-            )
+            ) : base(logger)
         {
             this.accessTokenValidator = accessTokenValidator;
             this.transfersService = transfersService;
@@ -38,15 +39,14 @@ namespace Functions.Transfers
                 "post",
                 Route = transfers + "/suspend"
             )] GetTransferRequest getTransferRequest,
-            IDictionary<string, string> headers,
-            ILogger log
+            IDictionary<string, string> headers
             )
         {
             try
             {
-                var tokenResult = await accessTokenValidator.ValidateToken(headers);
+                AccessTokenResult = await accessTokenValidator.ValidateToken(headers);
 
-                switch (tokenResult)
+                switch (AccessTokenResult)
                 {
                     case ValidAccessTokenResult _:
                         await transfersService.SuspendTransfer(new GetTransferParameters
@@ -54,15 +54,15 @@ namespace Functions.Transfers
                             TransferToken = getTransferRequest.TransferToken
                         });
 
-                        return LogOk(log);
+                        return LogOk();
 
                     default:
-                        return LogUnauthorized(log);
+                        return LogUnauthorized();
                 }
             }
             catch (Exception ex)
             {
-                return LogException(log, ex);
+                return LogException(ex);
             }
         }
     }

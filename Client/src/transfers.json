@@ -18,5 +18,9 @@
   "resumeTransfer": {
     "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/resume",
     "key": "h1KiaI3V8lcHooge/nQthfhlWm2d1dXTVu4eNLT9CFgRJyDtS53deg=="
+  },
+  "createTransfer": {
+    "endpoint": "https://consultingtransfersus-functions.azurewebsites.net/caddy/transfers/create",
+    "key": "VObOc9c9oCZBT4WlsGZ9zdgaQwvwGm4vQuaUTyxEnBTGRg5TJUTrRA=="
   }
 }

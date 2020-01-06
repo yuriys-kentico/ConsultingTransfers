@@ -1,7 +1,9 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { FC, ReactNode, useEffect, useRef, useState } from 'react';
 import { Message, Progress, Segment } from 'semantic-ui-react';
 
+import { header } from '../../../terms.en-us.json';
 import { getSizeText, toRounded } from '../../../utilities/numbers';
+import { format } from '../../../utilities/strings';
 import { ISnack, IUpdateMessage } from './snacks';
 
 export const Snack: FC<ISnack> = ({ type, content, update }) => {
@@ -9,6 +11,7 @@ export const Snack: FC<ISnack> = ({ type, content, update }) => {
 
   const [progress, setProgress] = useState<IUpdateMessage>({ current: 0, total: 0 });
   const [duration, setDuration] = useState<number>(0);
+
   useEffect(() => {
     if (update) {
       const subscription = update.subscribe({
@@ -22,7 +25,7 @@ export const Snack: FC<ISnack> = ({ type, content, update }) => {
     }
   }, [update]);
 
-  let message;
+  let message: ReactNode;
 
   switch (type) {
     case 'success':
@@ -39,13 +42,17 @@ export const Snack: FC<ISnack> = ({ type, content, update }) => {
       break;
     case 'update':
       const { current, total } = progress;
-      const [sent, unit] = getSizeText(current, 2);
+      const [sent, sentUnit] = getSizeText(current, 2);
 
-      let updateContent = `${sent} ${unit}`;
+      let updateContent = `${sent} ${sentUnit}`;
+
+      const { waitingToSend, hours, minutes, seconds, atToGo } = header.snacks;
+
+      if (sent === 0) {
+        updateContent = waitingToSend;
+      }
 
       if (duration !== undefined && duration > 0) {
-        const rate = toRounded(current / duration / 1000, 2);
-
         const remainingMilliseconds = (total - current) * (duration / current);
 
         const remainingTimeSegments = [','];
@@ -53,19 +60,21 @@ export const Snack: FC<ISnack> = ({ type, content, update }) => {
         const remainingHoursMilliseconds = remainingMilliseconds % (60 * 60 * 1000);
 
         const remainingHours = (remainingMilliseconds - remainingHoursMilliseconds) / 60 / 60 / 1000;
-        remainingHours > 0 && remainingTimeSegments.push(`${remainingHours} hours`);
+        remainingHours > 0 && remainingTimeSegments.push(format(hours, remainingHours.toString()));
 
         const remainingMinutesMilliseconds = remainingHoursMilliseconds % (60 * 1000);
 
         const remainingMinutes = (remainingHoursMilliseconds - remainingMinutesMilliseconds) / 60 / 1000;
-        remainingMinutes > 0 && remainingTimeSegments.push(`${remainingMinutes} minutes`);
+        remainingMinutes > 0 && remainingTimeSegments.push(format(minutes, remainingMinutes.toString()));
 
         const remainingSecondsMilliseconds = remainingMinutesMilliseconds % 1000;
 
         const remainingSeconds = (remainingMinutesMilliseconds - remainingSecondsMilliseconds) / 1000;
-        remainingTimeSegments.push(`${remainingSeconds} seconds`);
+        remainingTimeSegments.push(format(seconds, remainingSeconds.toString()));
 
-        updateContent += ` at ${getSizeText(rate, 2)[0]} ${unit}/s${remainingTimeSegments.join(' ')} to go`;
+        const [rate, rateUnit] = getSizeText((current / duration) * 1000, 2);
+
+        updateContent += format(atToGo, rate.toString(), rateUnit, remainingTimeSegments.join(' '));
       }
 
       const percent = toRounded((current / total) * 100);

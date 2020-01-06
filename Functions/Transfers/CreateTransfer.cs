@@ -8,6 +8,7 @@ using Functions.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using System;
@@ -19,17 +20,18 @@ using Transfers.Models;
 
 namespace Functions.Transfers
 {
-    public class CreateTransfer : AbstractFunction
+    public class CreateTransfer : BaseFunction
     {
         private readonly IAccessTokenValidator accessTokenValidator;
         private readonly ITransfersService transfersService;
         private readonly ICoreContext coreContext;
 
         public CreateTransfer(
+            ILogger<CreateTransfer> logger,
             IAccessTokenValidator accessTokenValidator,
             ITransfersService transfersService,
             ICoreContext coreContext
-            )
+            ) : base(logger)
         {
             this.accessTokenValidator = accessTokenValidator;
             this.transfersService = transfersService;
@@ -44,17 +46,16 @@ namespace Functions.Transfers
                 Route = transfers + "/create/{region:alpha:length(2)}"
             )] CreateTransferRequest createTransferRequest,
             IDictionary<string, string> headers,
-            string region,
-            ILogger log
+            string region
             )
         {
             try
             {
                 coreContext.Region = region;
 
-                var tokenResult = await accessTokenValidator.ValidateToken(headers);
+                AccessTokenResult = await accessTokenValidator.ValidateToken(headers);
 
-                switch (tokenResult)
+                switch (AccessTokenResult)
                 {
                     case ValidAccessTokenResult _:
                         var (name, customer, requester, template, localization) = createTransferRequest;
@@ -69,15 +70,15 @@ namespace Functions.Transfers
                             TemplateItemCodename = template
                         });
 
-                        return LogOkObject(log, transfer);
+                        return LogOkObject(transfer);
 
                     default:
-                        return LogUnauthorized(log);
+                        return LogUnauthorized();
                 }
             }
             catch (Exception ex)
             {
-                return LogException(log, ex);
+                return LogException(ex);
             }
         }
     }

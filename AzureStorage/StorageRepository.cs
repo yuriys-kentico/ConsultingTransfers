@@ -9,6 +9,7 @@ using Microsoft.Azure.Storage.Blob;
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -133,7 +134,17 @@ namespace AzureStorage
 
         public TransferToken DecryptTransferToken(string transferToken)
         {
-            var transferTokenJson = encryptionService.Decrypt(transferToken);
+            string transferTokenJson;
+
+            try
+            {
+                transferTokenJson = encryptionService.Decrypt(transferToken);
+            }
+            catch
+            {
+                throw new Exception("Could not decrypt transfer token.");
+            }
+
             var token = CoreHelper.Deserialize<TransferToken>(transferTokenJson);
 
             var (region, _, localization) = token;
@@ -183,9 +194,23 @@ namespace AzureStorage
         }
 
         private CloudBlobContainer GetContainerReference(GetContainerParameters getContainerParameters)
-            => GetStorageAccount()
-            .CreateCloudBlobClient()
-            .GetContainerReference(getContainerParameters.ContainerName);
+        {
+            var containerName = getContainerParameters.ContainerName;
+
+            var containerRegEx = new Regex("^[a-z0-9](?:[a-z0-9]|(\\-(?!\\-))){1,61}[a-z0-9]$|^\\$root$");
+
+            if (!containerRegEx.IsMatch(containerName))
+            {
+                containerName = new StringBuilder(containerName)
+                    .Replace("-", "")
+                    .Append("-container")
+                    .ToString();
+            }
+
+            return GetStorageAccount()
+                .CreateCloudBlobClient()
+                .GetContainerReference(containerName);
+        }
 
         private CloudStorageAccount GetStorageAccount()
             => CloudStorageAccount.Parse(CoreHelper.GetSetting(coreContext.Region));

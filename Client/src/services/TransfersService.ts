@@ -5,12 +5,14 @@ import { BehaviorSubject } from 'rxjs';
 import { authProvider } from '../app/authProvider';
 import { IMessageContext } from '../app/frontend/header/MessageContext';
 import {
+    createTransfer,
     getTransfer,
     listTransfers,
     resumeTransfer,
     suspendTransfer,
     updateTransfer
 } from '../transfers.json';
+import { ICreateTransferRequest } from './models/ICreateTransferRequest';
 import { IGetTransferRequest } from './models/IGetTransferRequest';
 import { IListTransfersRequest } from './models/IListTransfersRequest';
 import { ITransfer } from './models/ITransfer';
@@ -102,6 +104,24 @@ export class TransfersService {
         getTransferRequest,
         await this.getAuthorizationHeaders(resumeTransfer.key)
       );
+    } catch (error) {
+      showError(error);
+    }
+  }
+
+  async createTransfer(createTransferRequest: ICreateTransferRequest) {
+    const { showError } = this.messageContext;
+
+    try {
+      const response = await Axios.post<ITransfer>(
+        `${createTransfer.endpoint}/${createTransferRequest.region}`,
+        createTransferRequest,
+        await this.getAuthorizationHeaders(createTransfer.key)
+      );
+
+      if (response.data) {
+        this.transfer.next(response.data);
+      }
     } catch (error) {
       showError(error);
     }

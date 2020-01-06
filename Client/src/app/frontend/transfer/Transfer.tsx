@@ -1,15 +1,23 @@
 import React, { lazy, useContext, useEffect, useState } from 'react';
 import AzureAD from 'react-aad-msal';
 import Helmet from 'react-helmet';
-import { Header, Loader, Segment } from 'semantic-ui-react';
+import { Header, Loader, Segment, Table } from 'semantic-ui-react';
 
+import { navigate } from '@reach/router';
+
+import { experience } from '../../../appSettings.json';
 import { useDependency } from '../../../services/dependencyContainer';
 import { ITransferFilesService } from '../../../services/TransferFilesService';
 import { ITransfersService } from '../../../services/TransfersService';
 import { transfer as transferTerms } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
+import { wait } from '../../../utilities/promises';
 import { RoutedFC } from '../../../utilities/routing';
+import { format } from '../../../utilities/strings';
 import { authProvider } from '../../authProvider';
+import { routes } from '../../routes';
+import { ConfirmButton } from '../../shared/ConfirmButton';
+import { Tooltip } from '../../shared/Tooltip';
 import { MessageContext } from '../header/MessageContext';
 import { Fields } from './Fields';
 
@@ -30,7 +38,7 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
   const transfer = useSubscription(transfersService.transfer);
 
   const [ready, setReady] = useState(false);
-  const [title, setTitle] = useState<string>();
+  const [title, setTitle] = useState(transferTerms.header);
 
   const transferToken = decodeURIComponent(encodedTransferToken || '');
 
@@ -46,15 +54,61 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
     }
   }, [transfer, transferFilesService]);
 
+  const transfers = useSubscription(transfersService.transfers);
+  const [suspendedTransferCodename, setSuspendedTransferCodename] = useState('');
+  const [retry, setRetry] = useState(experience.detailsContainerCheckRetry);
+
+  const suspendTransfer = async () => {
+    if (transfer && transfer.codename) {
+      setReady(false);
+      setSuspendedTransferCodename(transfer.codename);
+
+      await transfersService.suspendTransfer({ transferToken });
+    }
+  };
+
+  useEffect(() => {
+    if (suspendedTransferCodename !== '') {
+      const transferSuspended =
+        transfers && !transfers.some(transfer => transfer.codename === suspendedTransferCodename);
+
+      if (transferSuspended) {
+        navigate(routes.transfers);
+      } else if (retry > 0) {
+        wait(experience.transferSuspendTimeout).then(() => transfersService.listTransfers({}));
+        setRetry(retry => retry--);
+      }
+    }
+  }, [suspendedTransferCodename, transfers, transfersService, retry]);
+
   return (
     <Segment basic>
       <Helmet>
         <title>{title}</title>
       </Helmet>
-      {!ready && !transfer && <Loader active size='massive' />}
+      {!ready && <Loader active size='massive' />}
       {ready && transfer && (
         <>
-          <Header as='h2' content={`${transferTerms.header} ${transfer.name}`} />
+          <Table basic='very'>
+            <Table.Body>
+              <Table.Row>
+                <Table.Cell>
+                  <Header as='h2' content={`${transferTerms.header}: ${transfer.name}`} />
+                </Table.Cell>
+                <AzureAD provider={authProvider}>
+                  <Table.Cell collapsing textAlign='right'>
+                    <Tooltip text={transferTerms.tooltips.suspend}>
+                      <ConfirmButton
+                        buttonProps={{ icon: 'pause', negative: true }}
+                        confirmProps={{ content: format(transferTerms.confirm.suspend, transfer.name) }}
+                        onConfirm={() => suspendTransfer()}
+                      />
+                    </Tooltip>
+                  </Table.Cell>
+                </AzureAD>
+              </Table.Row>
+            </Table.Body>
+          </Table>
           <Fields />
           <AzureAD provider={authProvider}>
             <Debug />

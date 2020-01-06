@@ -6,13 +6,15 @@ import { Link } from '@reach/router';
 
 import { experience } from '../../../appSettings.json';
 import { useDependency } from '../../../services/dependencyContainer';
-import { ITransfer } from '../../../services/models/ITransfer.js';
+import { ITransfer } from '../../../services/models/ITransfer';
 import { ITransfersService } from '../../../services/TransfersService';
-import { admin } from '../../../terms.en-us.json';
+import { admin, transfer as transferTerms } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
 import { wait } from '../../../utilities/promises';
 import { authenticated, AuthenticatedRoutedFC, getTransferUrl } from '../../../utilities/routing';
 import { format } from '../../../utilities/strings';
+import { ConfirmButton } from '../../shared/ConfirmButton';
+import { Tooltip } from '../../shared/Tooltip';
 import { MessageContext } from '../header/MessageContext';
 
 export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
@@ -32,9 +34,9 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
   const [suspendedTransferCodename, setSuspendedTransferCodename] = useState('');
 
   const suspendTransfer = async (transfer: ITransfer) => {
-    const { name, codename, transferToken } = transfer;
+    const { codename, transferToken } = transfer;
 
-    if (transfers && window.confirm(format(actions.suspendTransfer, name))) {
+    if (transfers && codename) {
       setReady(false);
       setSuspendedTransferCodename(codename);
 
@@ -43,17 +45,20 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
   };
 
   useEffect(() => {
-    const transferSuspended = transfers && !transfers.some(transfer => transfer.codename === suspendedTransferCodename);
+    if (suspendedTransferCodename !== '') {
+      const transferSuspended =
+        transfers && !transfers.some(transfer => transfer.codename === suspendedTransferCodename);
 
-    if (transferSuspended) {
-      setReady(true);
-    } else if (retry > 0) {
-      wait(experience.transferSuspendTimeout).then(() => transfersService.listTransfers({}));
-      setRetry(retry => retry--);
+      if (transferSuspended) {
+        setReady(true);
+      } else if (retry > 0) {
+        wait(experience.transferSuspendTimeout).then(() => transfersService.listTransfers({}));
+        setRetry(retry => retry--);
+      }
     }
   }, [suspendedTransferCodename, transfers, transfersService, retry]);
 
-  const { header, table, actions, invalid } = admin.transfers;
+  const { header, table, invalid } = admin.transfers;
 
   return (
     <Segment basic>
@@ -66,10 +71,10 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
         <Table unstackable singleLine basic='very'>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>{table.region}</Table.HeaderCell>
-              <Table.HeaderCell>{table.transfer}</Table.HeaderCell>
-              <Table.HeaderCell>{table.customer}</Table.HeaderCell>
-              <Table.HeaderCell>{table.requester}</Table.HeaderCell>
+              <Table.HeaderCell>{table.headings.region}</Table.HeaderCell>
+              <Table.HeaderCell>{table.headings.transfer}</Table.HeaderCell>
+              <Table.HeaderCell>{table.headings.customer}</Table.HeaderCell>
+              <Table.HeaderCell>{table.headings.requester}</Table.HeaderCell>
               <Table.HeaderCell></Table.HeaderCell>
             </Table.Row>
           </Table.Header>
@@ -81,8 +86,16 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
                 <Table.Cell>{transfer.customer}</Table.Cell>
                 <Table.Cell>{transfer.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
-                  <Button circular icon='edit' as={Link} to={getTransferUrl(transfer.transferToken)} />
-                  <Button circular icon='pause' onClick={() => suspendTransfer(transfer)} />
+                  <Tooltip text={transferTerms.tooltips.edit}>
+                    <Button circular icon='edit' as={Link} to={getTransferUrl(transfer.transferToken)} />
+                  </Tooltip>
+                  <Tooltip text={transferTerms.tooltips.suspend}>
+                    <ConfirmButton
+                      buttonProps={{ icon: 'pause', circular: true }}
+                      confirmProps={{ content: format(transferTerms.confirm.suspend, transfer.name) }}
+                      onConfirm={() => suspendTransfer(transfer)}
+                    />
+                  </Tooltip>
                 </Table.Cell>
               </Table.Row>
             ))}

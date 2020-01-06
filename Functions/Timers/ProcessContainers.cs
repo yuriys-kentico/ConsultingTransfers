@@ -11,19 +11,20 @@ using System.Threading.Tasks;
 using Transfers;
 using Transfers.Models;
 
-namespace Functions.Queue
+namespace Functions.Timers
 {
-    public class ProcessContainers : AbstractFunction
+    public class ProcessContainers : BaseFunction
     {
         private readonly IStorageRepository storageRepository;
         private readonly ITransfersService transfersService;
         private readonly ICoreContext coreContext;
 
         public ProcessContainers(
+            ILogger<ProcessContainers> logger,
             IStorageRepository storageRepository,
             ITransfersService transfersService,
             ICoreContext coreContext
-            )
+            ) : base(logger)
         {
             this.storageRepository = storageRepository;
             this.transfersService = transfersService;
@@ -35,8 +36,7 @@ namespace Functions.Queue
             [TimerTrigger(
                 "0 0 */6 * * *",
                 UseMonitor = false
-            )]TimerInfo myTimer,
-            ILogger log
+            )]TimerInfo myTimer
             )
         {
             try
@@ -63,7 +63,7 @@ namespace Functions.Queue
             }
             catch (Exception ex)
             {
-                LogException(log, ex);
+                LogException(ex);
             }
         }
     }

@@ -1,16 +1,12 @@
 import React, { FC, useContext, useEffect, useState } from 'react';
-import { Subject } from 'rxjs';
 import { Button, Divider, Header, Label, List, Segment, Table } from 'semantic-ui-react';
 
 import { useDependency } from '../../../services/dependencyContainer';
 import { IFile } from '../../../services/models/IFile';
 import { ITransferFilesService } from '../../../services/TransferFilesService';
 import { ITransfersService } from '../../../services/TransfersService';
-import { toRounded } from '../../../utilities/numbers';
 import { useSubscription } from '../../../utilities/observables';
-import { wait } from '../../../utilities/promises';
 import { MessageContext } from '../header/MessageContext';
-import { IUpdateMessage } from '../header/snacks';
 import { BlobDetails } from './BlobDetails';
 
 interface IFileListItem {
@@ -38,33 +34,33 @@ export const Debug: FC = () => {
     }
   }, [files]);
 
-  const { showInfoUntil } = messageContext;
+  // const { showInfoUntil } = messageContext;
 
-  const showRandomSnack = () => {
-    const getRandomInt = (min: number, max: number) => {
-      return toRounded(Math.random() * (max - min) + min);
-    };
+  // const showRandomSnack = () => {
+  //   const getRandomInt = (min: number, max: number) => {
+  //     return toRounded(Math.random() * (max - min) + min);
+  //   };
 
-    const totalTime = getRandomInt(1000, 15000);
-    const totalUpdates = 20;
-    const updater = new Subject<IUpdateMessage>();
-    let progress = 0;
+  //   const totalTime = getRandomInt(1000, 15000);
+  //   const totalUpdates = 20;
+  //   const updater = new Subject<IUpdateMessage>();
+  //   let progress = 0;
 
-    const interval = setInterval(() => {
-      progress += 100 / totalUpdates;
+  //   const interval = setInterval(() => {
+  //     progress += 100 / totalUpdates;
 
-      updater.next({
-        current: progress,
-        total: 100
-      });
+  //     updater.next({
+  //       current: progress,
+  //       total: 100
+  //     });
 
-      if (progress === 100) {
-        clearInterval(interval);
-      }
-    }, totalTime / totalUpdates);
+  //     if (progress === 100) {
+  //       clearInterval(interval);
+  //     }
+  //   }, totalTime / totalUpdates);
 
-    showInfoUntil(`test ${totalTime}`, wait(totalTime), updater);
-  };
+  //   showInfoUntil(`test ${totalTime}`, wait(totalTime), updater);
+  // };
 
   return (
     <>
@@ -109,9 +105,11 @@ export const Debug: FC = () => {
                     <Table.Cell>
                       <BlobDetails file={fileListItem.file} />
                     </Table.Cell>
-                    <Table.Cell>{`${fileListItem.file.field.name} (${fileListItem.file.field.type}) ${
-                      fileListItem.file.field.completed ? ': completed' : ''
-                    }`}</Table.Cell>
+                    <Table.Cell>
+                      {fileListItem.file.field.completed
+                        ? `${fileListItem.file.field.name} (${fileListItem.file.field.type}): completed`
+                        : `${fileListItem.file.field.name} (${fileListItem.file.field.type})`}
+                    </Table.Cell>
                     <Table.Cell textAlign='right'>
                       <Button
                         onClick={() => transferFilesService.downloadFiles(fileListItem.file)}
@@ -128,53 +126,46 @@ export const Debug: FC = () => {
                     </Table.Cell>
                   </Table.Row>
                 ))}
+                <Table.Row>
+                  <Table.Cell colSpan='4'>
+                    <Button
+                      onClick={() =>
+                        transferFilesService.downloadFiles(
+                          filesList
+                            .filter(blobListItem => blobListItem.selected)
+                            .map(blobsListItem => blobsListItem.file)
+                        )
+                      }
+                      disabled={!filesList.some(blobListItem => blobListItem.selected)}
+                      icon='download'
+                      color='green'
+                    />
+                    <Button
+                      onClick={() =>
+                        transferFilesService.deleteFiles(
+                          filesList
+                            .filter(blobListItem => blobListItem.selected)
+                            .map(blobsListItem => blobsListItem.file)
+                        )
+                      }
+                      disabled={!filesList.some(blobListItem => blobListItem.selected)}
+                      icon='trash'
+                      negative
+                    />
+                    <Button
+                      onClick={() => {
+                        filesList.forEach(blobListItem => (blobListItem.selected = true));
+                        setFilesList([...filesList]);
+                      }}
+                      disabled={!filesList.some(blobListItem => !blobListItem.selected)}
+                      content='Select all'
+                    />
+                  </Table.Cell>
+                </Table.Row>
               </Table.Body>
             </Table>
           </Segment>
-          <Divider hidden />
-          <Button
-            onClick={() =>
-              transferFilesService.downloadFiles(
-                filesList.filter(blobListItem => blobListItem.selected).map(blobsListItem => blobsListItem.file)
-              )
-            }
-            disabled={!filesList.some(blobListItem => blobListItem.selected)}
-            icon='download'
-            color='green'
-          />
-          <Button
-            onClick={() =>
-              transferFilesService.deleteFiles(
-                filesList.filter(blobListItem => blobListItem.selected).map(blobsListItem => blobsListItem.file)
-              )
-            }
-            disabled={!filesList.some(blobListItem => blobListItem.selected)}
-            icon='trash'
-            negative
-          />
-          <Button
-            onClick={() => {
-              filesList.forEach(blobListItem => (blobListItem.selected = true));
-              setFilesList([...filesList]);
-            }}
-            disabled={!filesList.some(blobListItem => !blobListItem.selected)}
-            content='Select all'
-          />
-          <Button
-            onClick={() =>
-              window.confirm('Are you sure you want to delete the container?') && transferFilesService.deleteContainer()
-            }
-            floated='right'
-            icon='trash'
-            negative
-            content='Container'
-          />
-          {/* <Button
-        onClick={() => transferFilesService.createContainer()}
-        floated='right'
-        content='Create container'
-      /> */}
-          <Button onClick={() => showRandomSnack()} floated='right' content='Show random snack' />
+          {/* <Button onClick={() => showRandomSnack()} floated='right' content='Show random snack' /> */}
         </>
       )}
     </>

@@ -26,26 +26,67 @@
     "transfers": {
       "header": "Transfers",
       "table": {
-        "transfer": "Transfer",
-        "customer": "Customer",
-        "requester": "Requester",
-        "region": "Region"
-      },
-      "actions": {
-        "suspendTransfer": "Do you want to suspend transfer {0}?"
+        "headings": {
+          "transfer": "Transfer",
+          "customer": "Customer",
+          "requester": "Requester",
+          "region": "Region"
+        }
       },
       "invalid": {
         "header": "Transfers not available",
         "explanation": "Something went wrong with getting all transfers. Please contact the admin for help."
       }
+    },
+    "newTransfer": {
+      "header": "New transfer",
+      "fields": {
+        "name": {
+          "label": "Name of the transfer",
+          "placeholder": "Backups for ticket #123456789",
+          "invalid": "Please enter a name for the transfer."
+        },
+        "customer": {
+          "label": "The name of the CRM account or company",
+          "placeholder": "Partner Name Company",
+          "invalid": "Please enter a name of the CRM account or company."
+        },
+        "requester": {
+          "label": "Name of the Consultant or Support Engineer that is requesting the transfer",
+          "placeholder": "Kentico Employee",
+          "invalid": "Please enter a name of the Consultant or Support Engineer that is requesting the transfer."
+        },
+        "template": {
+          "label": "Template Kontent item",
+          "options": [{ "text": "Support | Filesystem and database", "value": "support___filesystem_and_database" }]
+        },
+        "region": {
+          "label": "Region",
+          "options": [{ "text": "US", "value": "us" }]
+        }
+      },
+      "modal": {
+        "close": "Close",
+        "template": "Copy this into an email"
+      },
+      "invalid": {
+        "fields": "Please correct any invalid fields."
+      }
     }
   },
   "header": {
     "header": "Caddy",
-    "description": "Caddy provides transfer services between Kentico and its customers."
+    "description": "Caddy provides transfer services between Kentico and its customers.",
+    "snacks": {
+      "waitingToSend": "Waiting to send...",
+      "hours": "{0} hours",
+      "minutes": "{0} minutes",
+      "seconds": "{0} seconds",
+      "atToGo": " at {0} {1}/s{2} to go"
+    }
   },
   "transfer": {
-    "header": "Transfer:",
+    "header": "Transfer",
     "fields": {
       "markCompleted": "Mark complete",
       "markIncomplete": "Mark incomplete",
@@ -62,6 +103,13 @@
       "writeText": {
         "placeholder": "Write some text here..."
       }
+    },
+    "tooltips": {
+      "edit": "Edit transfer",
+      "suspend": "Suspend transfer"
+    },
+    "confirm": {
+      "suspend": "Do you want to suspend transfer {0}? This will invalidate its URL but the files will remain for 1 month. If the transfer is resumed, the files will be accessible and won't be deleted after 1 month."
     },
     "invalid": {
       "header": "Transfer not available",

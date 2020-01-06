@@ -19,17 +19,18 @@ using Transfers.Models;
 
 namespace Functions.Transfers
 {
-    public class GetTransfer : AbstractFunction
+    public class GetTransfer : BaseFunction
     {
         private readonly IAccessTokenValidator accessTokenValidator;
         private readonly ITransfersService transfersService;
         private readonly ICoreContext coreContext;
 
         public GetTransfer(
+            ILogger<GetTransfer> logger,
             IAccessTokenValidator accessTokenValidator,
             ITransfersService transfersService,
             ICoreContext coreContext
-            )
+            ) : base(logger)
         {
             this.accessTokenValidator = accessTokenValidator;
             this.transfersService = transfersService;
@@ -43,15 +44,14 @@ namespace Functions.Transfers
                 "post",
                 Route = transfers + "/get"
             )] GetTransferRequest getTransferRequest,
-            IDictionary<string, string> headers,
-            ILogger log
+            IDictionary<string, string> headers
             )
         {
             try
             {
-                var tokenResult = await accessTokenValidator.ValidateToken(headers);
+                AccessTokenResult = await accessTokenValidator.ValidateToken(headers);
 
-                switch (tokenResult)
+                switch (AccessTokenResult)
                 {
                     case ValidAccessTokenResult _:
                     case NoAccessTokenResult _:
@@ -63,18 +63,18 @@ namespace Functions.Transfers
                             Files = files,
                             Fields = fields,
                             ContainerUrl = containerUrl,
-                            AccessTokenResult = tokenResult
+                            AccessTokenResult = AccessTokenResult
                         });
 
-                        return LogOkObject(log, transfer);
+                        return LogOkObject(transfer);
 
                     default:
-                        return LogUnauthorized(log);
+                        return LogUnauthorized();
                 }
             }
             catch (Exception ex)
             {
-                return LogException(log, ex);
+                return LogException(ex);
             }
         }
     }

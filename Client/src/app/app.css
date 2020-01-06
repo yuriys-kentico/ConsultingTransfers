@@ -48,6 +48,97 @@ table .basic.icon.button {
   box-shadow: none !important;
 }
 
+[data-balloon] {
+  position: relative;
+}
+
+[data-balloon]:after,
+[data-balloon]:before {
+  position: absolute;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  font-weight: 400;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1) 50ms;
+  bottom: 100%;
+  left: 50%;
+  z-index: 2400;
+  -webkit-transform: translate(-50%, 10px);
+  transform: translate(-50%, 10px);
+  -webkit-transform-origin: top;
+  transform-origin: top;
+}
+
+[data-balloon]:after {
+  padding: 0.5em 1em;
+  margin-bottom: 11px;
+  font-size: 14px;
+  color: #fff;
+  white-space: pre;
+  background: #424242;
+  border-radius: 2px;
+  content: attr(data-balloon);
+}
+
+[data-balloon]:before {
+  width: 18px;
+  height: 6px;
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='12'%3E%3Cpath fill='%23424242' d='M2.658 0h32.004c-6 0-11.627 12.002-16.002 12.002C14.285 12.002 8.594 0 2.658 0z'/%3E%3C/svg%3E")
+    no-repeat;
+  background-size: 100% auto;
+  margin-bottom: 5px;
+  content: '';
+}
+
+[data-balloon]:hover:after,
+[data-balloon]:hover:before {
+  opacity: 1;
+  filter: alpha(opacity=100);
+  pointer-events: auto;
+  transform: translate(-50%);
+}
+
+[data-balloon='']:after,
+[data-balloon='']:before {
+  content: normal;
+}
+
+[data-balloon-pos='down']:after,
+[data-balloon-pos='down']:before {
+  top: 100%;
+  bottom: auto;
+  left: 50%;
+  margin-bottom: 0;
+  transform: translate(-50%, -10px);
+}
+
+[data-balloon-pos='down']:after {
+  margin-top: 11px;
+}
+
+[data-balloon-pos='down']:before {
+  width: 18px;
+  height: 6px;
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='12'%3E%3Cpath fill='%23424242' d='M33.342 12H1.338c6 0 11.627-12.002 16.002-12.002C21.715-.002 27.406 12 33.342 12z'/%3E%3C/svg%3E")
+    no-repeat;
+  background-size: 100% auto;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+
+[data-balloon-pos='down']:hover:after,
+[data-balloon-pos='down']:hover:before {
+  transform: translate(-50%);
+}
+
+.clean.template {
+  background: inherit;
+  line-height: inherit;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+}
+
 .drop.zone {
   display: flex;
   flex-direction: column;
@@ -195,4 +286,8 @@ ol.ui.list ol,
 .ui.header {
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.ui.loading.form:before {
+  background: #eff0f1aa !important;
 }

@@ -83,7 +83,29 @@ namespace KenticoKontent
 
             await PublishLanguageVariant(getKontentItemParameters);
 
-            return await GetKontentItem<TransferItem>(getKontentItemParameters);
+            TransferItem? transferItem = null;
+            var retryAttempts = int.Parse(CoreHelper.GetSetting("PublishLanguageVariantRetry") ?? "15");
+
+            while (retryAttempts > 0)
+            {
+                try
+                {
+                    transferItem = await GetKontentItem<TransferItem>(getKontentItemParameters);
+                }
+                catch { }
+
+                if (transferItem != null)
+                {
+                    return transferItem;
+                }
+                else
+                {
+                    await Task.Delay(1000);
+                    retryAttempts--;
+                }
+            }
+
+            throw new Exception($"Published language variant {contentItemResponse.Codename} but could not get it from Delivery.");
         }
 
         private string ConfigureClient(string endpoint = "")
@@ -255,9 +277,9 @@ namespace KenticoKontent
             var response = await httpClient.PostAsync(requestUri, value, new JsonMediaTypeFormatter()
             {
                 SerializerSettings =
-                    {
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    }
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                }
             });
 
             await ThrowIfNotSuccessStatusCode(response);
@@ -270,9 +292,9 @@ namespace KenticoKontent
             var response = await httpClient.PutAsync(requestUri, value, new JsonMediaTypeFormatter()
             {
                 SerializerSettings =
-                    {
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    }
+                {
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                }
             });
 
             await ThrowIfNotSuccessStatusCode(response);

@@ -18,17 +18,18 @@ using Transfers.Models;
 
 namespace Functions.Transfers
 {
-    public class ListTransfers : AbstractFunction
+    public class ListTransfers : BaseFunction
     {
         private readonly IAccessTokenValidator accessTokenValidator;
         private readonly ITransfersService transfersService;
         private readonly ICoreContext coreContext;
 
         public ListTransfers(
+            ILogger<ListTransfers> logger,
             IAccessTokenValidator accessTokenValidator,
             ITransfersService transfersService,
             ICoreContext coreContext
-            )
+            ) : base(logger)
         {
             this.accessTokenValidator = accessTokenValidator;
             this.transfersService = transfersService;
@@ -43,15 +44,14 @@ namespace Functions.Transfers
                     Route = transfers + "/list/{specificRegion:alpha:length(2)?}"
                 )] HttpRequest request,
                 IDictionary<string, string> headers,
-                string specificRegion,
-                ILogger log
+                string specificRegion
                 )
         {
             try
             {
-                var tokenResult = await accessTokenValidator.ValidateToken(headers);
+                AccessTokenResult = await accessTokenValidator.ValidateToken(headers);
 
-                switch (tokenResult)
+                switch (AccessTokenResult)
                 {
                     case ValidAccessTokenResult _:
                         var regions = !string.IsNullOrWhiteSpace(specificRegion)
@@ -72,15 +72,15 @@ namespace Functions.Transfers
                             transfers.AddRange(await transfersService.ListTransfers());
                         }
 
-                        return LogOkObject(log, transfers);
+                        return LogOkObject(transfers);
 
                     default:
-                        return LogUnauthorized(log);
+                        return LogUnauthorized();
                 }
             }
             catch (Exception ex)
             {
-                return LogException(log, ex);
+                return LogException(ex);
             }
         }
     }

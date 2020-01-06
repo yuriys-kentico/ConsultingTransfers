@@ -4,7 +4,7 @@ import { Container, Header, Segment } from 'semantic-ui-react';
 import { errors } from '../../terms.en-us.json';
 import { RoutedFC } from '../../utilities/routing';
 
-export interface IErrorProps {
+interface IErrorProps {
   message?: string;
   stack?: string;
 }
