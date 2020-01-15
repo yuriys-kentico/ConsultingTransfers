@@ -43,14 +43,11 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
   const transferToken = decodeURIComponent(encodedTransferToken || '');
 
   useEffect(() => {
-    let stopGetting: () => void;
+    const getTransfer = transfersService.getTransfer({ transferToken }).finally(() => setReady(true));
 
-    transfersService
-      .getTransfer({ transferToken })
-      .then(stopGettingInner => (stopGetting = stopGettingInner))
-      .finally(() => setReady(true));
-
-    return () => stopGetting();
+    return () => {
+      getTransfer.then(stopGetting => stopGetting());
+    };
   }, [transfersService, transferToken]);
 
   useEffect(() => {

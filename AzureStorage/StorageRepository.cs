@@ -27,7 +27,7 @@ namespace AzureStorage
             Permissions = SharedAccessBlobPermissions.Read
                     | SharedAccessBlobPermissions.Write
                     | SharedAccessBlobPermissions.List,
-            SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5),
+            SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
             SharedAccessExpiryTime = DateTime.UtcNow.AddHours(
                 CoreHelper.GetSetting<double>("AzureStorage", "Sas", "ExpirationHours")
                 )
@@ -43,7 +43,7 @@ namespace AzureStorage
             Services = SharedAccessAccountServices.Blob,
             ResourceTypes = SharedAccessAccountResourceTypes.Container
                     | SharedAccessAccountResourceTypes.Object,
-            SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5),
+            SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
             SharedAccessExpiryTime = DateTime.UtcNow.AddHours(
                 CoreHelper.GetSetting<double>("AzureStorage", "Sas", "ExpirationHours")
                 ),

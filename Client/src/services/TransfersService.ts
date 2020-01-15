@@ -52,30 +52,32 @@ export class TransfersService {
     getTransferRequest.containerUrl = true;
     getTransferRequest.fields = true;
 
-    let subscription!: Subscription;
+    const getTransferLoop = async () => {
+      const response = await Axios.post<ITransfer>(
+        getTransfer.endpoint,
+        getTransferRequest,
+        await this.getAuthorizationHeaders(getTransfer.key)
+      );
+
+      if (response.data) {
+        response.data.transferToken = getTransferRequest.transferToken;
+        this.transfer.next(response.data);
+      }
+    };
+
+    let subscription: Subscription;
 
     try {
-      const refreshTimer = timer(0, experience.transferRefreshTimeout);
+      await getTransferLoop();
 
-      subscription = refreshTimer.subscribe({
-        next: async () => {
-          const response = await Axios.post<ITransfer>(
-            getTransfer.endpoint,
-            getTransferRequest,
-            await this.getAuthorizationHeaders(getTransfer.key)
-          );
-
-          if (response.data) {
-            response.data.transferToken = getTransferRequest.transferToken;
-            this.transfer.next(response.data);
-          }
-        }
+      subscription = timer(experience.transferRefreshTimeout, experience.transferRefreshTimeout).subscribe({
+        next: getTransferLoop
       });
     } catch (error) {
       showError(error);
     }
 
-    return subscription.unsubscribe;
+    return () => subscription.unsubscribe();
   }
 
   async updateTransfer(updateTransferRequest: IUpdateTransferRequest): Promise<void> {

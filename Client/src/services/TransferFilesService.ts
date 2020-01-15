@@ -74,13 +74,17 @@ export class TransferFilesService {
       const fieldPairs = this.fields.map(field => ({ folder: this.getSafePathSegment(field.name), field }));
 
       for await (const blob of this.containerClient.listBlobsFlat()) {
-        files.push({
-          name: blob.name.split('/').pop()!,
-          path: blob.name,
-          sizeBytes: blob.properties.contentLength || 0,
-          modified: blob.properties.lastModified,
-          field: fieldPairs.find(fieldPair => blob.name.indexOf(fieldPair.folder) > -1)!.field
-        });
+        const matchedFieldPair = fieldPairs.find(fieldPair => blob.name.indexOf(fieldPair.folder) > -1);
+
+        if (matchedFieldPair) {
+          files.push({
+            name: blob.name.split('/').pop()!,
+            path: blob.name,
+            sizeBytes: blob.properties.contentLength || 0,
+            modified: blob.properties.lastModified,
+            field: matchedFieldPair.field
+          });
+        }
       }
 
       this.files.next(files);
