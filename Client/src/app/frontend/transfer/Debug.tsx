@@ -5,7 +5,9 @@ import { useDependency } from '../../../services/dependencyContainer';
 import { IFile } from '../../../services/models/IFile';
 import { ITransferFilesService } from '../../../services/TransferFilesService';
 import { ITransfersService } from '../../../services/TransfersService';
+import { transfer as transferTerms } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
+import { Tooltip } from '../../shared/Tooltip';
 import { MessageContext } from '../header/MessageContext';
 import { BlobDetails } from './BlobDetails';
 
@@ -111,55 +113,65 @@ export const Debug: FC = () => {
                         : `${fileListItem.file.field.name} (${fileListItem.file.field.type})`}
                     </Table.Cell>
                     <Table.Cell textAlign='right'>
-                      <Button
-                        onClick={() => transferFilesService.downloadFiles(fileListItem.file)}
-                        icon='download'
-                        color='green'
-                        circular
-                      />
-                      <Button
-                        onClick={() => transferFilesService.deleteFiles(fileListItem.file)}
-                        icon='trash'
-                        negative
-                        circular
-                      />
+                      <Tooltip text={transferTerms.tooltips.downloadFile}>
+                        <Button
+                          onClick={() => transferFilesService.downloadFiles(fileListItem.file)}
+                          icon='download'
+                          color='green'
+                          circular
+                        />
+                      </Tooltip>
+                      <Tooltip text={transferTerms.tooltips.deleteFile}>
+                        <Button
+                          onClick={() => transferFilesService.deleteFiles(fileListItem.file)}
+                          icon='trash'
+                          color='red'
+                        />
+                      </Tooltip>
                     </Table.Cell>
                   </Table.Row>
                 ))}
                 <Table.Row>
-                  <Table.Cell colSpan='4'>
-                    <Button
-                      onClick={() =>
-                        transferFilesService.downloadFiles(
-                          filesList
-                            .filter(blobListItem => blobListItem.selected)
-                            .map(blobsListItem => blobsListItem.file)
-                        )
-                      }
-                      disabled={!filesList.some(blobListItem => blobListItem.selected)}
-                      icon='download'
-                      color='green'
-                    />
-                    <Button
-                      onClick={() =>
-                        transferFilesService.deleteFiles(
-                          filesList
-                            .filter(blobListItem => blobListItem.selected)
-                            .map(blobsListItem => blobsListItem.file)
-                        )
-                      }
-                      disabled={!filesList.some(blobListItem => blobListItem.selected)}
-                      icon='trash'
-                      negative
-                    />
+                  <Table.Cell colSpan='3'>
                     <Button
                       onClick={() => {
-                        filesList.forEach(blobListItem => (blobListItem.selected = true));
+                        const someDeselected = filesList.some(blobListItem => !blobListItem.selected);
+                        filesList.forEach(innerBlobListItem => (innerBlobListItem.selected = someDeselected));
                         setFilesList([...filesList]);
                       }}
-                      disabled={!filesList.some(blobListItem => !blobListItem.selected)}
-                      content='Select all'
+                      content={filesList.some(blobListItem => !blobListItem.selected) ? 'Select all' : 'Deselect all'}
                     />
+                  </Table.Cell>
+                  <Table.Cell textAlign='right'>
+                    <Tooltip text={transferTerms.tooltips.downloadSelectedFiles}>
+                      <Button
+                        onClick={() =>
+                          transferFilesService.downloadFiles(
+                            filesList
+                              .filter(blobListItem => blobListItem.selected)
+                              .map(blobsListItem => blobsListItem.file)
+                          )
+                        }
+                        disabled={!filesList.some(blobListItem => blobListItem.selected)}
+                        icon='download'
+                        color='green'
+                        circular
+                      />
+                    </Tooltip>
+                    <Tooltip text={transferTerms.tooltips.deleteSelectedFiles}>
+                      <Button
+                        onClick={() =>
+                          transferFilesService.deleteFiles(
+                            filesList
+                              .filter(blobListItem => blobListItem.selected)
+                              .map(blobsListItem => blobsListItem.file)
+                          )
+                        }
+                        disabled={!filesList.some(blobListItem => blobListItem.selected)}
+                        icon='trash'
+                        color='red'
+                      />
+                    </Tooltip>
                   </Table.Cell>
                 </Table.Row>
               </Table.Body>

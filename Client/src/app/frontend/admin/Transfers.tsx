@@ -87,11 +87,11 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
                 <Table.Cell>{transfer.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
                   <Tooltip text={transferTerms.tooltips.edit}>
-                    <Button circular icon='edit' as={Link} to={getTransferUrl(transfer.transferToken)} />
+                    <Button icon='edit' color='blue' circular as={Link} to={getTransferUrl(transfer.transferToken)} />
                   </Tooltip>
                   <Tooltip text={transferTerms.tooltips.suspend}>
                     <ConfirmButton
-                      buttonProps={{ icon: 'pause', circular: true }}
+                      buttonProps={{ icon: 'pause', color: 'orange' }}
                       confirmProps={{ content: format(transferTerms.confirm.suspend, transfer.name) }}
                       onConfirm={() => suspendTransfer(transfer)}
                     />

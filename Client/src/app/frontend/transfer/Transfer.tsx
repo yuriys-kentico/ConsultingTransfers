@@ -43,7 +43,14 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
   const transferToken = decodeURIComponent(encodedTransferToken || '');
 
   useEffect(() => {
-    transfersService.getTransfer({ transferToken }).finally(() => setReady(true));
+    let stopGetting: () => void;
+
+    transfersService
+      .getTransfer({ transferToken })
+      .then(stopGettingInner => (stopGetting = stopGettingInner))
+      .finally(() => setReady(true));
+
+    return () => stopGetting();
   }, [transfersService, transferToken]);
 
   useEffect(() => {
@@ -99,7 +106,7 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
                   <Table.Cell collapsing textAlign='right'>
                     <Tooltip text={transferTerms.tooltips.suspend}>
                       <ConfirmButton
-                        buttonProps={{ icon: 'pause', negative: true }}
+                        buttonProps={{ icon: 'pause', color: 'orange' }}
                         confirmProps={{ content: format(transferTerms.confirm.suspend, transfer.name) }}
                         onConfirm={() => suspendTransfer()}
                       />

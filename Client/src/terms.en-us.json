@@ -106,7 +106,11 @@
     },
     "tooltips": {
       "edit": "Edit transfer",
-      "suspend": "Suspend transfer"
+      "suspend": "Suspend transfer",
+      "deleteFile": "Delete file",
+      "downloadFile": "Download file",
+      "deleteSelectedFiles": "Delete selected files",
+      "downloadSelectedFiles": "Download selected files"
     },
     "confirm": {
       "suspend": "Do you want to suspend transfer {0}? This will invalidate its URL but the files will remain for 1 month. If the transfer is resumed, the files will be accessible and won't be deleted after 1 month."

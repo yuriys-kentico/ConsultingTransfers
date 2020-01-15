@@ -217,11 +217,6 @@ table .basic.icon.button {
   text-transform: initial !important;
 }
 
-.ui.negative.buttons .button:hover,
-.ui.negative.button:hover {
-  background-color: #b11a1a !important;
-}
-
 .ui.list .list > .item [class*='left floated'],
 .ui.list > .item [class*='left floated'] {
   margin: 0em !important;

@@ -1,9 +1,10 @@
 import Axios from 'axios';
 import { AuthenticationState } from 'react-aad-msal';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription, timer } from 'rxjs';
 
 import { authProvider } from '../app/authProvider';
 import { IMessageContext } from '../app/frontend/header/MessageContext';
+import { experience } from '../appSettings.json';
 import {
     createTransfer,
     getTransfer,
@@ -45,26 +46,36 @@ export class TransfersService {
     }
   }
 
-  async getTransfer(getTransferRequest: IGetTransferRequest) {
+  async getTransfer(getTransferRequest: IGetTransferRequest): Promise<() => void> {
     const { showError } = this.messageContext;
 
     getTransferRequest.containerUrl = true;
     getTransferRequest.fields = true;
 
-    try {
-      const response = await Axios.post<ITransfer>(
-        getTransfer.endpoint,
-        getTransferRequest,
-        await this.getAuthorizationHeaders(getTransfer.key)
-      );
+    let subscription!: Subscription;
 
-      if (response.data) {
-        response.data.transferToken = getTransferRequest.transferToken;
-        this.transfer.next(response.data);
-      }
+    try {
+      const refreshTimer = timer(0, experience.transferRefreshTimeout);
+
+      subscription = refreshTimer.subscribe({
+        next: async () => {
+          const response = await Axios.post<ITransfer>(
+            getTransfer.endpoint,
+            getTransferRequest,
+            await this.getAuthorizationHeaders(getTransfer.key)
+          );
+
+          if (response.data) {
+            response.data.transferToken = getTransferRequest.transferToken;
+            this.transfer.next(response.data);
+          }
+        }
+      });
     } catch (error) {
       showError(error);
     }
+
+    return subscription.unsubscribe;
   }
 
   async updateTransfer(updateTransferRequest: IUpdateTransferRequest): Promise<void> {

@@ -9,6 +9,7 @@ import { ITransferFilesService } from '../../../../services/TransferFilesService
 import { transfer } from '../../../../terms.en-us.json';
 import { useSubscription } from '../../../../utilities/observables';
 import { format } from '../../../../utilities/strings';
+import { Tooltip } from '../../../shared/Tooltip';
 import { MessageContext } from '../../header/MessageContext';
 import { BlobDetails } from '../BlobDetails';
 import { IFieldHolderProps } from '../FieldHolder';
@@ -87,15 +88,18 @@ export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldRea
                     <BlobDetails file={file} />
                   </Table.Cell>
                   <Table.Cell textAlign='right'>
-                    <Button
-                      onClick={event => {
-                        event.stopPropagation();
-                        transferFilesService.deleteFiles(file);
-                      }}
-                      disabled={completed}
-                      icon='trash'
-                      circular
-                    />
+                    <Tooltip text={transfer.tooltips.deleteFile}>
+                      <Button
+                        onClick={event => {
+                          event.stopPropagation();
+                          transferFilesService.deleteFiles(file);
+                        }}
+                        disabled={completed}
+                        inverted
+                        icon='trash'
+                        color='red'
+                      />
+                    </Tooltip>
                   </Table.Cell>
                 </Table.Row>
               ))}

@@ -32,19 +32,22 @@ export const NewTransfer: AuthenticatedRoutedFC = authenticated(() => {
 
   useEffect(() => {
     if (transfer) {
-      setModalOpen(true);
+      if (name && customer && requester) {
+        setModalOpen(true);
+      }
+
       setName('');
       setCustomer('');
       setRequester('');
     }
-  }, [transfer]);
+  }, [transfer, customer, name, requester]);
 
   const createTransfer = async () => {
     if (name === '' || customer === '' || requester === '') {
       setError(true);
     } else if (name && customer && requester) {
       setError(false);
-      
+
       setReady(false);
       await transfersService.createTransfer({ name, customer, requester, template, region });
       setReady(true);

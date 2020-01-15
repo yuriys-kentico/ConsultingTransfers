@@ -69,7 +69,7 @@ export class TransferFilesService {
     const { showError } = this.messageContext;
 
     try {
-      let files: IFile[] = [];
+      const files: IFile[] = [];
 
       const fieldPairs = this.fields.map(field => ({ folder: this.getSafePathSegment(field.name), field }));
 
@@ -92,7 +92,7 @@ export class TransferFilesService {
   async deleteFiles(files: IFile | IFile[], silent?: boolean) {
     const { showInfo, showError, showSuccess, showWarning } = this.messageContext;
 
-    let filesToDelete = ensureArray(files);
+    const filesToDelete = ensureArray(files);
 
     try {
       if (filesToDelete.length === 0) {
@@ -116,7 +116,7 @@ export class TransferFilesService {
   async uploadFiles(files: File | File[], directory: string, silent?: boolean) {
     const { showInfoUntil, showError, showSuccess } = this.messageContext;
 
-    let filesToUpload = ensureArray(files);
+    const filesToUpload = ensureArray(files);
 
     const safeDirectory = this.getSafePathSegment(directory);
 
@@ -148,7 +148,7 @@ export class TransferFilesService {
   async downloadFiles(files: IFile | IFile[]) {
     const { showInfoUntil, showError, showSuccess } = this.messageContext;
 
-    let filesToDownload = ensureArray(files);
+    const filesToDownload = ensureArray(files);
 
     try {
       const promises: { [key: string]: Promise<Blob> } = {};
@@ -217,7 +217,7 @@ export class TransferFilesService {
   }
 
   getFile(content: BlobPart | BlobPart[], name: string, extension: string, type: string) {
-    let contentArray = ensureArray(content);
+    const contentArray = ensureArray(content);
     return new File(contentArray, `${this.getSafePathSegment(name)}.${extension}`, { type });
   }
 
