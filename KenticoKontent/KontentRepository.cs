@@ -84,7 +84,7 @@ namespace KenticoKontent
             await PublishLanguageVariant(getKontentItemParameters);
 
             TransferItem? transferItem = null;
-            var retryAttempts = int.Parse(CoreHelper.GetSetting("PublishLanguageVariantRetry") ?? "15");
+            var retryAttempts = CoreHelper.GetSetting<int>("KenticoKontent", "PublishLanguageVariantRetry");
 
             while (retryAttempts > 0)
             {

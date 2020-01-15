@@ -22,9 +22,9 @@ namespace Authorization
 
         public AccessTokenValidator()
         {
-            var metadataAddress = CoreHelper.GetSetting("Authorization", "MetadataAddress");
-            var audiences = CoreHelper.GetSetting("Authorization", "Audiences");
-            var issuer = CoreHelper.GetSetting("Authorization", "Issuer");
+            var metadataAddress = CoreHelper.GetSetting<string>("Authorization", "MetadataAddress");
+            var audiences = CoreHelper.GetSetting<string>("Authorization", "Audiences");
+            var issuer = CoreHelper.GetSetting<string>("Authorization", "Issuer");
 
             configManager = new ConfigurationManager<OpenIdConnectConfiguration>(metadataAddress, new OpenIdConnectConfigurationRetriever());
 
@@ -45,7 +45,7 @@ namespace Authorization
                     var accessTokenValue = accessToken.Substring(BearerSpace.Length);
 
                     // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
-                    if (accessTokenValue == CoreHelper.GetSetting("Authorization", "DetailsKey"))
+                    if (accessTokenValue == CoreHelper.GetSetting<string>("Authorization", "DetailsKey"))
                         return new ValidAccessTokenResult(null);
 
                     var config = await configManager.GetConfigurationAsync();

@@ -28,7 +28,9 @@ namespace AzureStorage
                     | SharedAccessBlobPermissions.Write
                     | SharedAccessBlobPermissions.List,
             SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5),
-            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(12)
+            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(
+                CoreHelper.GetSetting<double>("AzureStorage", "Sas", "ExpirationHours")
+                )
         };
 
         public static SharedAccessAccountPolicy AdminSharedAccessAccountPolicy => new SharedAccessAccountPolicy
@@ -42,7 +44,9 @@ namespace AzureStorage
             ResourceTypes = SharedAccessAccountResourceTypes.Container
                     | SharedAccessAccountResourceTypes.Object,
             SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5),
-            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(12),
+            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(
+                CoreHelper.GetSetting<double>("AzureStorage", "Sas", "ExpirationHours")
+                ),
             Protocols = SharedAccessProtocol.HttpsOnly
         };
 
@@ -213,6 +217,6 @@ namespace AzureStorage
         }
 
         private CloudStorageAccount GetStorageAccount()
-            => CloudStorageAccount.Parse(CoreHelper.GetSetting(coreContext.Region));
+            => CloudStorageAccount.Parse(CoreHelper.GetSetting<string>(coreContext.Region));
     }
 }

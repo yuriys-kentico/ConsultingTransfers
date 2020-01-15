@@ -1,8 +1,6 @@
 using Authorization;
 using Authorization.Models;
 
-using Core;
-
 using Functions.Models;
 
 using Microsoft.AspNetCore.Mvc;
@@ -23,18 +21,15 @@ namespace Functions.Transfers
     {
         private readonly IAccessTokenValidator accessTokenValidator;
         private readonly ITransfersService transfersService;
-        private readonly ICoreContext coreContext;
 
         public GetTransfer(
             ILogger<GetTransfer> logger,
             IAccessTokenValidator accessTokenValidator,
-            ITransfersService transfersService,
-            ICoreContext coreContext
+            ITransfersService transfersService
             ) : base(logger)
         {
             this.accessTokenValidator = accessTokenValidator;
             this.transfersService = transfersService;
-            this.coreContext = coreContext;
         }
 
         [FunctionName(nameof(GetTransfer))]

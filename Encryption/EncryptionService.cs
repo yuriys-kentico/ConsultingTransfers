@@ -20,7 +20,7 @@ namespace Encryption
 
         public EncryptionService()
         {
-            secret = CoreHelper.GetSetting("TokenSecret") ?? secret;
+            secret = CoreHelper.GetSetting<string>("TokenSecret");
         }
 
         public string Encrypt(string? source)

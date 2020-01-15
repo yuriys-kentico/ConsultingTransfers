@@ -33,7 +33,7 @@ namespace Transfers.Models
 
         public static string GetUrl(string? transferToken)
         {
-            return $"{CoreHelper.GetSetting("ClientTransferUrl")}{HttpUtility.UrlEncode(transferToken)}";
+            return $"{CoreHelper.GetSetting<string>("Client", "TransferUrl")}{HttpUtility.UrlEncode(transferToken)}";
         }
     }
 }

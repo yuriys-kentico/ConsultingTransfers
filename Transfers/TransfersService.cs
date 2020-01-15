@@ -1,4 +1,4 @@
-using Authorization.Models;
+﻿using Authorization.Models;
 
 using AzureStorage;
 using AzureStorage.Models;
@@ -219,7 +219,7 @@ namespace Transfers
                 TransferCustomer = transferItem.GetInfo().Customer,
                 TransferRequester = transferItem.GetInfo().Requester,
                 TransferUrl = Transfer.GetUrl(transferToken),
-                TransfersUrl = CoreHelper.GetSetting("ClientTransfersUrl"),
+                TransfersUrl = CoreHelper.GetSetting<string>("Client", "TransfersUrl"),
                 Field = transferItem.GetFields(container.CompletedFields)
                     .Single(completedField => completedField.Codename == field).Name,
             }, nameof(TeamsMessageItem.CardJSON));

@@ -11,17 +11,17 @@ namespace Core
         public string? Localization { get; set; }
 
         public IEnumerable<string> Regions
-            => CoreHelper.GetSetting(nameof(Regions))?.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            => CoreHelper.GetSetting<string>(nameof(Regions))?.Split(';', StringSplitOptions.RemoveEmptyEntries)
             ?? Enumerable.Empty<string>();
 
-        public string? DefaultLocalization => CoreHelper.GetSetting(Region, "Default", nameof(Localization));
+        public string DefaultLocalization => CoreHelper.GetSetting<string>(Region, "Default", nameof(Localization));
 
-        public string? ProjectId => CoreHelper.GetSetting(Region, nameof(ProjectId));
+        public string ProjectId => CoreHelper.GetSetting<string>(Region, nameof(ProjectId));
 
-        public string? DeliveryApiSecureAccessKey => CoreHelper.GetSetting(Region, nameof(DeliveryApiSecureAccessKey));
+        public string DeliveryApiSecureAccessKey => CoreHelper.GetSetting<string>(Region, nameof(DeliveryApiSecureAccessKey));
 
-        public string? ContentManagementApiKey => CoreHelper.GetSetting(Region, nameof(ContentManagementApiKey));
+        public string ContentManagementApiKey => CoreHelper.GetSetting<string>(Region, nameof(ContentManagementApiKey));
 
-        public string? WebhookSecret => CoreHelper.GetSetting(Region, nameof(WebhookSecret));
+        public string WebhookSecret => CoreHelper.GetSetting<string>(Region, nameof(WebhookSecret));
     }
 }

@@ -23,8 +23,8 @@ namespace MicrosoftTeams
 
             card = card ?? throw new ArgumentNullException(nameof(card));
 
-            channel ??= CoreHelper.GetSetting("Teams", "Default", "Channel");
-            var requestUri = CoreHelper.GetSetting("Teams", "Channel", channel ?? "");
+            channel ??= CoreHelper.GetSetting<string>("MicrosoftTeams", "Default", "Channel");
+            var requestUri = CoreHelper.GetSetting<string>("MicrosoftTeams", "Channel", channel ?? "");
 
             var content = new StringContent(CoreHelper.Serialize(card));
             var response = await httpClient.PostAsync(requestUri, content);
