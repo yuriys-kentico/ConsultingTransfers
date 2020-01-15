@@ -1,4 +1,8 @@
-﻿using System.Security.Claims;
+﻿using System.Runtime.CompilerServices;
+using System.Security.Claims;
+
+// Required for tests
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace Authorization.Models
 {
@@ -6,27 +10,32 @@ namespace Authorization.Models
     {
     }
 
-    public sealed class NoAccessTokenResult : IAccessTokenResult
+    public class NoAccessTokenResult : IAccessTokenResult
     {
         internal NoAccessTokenResult()
         {
         }
     }
 
-    public sealed class ExpiredAccessTokenResult : IAccessTokenResult
+    public class ExpiredAccessTokenResult : IAccessTokenResult
     {
         internal ExpiredAccessTokenResult()
         {
         }
     }
 
-    public sealed class ValidAccessTokenResult : IAccessTokenResult
+    public class ValidAccessTokenResult : IAccessTokenResult
     {
         public ClaimsPrincipal? Principal { get; }
 
         internal ValidAccessTokenResult(ClaimsPrincipal? principal)
         {
             Principal = principal;
+        }
+
+        // Required for tests
+        internal ValidAccessTokenResult()
+        {
         }
     }
 }

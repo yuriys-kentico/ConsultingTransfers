@@ -1,11 +1,9 @@
 ﻿using Authorization.Models;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 using System;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
 
 namespace Functions
 {
@@ -32,16 +30,20 @@ namespace Functions
 
         protected IActionResult LogOkObject(object? response)
         {
-            logger.LogInformation("Ok object");
+            logger.LogInformation("Ok object: {response}", response);
 
             return new OkObjectResult(response);
         }
 
         protected IActionResult LogUnauthorized()
         {
-            logger.LogWarning("Unauthorized");
+            logger.LogWarning("Unauthorized: {AccessTokenResult}", AccessTokenResult);
 
-            return new UnauthorizedResult();
+            return AccessTokenResult switch
+            {
+                ExpiredAccessTokenResult _ => new UnauthorizedResult(),
+                _ => new NotFoundResult(),
+            };
         }
 
         protected IActionResult LogException(Exception exception)

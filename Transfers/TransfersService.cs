@@ -1,4 +1,4 @@
-﻿using Authorization.Models;
+using Authorization.Models;
 
 using AzureStorage;
 using AzureStorage.Models;
@@ -150,7 +150,7 @@ namespace Transfers
                     ContainerUrl = storageRepository.GetAdminContainerUrl(getContainerParameters),
                     Fields = transferItem.GetFields(container.CompletedFields)
                 },
-                (true, false, false, _) => new Transfer
+                (true, false, false, _) when accessTokenResult is ValidAccessTokenResult => new Transfer
                 {
                     Region = region,
                     Name = transferItem.System.Name,
@@ -262,10 +262,15 @@ namespace Transfers
             coreContext.Region = region;
             coreContext.Localization = localization;
 
-            await kontentRepository.UnpublishLanguageVariant(new GetKontentParameters
+            var getKontentItemParameters = new GetKontentParameters
             {
                 Codename = codename
-            });
+            };
+
+            if (kontentRepository.GetKontentItem<Transfer>(getKontentItemParameters) != null)
+            {
+                await kontentRepository.UnpublishLanguageVariant(getKontentItemParameters);
+            }
         }
 
         public async Task ResumeTransfer(GetTransferParameters getTransferParameters)
