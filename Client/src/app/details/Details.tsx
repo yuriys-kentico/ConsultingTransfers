@@ -12,7 +12,7 @@ import { details } from '../../terms.en-us.json';
 import { loadModule } from '../../utilities/modules';
 import { useSubscription } from '../../utilities/observables';
 import { wait } from '../../utilities/promises';
-import { getTransferUrl, RoutedFC } from '../../utilities/routing';
+import { authenticatedPopup, AuthenticatedRoutedFC, getTransferUrl } from '../../utilities/routing';
 import { MessageContext } from '../frontend/header/MessageContext';
 import { routes } from '../routes';
 import { Element, ICustomElement } from './customElement';
@@ -25,17 +25,13 @@ interface IDetailsValue {
   requester: string;
 }
 
-interface IDetailsConfig {
-  key: string;
-}
-
 interface IDetailsProps {
   region: string;
 }
 
 const defaultDetailsValue: IDetailsValue = { customer: '', requester: '' };
 
-export const Details: RoutedFC<IDetailsProps> = ({ region }) => {
+export const Details: AuthenticatedRoutedFC<IDetailsProps> = authenticatedPopup(({ region }) => {
   if (window.self === window.top) {
     navigate('/');
   }
@@ -44,13 +40,12 @@ export const Details: RoutedFC<IDetailsProps> = ({ region }) => {
   const [available, setAvailable] = useState(false);
   const [customer, setCustomer] = useState('');
   const [requester, setRequester] = useState('');
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(false);
   const [transferToken, setTransferToken] = useState('');
   const [codename, setCodename] = useState('');
   const [retry, setRetry] = useState(experience.detailsContainerCheckRetry);
 
   const customElementRef = useRef<HTMLDivElement>(null);
-  const customElementConfig = useRef<IDetailsConfig>({ key: '' });
 
   const transfersService = useDependency(ITransfersService);
   transfersService.messageContext = useContext(MessageContext);
@@ -63,10 +58,6 @@ export const Details: RoutedFC<IDetailsProps> = ({ region }) => {
       setAvailable(true);
       setCustomer(elementValue.customer || '');
       setRequester(elementValue.requester || '');
-
-      // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
-      customElementConfig.current = element.config as IDetailsConfig;
-
       setEnabledAndListTransfers(!element.disabled);
 
       CustomElement.onDisabledChanged(disabled => setEnabledAndListTransfers(!disabled));
@@ -79,7 +70,7 @@ export const Details: RoutedFC<IDetailsProps> = ({ region }) => {
       if (!enabled) {
         CustomElement.init((_, context) => {
           setCodename(context.item.codename);
-          transfersService.listTransfers({ region, detailsKey: customElementConfig.current.key });
+          transfersService.listTransfers({ region });
         });
       }
     };
@@ -94,9 +85,7 @@ export const Details: RoutedFC<IDetailsProps> = ({ region }) => {
       setTransferToken(transfer.transferToken);
       setReady(true);
     } else if (retry > 0) {
-      wait(experience.detailsContainerCheckTimeout).then(() =>
-        transfersService.listTransfers({ region, detailsKey: customElementConfig.current.key })
-      );
+      wait(experience.detailsContainerCheckTimeout).then(() => transfersService.listTransfers({ region }));
       setRetry(retry => retry--);
     }
   }, [codename, region, transfers, transfersService, retry]);
@@ -108,10 +97,10 @@ export const Details: RoutedFC<IDetailsProps> = ({ region }) => {
   });
 
   useEffect(() => {
-    if (available) {
+    if (available && enabled) {
       CustomElement.setValue(JSON.stringify({ customer, requester }));
     }
-  }, [available, customer, requester]);
+  }, [available, enabled, customer, requester]);
 
   const getUrl = (path: string) => {
     return `${window.location.protocol}//${window.location.host}${path}`;
@@ -204,4 +193,4 @@ export const Details: RoutedFC<IDetailsProps> = ({ region }) => {
       )}
     </div>
   );
-};
+});

@@ -2,7 +2,6 @@ import Axios from 'axios';
 import { AuthenticationState } from 'react-aad-msal';
 import { BehaviorSubject, Subscription, timer } from 'rxjs';
 
-import { authProvider } from '../app/authProvider';
 import { IMessageContext } from '../app/frontend/header/MessageContext';
 import { experience } from '../appSettings.json';
 import {
@@ -13,6 +12,7 @@ import {
     suspendTransfer,
     updateTransfer
 } from '../transfers.json';
+import { authProvider } from './authProvider';
 import { ICreateTransferRequest } from './models/ICreateTransferRequest';
 import { IGetTransferRequest } from './models/IGetTransferRequest';
 import { IListTransfersRequest } from './models/IListTransfersRequest';

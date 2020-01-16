@@ -6,6 +6,7 @@ import { Header, Loader, Segment, Table } from 'semantic-ui-react';
 import { navigate } from '@reach/router';
 
 import { experience } from '../../../appSettings.json';
+import { authProvider } from '../../../services/authProvider';
 import { useDependency } from '../../../services/dependencyContainer';
 import { ITransferFilesService } from '../../../services/TransferFilesService';
 import { ITransfersService } from '../../../services/TransfersService';
@@ -14,7 +15,6 @@ import { useSubscription } from '../../../utilities/observables';
 import { wait } from '../../../utilities/promises';
 import { RoutedFC } from '../../../utilities/routing';
 import { format } from '../../../utilities/strings';
-import { authProvider } from '../../authProvider';
 import { routes } from '../../routes';
 import { ConfirmButton } from '../../shared/ConfirmButton';
 import { Tooltip } from '../../shared/Tooltip';

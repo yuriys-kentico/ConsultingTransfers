@@ -5,11 +5,11 @@ import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 import { Link, LinkGetProps, Router } from '@reach/router';
 
 import { experience } from '../../appSettings.json';
+import { authProvider } from '../../services/authProvider';
 import { admin, errors, header } from '../../terms.en-us.json';
 import { deleteFrom } from '../../utilities/arrays';
 import { wait } from '../../utilities/promises';
 import { RoutedFC } from '../../utilities/routing';
-import { authProvider } from '../authProvider';
 import { routes } from '../routes';
 import {
     IMessageContext,

@@ -27,7 +27,7 @@ export const App = boundary(() => {
       <Suspense fallback={<Loader active size='massive' />}>
         <Router>
           <Frontend path='*' />
-          <Details path={routes.details} />
+          <Details path={routes.details} authenticated />
           <Error path={routes.error} default message={errors.notFound} />
         </Router>
       </Suspense>

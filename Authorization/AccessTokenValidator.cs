@@ -44,10 +44,6 @@ namespace Authorization
                 {
                     var accessTokenValue = accessToken.Substring(BearerSpace.Length);
 
-                    // TODO: Pending MSAL in iframe: https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/899
-                    if (accessTokenValue == CoreHelper.GetSetting<string>("Authorization", "DetailsKey"))
-                        return new ValidAccessTokenResult(null);
-
                     var config = await configManager.GetConfigurationAsync();
 
                     tokenValidationParameters.IssuerSigningKeys = config.SigningKeys;
