@@ -1,8 +1,9 @@
 # Caddy
 
 [![Build status](https://ci.appveyor.com/api/projects/status/tl95fkw53i6vpqd9/branch/master?svg=true)](https://ci.appveyor.com/project/yuriys-kentico/consultingtransfers)
+[![Dependency status](https://david-dm.org/yuriys-kentico/ConsultingTransfers.svg)](https://david-dm.org/yuriys-kentico/ConsultingTransfers)
 
-The source code for Caddy backend and client.
+The source code for the Caddy backend and client.
 
 ## What is Caddy?
 
