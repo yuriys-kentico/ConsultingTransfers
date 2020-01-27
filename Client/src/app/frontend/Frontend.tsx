@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useRef, useState } from 'react';
 import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
 import { Link, LinkGetProps, Location, Router } from '@reach/router';
@@ -26,47 +26,63 @@ const NewTransfer = lazy(() => import('./admin/NewTransfer').then(module => ({ d
 const Transfer = lazy(() => import('./transfer/Transfer').then(module => ({ default: module.Transfer })));
 const Error = lazy(() => import('../shared/Error').then(module => ({ default: module.Error })));
 
+const setActiveWhenCurrent = (linkIsCurrent: (link: LinkGetProps) => boolean) => (link: LinkGetProps) => ({
+  className: linkIsCurrent(link) ? 'active item' : 'item'
+});
+
 export const Frontend: RoutedFC = () => {
   const { snackTimeout } = experience;
 
   const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');
 
-  const showInfo: ShowInfoHandler = (text, timeout, type = 'info') => {
-    showSnack(
-      text,
-      type,
-      snack => setSnacks(snacks => [...snacks, snack]),
-      wait(timeout || snackTimeout),
-      snack => setSnacks(snacks => deleteFrom(snack, snacks))
-    );
-  };
+  const showInfo: ShowInfoHandler = useCallback(
+    (text, timeout, type = 'info') => {
+      showSnack(
+        text,
+        type,
+        snack => setSnacks(snacks => [...snacks, snack]),
+        wait(timeout || snackTimeout),
+        snack => setSnacks(snacks => deleteFrom(snack, snacks))
+      );
+    },
+    [snackTimeout]
+  );
 
-  const showInfoUntil: ShowInfoUntilHandler = (text, isComplete, update?) => {
-    showSnack(
-      text,
-      'update',
-      snack => setSnacks(snacks => [...snacks, snack]),
-      isComplete.then(() => wait(snackTimeout)),
-      snack => setSnacks(snacks => deleteFrom(snack, snacks)),
-      update
-    );
-  };
+  const showInfoUntil: ShowInfoUntilHandler = useCallback(
+    (text, isComplete, update?) => {
+      showSnack(
+        text,
+        'update',
+        snack => setSnacks(snacks => [...snacks, snack]),
+        isComplete.then(() => wait(snackTimeout)),
+        snack => setSnacks(snacks => deleteFrom(snack, snacks)),
+        update
+      );
+    },
+    [snackTimeout]
+  );
 
-  const showWarning: ShowErrorHandler = (error, timeout) => {
-    console.warn(error);
+  const showWarning: ShowErrorHandler = useCallback(
+    (error, timeout) => {
+      console.warn(error);
 
-    const text = (error.body && error.body.message) || error.message;
+      const text = (error.body && error.body.message) || error.message;
 
-    showInfo(text, timeout, 'warning');
-  };
+      showInfo(text, timeout, 'warning');
+    },
+    [showInfo]
+  );
 
-  const showError: ShowErrorHandler = (error, timeout) => {
-    console.error(error);
+  const showError: ShowErrorHandler = useCallback(
+    (error, timeout) => {
+      console.error(error);
 
-    const text = (error.body && error.body.message) || error.message;
+      const text = (error.body && error.body.message) || error.message;
 
-    showInfo(text, timeout, 'error');
-  };
+      showInfo(text, timeout, 'error');
+    },
+    [showInfo]
+  );
 
   const [snacks, setSnacks] = useState<ISnack[]>([]);
 
@@ -79,10 +95,6 @@ export const Frontend: RoutedFC = () => {
   });
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const setActiveWhenCurrent = (linkIsCurrent: (link: LinkGetProps) => boolean) => (link: LinkGetProps) => ({
-    className: linkIsCurrent(link) ? 'active item' : 'item'
-  });
 
   return (
     <MessageContext.Provider value={headerContext.current}>

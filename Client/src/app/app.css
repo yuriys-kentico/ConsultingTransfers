@@ -286,7 +286,6 @@ ol.ui.list ol,
 
 .ui.header {
   text-overflow: ellipsis;
-  overflow: hidden;
 }
 
 .ui.loading.form:before {

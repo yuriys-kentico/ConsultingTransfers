@@ -1,4 +1,4 @@
-import React, { lazy, useContext, useEffect, useState } from 'react';
+import React, { lazy, useCallback, useContext, useEffect, useState } from 'react';
 import Helmet from 'react-helmet';
 import { Header, Loader, Segment, Table } from 'semantic-ui-react';
 
@@ -61,14 +61,14 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
   const [suspendedTransferCodename, setSuspendedTransferCodename] = useState('');
   const [retry, setRetry] = useState(experience.detailsContainerCheckRetry);
 
-  const suspendTransfer = async () => {
+  const suspendTransfer = useCallback(async () => {
     if (transfer && transfer.codename) {
       setReady(false);
       setSuspendedTransferCodename(transfer.codename);
 
       await transfersService.suspendTransfer({ transferToken });
     }
-  };
+  }, [transfer, transferToken, transfersService]);
 
   useEffect(() => {
     if (suspendedTransferCodename !== '') {
@@ -100,7 +100,7 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
                 </Table.Cell>
                 <Authenticated>
                   <Table.Cell collapsing textAlign='right'>
-                    <Tooltip text={transferTerms.tooltips.suspend}>
+                    <Tooltip label={transferTerms.tooltips.suspend}>
                       <ConfirmButton
                         buttonProps={{ icon: 'pause', color: 'orange' }}
                         confirmProps={{ content: format(transferTerms.confirm.suspend, transfer.name) }}

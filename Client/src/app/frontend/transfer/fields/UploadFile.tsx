@@ -98,7 +98,7 @@ export const UploadFile: FC<IFieldProps> = ({
                       <BlobDetails file={file} />
                     </Table.Cell>
                     <Table.Cell textAlign='right'>
-                      <Tooltip text={transfer.tooltips.deleteFile}>
+                      <Tooltip label={transfer.tooltips.deleteFile}>
                         <Button
                           onClick={event => {
                             event.stopPropagation();

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Helmet from 'react-helmet';
 import { Button, Header, Loader, Segment, Table } from 'semantic-ui-react';
 
@@ -33,16 +33,19 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
 
   const [suspendedTransferCodename, setSuspendedTransferCodename] = useState('');
 
-  const suspendTransfer = async (transfer: ITransfer) => {
-    const { codename, transferToken } = transfer;
+  const suspendTransfer = useCallback(
+    async (transfer: ITransfer) => {
+      const { codename, transferToken } = transfer;
 
-    if (transfers && codename) {
-      setReady(false);
-      setSuspendedTransferCodename(codename);
+      if (transfers && codename) {
+        setReady(false);
+        setSuspendedTransferCodename(codename);
 
-      await transfersService.suspendTransfer({ transferToken });
-    }
-  };
+        await transfersService.suspendTransfer({ transferToken });
+      }
+    },
+    [transfers, transfersService]
+  );
 
   useEffect(() => {
     if (suspendedTransferCodename !== '') {
@@ -86,10 +89,10 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
                 <Table.Cell>{transfer.customer}</Table.Cell>
                 <Table.Cell>{transfer.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
-                  <Tooltip text={transferTerms.tooltips.edit}>
+                  <Tooltip label={transferTerms.tooltips.edit}>
                     <Button icon='edit' color='blue' circular as={Link} to={getTransferUrl(transfer.transferToken)} />
                   </Tooltip>
-                  <Tooltip text={transferTerms.tooltips.suspend}>
+                  <Tooltip label={transferTerms.tooltips.suspend}>
                     <ConfirmButton
                       buttonProps={{ icon: 'pause', color: 'orange' }}
                       confirmProps={{ content: format(transferTerms.confirm.suspend, transfer.name) }}

@@ -1,11 +1,11 @@
 import React, { FC } from 'react';
 
 interface ITooltipProps {
-  text: string;
+  label: string;
   position?: 'down';
 }
 
-export const Tooltip: FC<ITooltipProps> = ({ text, position, children }) => {
+export const Tooltip: FC<ITooltipProps> = ({ label: text, position, children }) => {
   return (
     <span data-balloon={text} data-balloon-pos={position || 'down'}>
       {children}

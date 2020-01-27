@@ -5,7 +5,7 @@ import 'megadraft/dist/css/megadraft.css';
 import { ContentState, convertToRaw, EditorState } from 'draft-js';
 import { draftToMarkdown, markdownToDraft } from 'markdown-draft-js';
 import { editorStateFromRaw, IAction, MegadraftEditor, MegadraftIcons as icons } from 'megadraft';
-import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
@@ -88,13 +88,16 @@ export const WriteText: FC<IFieldProps> = ({
     return () => subscription.unsubscribe();
   }, [name, transferFilesService, setFieldReady, setFieldCanBeCompleted]);
 
-  const updateEditorState = (editorState: EditorState) => {
-    if (!completed) {
-      setEditorState(editorState);
+  const updateEditorState = useCallback(
+    (editorState: EditorState) => {
+      if (!completed) {
+        setEditorState(editorState);
 
-      stateStream.current.next(editorState.getCurrentContent());
-    }
-  };
+        stateStream.current.next(editorState.getCurrentContent());
+      }
+    },
+    [completed]
+  );
 
   const actions: IAction[] = [
     { type: 'inline', label: 'B', style: 'BOLD', icon: icons.BoldIcon },

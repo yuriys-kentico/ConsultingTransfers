@@ -31,6 +31,10 @@ interface IDetailsProps {
 
 const defaultDetailsValue: IDetailsValue = { customer: '', requester: '' };
 
+const getUrl = (path: string) => {
+  return `${window.location.protocol}//${window.location.host}${path}`;
+};
+
 export const Details: AuthenticatedRoutedFC<IDetailsProps> = authenticatedPopup(({ region }) => {
   if (window.self === window.top) {
     navigate('/');
@@ -101,10 +105,6 @@ export const Details: AuthenticatedRoutedFC<IDetailsProps> = authenticatedPopup(
       CustomElement.setValue(JSON.stringify({ customer, requester }));
     }
   }, [available, enabled, customer, requester]);
-
-  const getUrl = (path: string) => {
-    return `${window.location.protocol}//${window.location.host}${path}`;
-  };
 
   return (
     <div className={`custom element ${enabled ? '' : 'disabled'}`} ref={customElementRef}>

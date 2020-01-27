@@ -1,5 +1,5 @@
 import { Parser } from 'html-to-react';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Helmet from 'react-helmet';
 import { Button, Divider, Form, Header, Message, Modal, Segment } from 'semantic-ui-react';
 
@@ -42,17 +42,18 @@ export const NewTransfer: AuthenticatedRoutedFC = authenticated(() => {
     }
   }, [transfer, customer, name, requester]);
 
-  const createTransfer = async () => {
+  const createTransfer = useCallback(async () => {
     if (name === '' || customer === '' || requester === '') {
       setError(true);
     } else if (name && customer && requester) {
       setError(false);
-
       setReady(false);
+
       await transfersService.createTransfer({ name, customer, requester, template, region });
+
       setReady(true);
     }
-  };
+  }, [customer, name, region, requester, template, transfersService]);
 
   return (
     <Segment basic>

@@ -113,7 +113,7 @@ export const Debug: FC = () => {
                         : `${fileListItem.file.field.name} (${fileListItem.file.field.type})`}
                     </Table.Cell>
                     <Table.Cell textAlign='right'>
-                      <Tooltip text={transferTerms.tooltips.downloadFile}>
+                      <Tooltip label={transferTerms.tooltips.downloadFile}>
                         <Button
                           onClick={() => transferFilesService.downloadFiles(fileListItem.file)}
                           icon='download'
@@ -121,7 +121,7 @@ export const Debug: FC = () => {
                           circular
                         />
                       </Tooltip>
-                      <Tooltip text={transferTerms.tooltips.deleteFile}>
+                      <Tooltip label={transferTerms.tooltips.deleteFile}>
                         <Button
                           onClick={() => transferFilesService.deleteFiles(fileListItem.file)}
                           icon='trash'
@@ -143,7 +143,7 @@ export const Debug: FC = () => {
                     />
                   </Table.Cell>
                   <Table.Cell textAlign='right'>
-                    <Tooltip text={transferTerms.tooltips.downloadSelectedFiles}>
+                    <Tooltip label={transferTerms.tooltips.downloadSelectedFiles}>
                       <Button
                         onClick={() =>
                           transferFilesService.downloadFiles(
@@ -158,7 +158,7 @@ export const Debug: FC = () => {
                         circular
                       />
                     </Tooltip>
-                    <Tooltip text={transferTerms.tooltips.deleteSelectedFiles}>
+                    <Tooltip label={transferTerms.tooltips.deleteSelectedFiles}>
                       <Button
                         onClick={() =>
                           transferFilesService.deleteFiles(
