@@ -7,7 +7,7 @@ import {
     RawDraftContentState
 } from 'draft-js';
 import defaultDecorator from 'megadraft/decorators/defaultDecorator';
-import { Component, FC, ReactNode } from 'react';
+import { Component, ComponentType } from 'react';
 
     export const actions: IAction[];
 
@@ -21,7 +21,7 @@ import { Component, FC, ReactNode } from 'react';
     Toolbar?: FC<IToolbarProps>;
     actions?: IAction[];
     keyBindings?: { name: string; isKeyBound: (event: any) => boolean; action: () => void }[];
-    handleBlockNotFound?: (block: any) => { blockComponent: Component };
+    handleBlockNotFound?: (block: any) => { blockComponent: ComponentType };
     softNewLines?: boolean;
     resetStyleNewLine?: boolean;
     blocksWithoutStyleReset?: string[];
@@ -43,8 +43,8 @@ import { Component, FC, ReactNode } from 'react';
     editorHasFocus: boolean;
     readOnly: boolean;
     onChange: (editorState: EditorState) => void;
-    actions?: { type: string; label: string; style: string; icon: Component }[];
-    entityInputs: Component[];
+    actions?: { type: string; label: string; style: string; icon: ComponentType }[];
+    entityInputs: ComponentType[];
     shouldDisplayToolbarFn?: (props: IToolbarProps) => boolean;
   }
 
@@ -62,8 +62,8 @@ import { Component, FC, ReactNode } from 'react';
   export interface IPlugin {
     title: string;
     type: string;
-    buttonComponent: Component;
-    blockComponent: Component;
+    buttonComponent: ComponentType;
+    blockComponent: ComponentType;
   }
 
   export interface IAction {
@@ -71,33 +71,33 @@ import { Component, FC, ReactNode } from 'react';
     label?: string;
     style?: DraftInlineStyleType | string;
     entity?: string;
-    icon?: Component | FC;
+    icon?: ComponentType;
   }
 
   export class MegadraftEditor extends Component<IMegadraftEditorProps> {}
 
   export const MegadraftIcons: {
-    BoldIcon: Component;
-    ItalicIcon: Component;
-    ULIcon: Component;
-    OLIcon: Component;
-    H2Icon: Component;
-    BlockQuoteIcon: Component;
-    LinkIcon: Component;
-    CrossIcon: Component;
-    ImageIcon: Component;
-    VideoIcon: Component;
-    EditIcon: Component;
-    DeleteIcon: Component;
-    CropIcon: Component;
-    MediaBigIcon: Component;
-    MediaMediumIcon: Component;
-    MediaSmallIcon: Component;
-    DropdownArrow: Component;
-    ErrorIcon: Component;
-    UnlinkIcon: Component;
-    CloseIcon: Component;
-    MoreIcon: Component;
+    BoldIcon: ComponentType;
+    ItalicIcon: ComponentType;
+    ULIcon: ComponentType;
+    OLIcon: ComponentType;
+    H2Icon: ComponentType;
+    BlockQuoteIcon: ComponentType;
+    LinkIcon: ComponentType;
+    CrossIcon: ComponentType;
+    ImageIcon: ComponentType;
+    VideoIcon: ComponentType;
+    EditIcon: ComponentType;
+    DeleteIcon: ComponentType;
+    CropIcon: ComponentType;
+    MediaBigIcon: ComponentType;
+    MediaMediumIcon: ComponentType;
+    MediaSmallIcon: ComponentType;
+    DropdownArrow: ComponentType;
+    ErrorIcon: ComponentType;
+    UnlinkIcon: ComponentType;
+    CloseIcon: ComponentType;
+    MoreIcon: ComponentType;
   };
   // export MegadraftMediaMessage: _MediaMessage["default"],
   // export MegadraftPlugin: MegadraftPlugin,
