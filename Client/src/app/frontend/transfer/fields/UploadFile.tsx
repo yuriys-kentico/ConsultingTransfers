@@ -12,9 +12,16 @@ import { format } from '../../../../utilities/strings';
 import { Tooltip } from '../../../shared/Tooltip';
 import { MessageContext } from '../../header/MessageContext';
 import { BlobDetails } from '../BlobDetails';
-import { IFieldHolderProps } from '../FieldHolder';
+import { IFieldProps } from '../FieldHolder';
 
-export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldReady, setFieldCanBeCompleted }) => {
+export const UploadFile: FC<IFieldProps> = ({
+  name,
+  completed,
+  headingBlock,
+  commentBlock,
+  setFieldReady,
+  setFieldCanBeCompleted
+}) => {
   const { uploadFile } = transfer.fields;
   const { uploadExtensions } = experience;
 
@@ -73,42 +80,46 @@ export const UploadFile: FC<IFieldHolderProps> = ({ name, completed, setFieldRea
   }, [files, transferFilesService, name, setFieldCanBeCompleted]);
 
   return (
-    <div
-      {...getRootProps({
-        className: `drop zone ${isDragActive ? 'active' : ''} ${completed ? 'disabled' : ''}`
-      })}
-    >
-      <Container>
-        {ready && (
-          <Table unstackable singleLine basic='very' compact>
-            <Table.Body>
-              {filesList.map((file, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell>
-                    <BlobDetails file={file} />
-                  </Table.Cell>
-                  <Table.Cell textAlign='right'>
-                    <Tooltip text={transfer.tooltips.deleteFile}>
-                      <Button
-                        onClick={event => {
-                          event.stopPropagation();
-                          transferFilesService.deleteFiles(file);
-                        }}
-                        disabled={completed}
-                        inverted
-                        icon='trash'
-                        color='red'
-                      />
-                    </Tooltip>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-        )}
-      </Container>
-      <input {...getInputProps()} />
-      {!completed && (isDragActive ? uploadFile.active : uploadFile.passive)}
-    </div>
+    <>
+      {headingBlock()}
+      {commentBlock()}
+      <div
+        {...getRootProps({
+          className: `drop zone ${isDragActive ? 'active' : ''} ${completed ? 'disabled' : ''}`
+        })}
+      >
+        <Container>
+          {ready && (
+            <Table unstackable singleLine basic='very' compact>
+              <Table.Body>
+                {filesList.map((file, index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell>
+                      <BlobDetails file={file} />
+                    </Table.Cell>
+                    <Table.Cell textAlign='right'>
+                      <Tooltip text={transfer.tooltips.deleteFile}>
+                        <Button
+                          onClick={event => {
+                            event.stopPropagation();
+                            transferFilesService.deleteFiles(file);
+                          }}
+                          disabled={completed}
+                          inverted
+                          icon='trash'
+                          color='red'
+                        />
+                      </Tooltip>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          )}
+        </Container>
+        <input {...getInputProps()} />
+        {!completed && (isDragActive ? uploadFile.active : uploadFile.passive)}
+      </div>
+    </>
   );
 };

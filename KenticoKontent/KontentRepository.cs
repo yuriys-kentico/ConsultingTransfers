@@ -191,12 +191,16 @@ namespace KenticoKontent
 
                         switch (field.Type)
                         {
-                            case Field.upload_file:
-                                component = new UploadFileComponent(field);
+                            case Field.heading:
+                                component = new HeadingComponent(field);
                                 break;
 
                             case Field.write_text:
                                 component = new WriteTextComponent(field);
+                                break;
+
+                            case Field.upload_file:
+                                component = new UploadFileComponent(field);
                                 break;
 
                             case Field.download_asset:

@@ -1,12 +1,10 @@
 import React, { lazy, useContext, useEffect, useState } from 'react';
-import AzureAD from 'react-aad-msal';
 import Helmet from 'react-helmet';
 import { Header, Loader, Segment, Table } from 'semantic-ui-react';
 
 import { navigate } from '@reach/router';
 
 import { experience } from '../../../appSettings.json';
-import { authProvider } from '../../../services/authProvider';
 import { useDependency } from '../../../services/dependencyContainer';
 import { ITransferFilesService } from '../../../services/TransferFilesService';
 import { ITransfersService } from '../../../services/TransfersService';
@@ -18,6 +16,7 @@ import { format } from '../../../utilities/strings';
 import { routes } from '../../routes';
 import { ConfirmButton } from '../../shared/ConfirmButton';
 import { Tooltip } from '../../shared/Tooltip';
+import { Authenticated } from '../admin/Authenticated';
 import { MessageContext } from '../header/MessageContext';
 import { Fields } from './Fields';
 
@@ -99,7 +98,7 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
                 <Table.Cell>
                   <Header as='h2' content={`${transferTerms.header}: ${transfer.name}`} />
                 </Table.Cell>
-                <AzureAD provider={authProvider}>
+                <Authenticated>
                   <Table.Cell collapsing textAlign='right'>
                     <Tooltip text={transferTerms.tooltips.suspend}>
                       <ConfirmButton
@@ -109,14 +108,14 @@ export const Transfer: RoutedFC<ITransferProps> = ({ encodedTransferToken }) => 
                       />
                     </Tooltip>
                   </Table.Cell>
-                </AzureAD>
+                </Authenticated>
               </Table.Row>
             </Table.Body>
           </Table>
           <Fields />
-          <AzureAD provider={authProvider}>
+          <Authenticated>
             <Debug />
-          </AzureAD>
+          </Authenticated>
         </>
       )}
       {ready && !transfer && (

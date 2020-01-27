@@ -1,0 +1,1 @@
+export type FieldType = 'heading' | 'upload_file' | 'write_text' | 'download_asset';

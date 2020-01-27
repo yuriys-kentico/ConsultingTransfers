@@ -1,12 +1,4 @@
-export type FieldType = 'upload_file' | 'write_text' | 'download_asset';
-
-interface Asset {
-  name: string;
-  description: string | null;
-  type: string;
-  size: number;
-  url: string;
-}
+import { FieldType } from './FieldType';
 
 export interface IField {
   name: string;
@@ -16,4 +8,12 @@ export interface IField {
   completed: boolean;
   assets?: Asset[];
   defaultText?: string;
+}
+
+interface Asset {
+  name: string;
+  description: string | null;
+  type: string;
+  size: number;
+  url: string;
 }

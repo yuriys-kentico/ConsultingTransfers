@@ -26,6 +26,7 @@ namespace AzureStorage
         {
             Permissions = SharedAccessBlobPermissions.Read
                     | SharedAccessBlobPermissions.Write
+                    | SharedAccessBlobPermissions.Delete
                     | SharedAccessBlobPermissions.List,
             SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
             SharedAccessExpiryTime = DateTime.UtcNow.AddHours(

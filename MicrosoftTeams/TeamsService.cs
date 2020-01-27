@@ -2,7 +2,6 @@
 
 using MicrosoftTeams.Models;
 
-using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -20,8 +19,6 @@ namespace MicrosoftTeams
         public async Task PostMessage(PostMessageParameters postMessageParameters)
         {
             var (channel, card) = postMessageParameters;
-
-            card = card ?? throw new ArgumentNullException(nameof(card));
 
             channel ??= CoreHelper.GetSetting<string>("MicrosoftTeams", "Default", "Channel");
             var requestUri = CoreHelper.GetSetting<string>("MicrosoftTeams", "Channel", channel ?? "");

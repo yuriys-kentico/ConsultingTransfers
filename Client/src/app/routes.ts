@@ -3,6 +3,18 @@ export const routes = {
   transfers: '/transfers',
   newTransfer: '/transfers/new',
   transfer: '/transfer/',
-  details: '/details/:region',
+  details: '/details/',
   error: '/error'
+};
+
+export const shouldAuthenticateRoute = (path: string) => {
+  switch (path) {
+    case routes.home:
+    case routes.transfers:
+    case routes.newTransfer:
+      return true;
+
+    default:
+      return false;
+  }
 };

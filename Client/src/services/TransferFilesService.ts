@@ -33,38 +33,6 @@ export class TransferFilesService {
     await this.listFiles();
   }
 
-  async createContainer() {
-    const { showInfoUntil, showError, showSuccess } = this.messageContext;
-
-    try {
-      var createPromise = this.containerClient.create();
-
-      showInfoUntil(format(services.creatingContainer, this.containerClient.containerName), createPromise);
-
-      await createPromise;
-
-      showSuccess(services.done);
-    } catch (error) {
-      showError(error);
-    }
-  }
-
-  async deleteContainer() {
-    const { showInfoUntil, showError, showSuccess } = this.messageContext;
-
-    try {
-      var deletePromise = this.containerClient.delete();
-
-      showInfoUntil(format(services.deletingContainer, this.containerClient.containerName), deletePromise);
-
-      await deletePromise;
-
-      showSuccess(services.done);
-    } catch (error) {
-      showError(error);
-    }
-  }
-
   async listFiles() {
     const { showError } = this.messageContext;
 

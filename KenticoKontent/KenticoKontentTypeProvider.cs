@@ -12,8 +12,9 @@ namespace KenticoKontent
     {
         private static readonly IEnumerable<(Type Type, string Codename)> codenames = new HashSet<(Type, string)>
         {
-            (typeof(Field), Field.upload_file),
+            (typeof(Field), Field.heading),
             (typeof(Field), Field.write_text),
+            (typeof(Field), Field.upload_file),
             (typeof(Field), Field.download_asset),
             (typeof(TransferItem), TransferItem.Codename)
         };

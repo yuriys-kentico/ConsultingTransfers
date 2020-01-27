@@ -1,16 +1,15 @@
 import React, { lazy, Suspense, useRef, useState } from 'react';
-import AzureAD from 'react-aad-msal';
 import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
-import { Link, LinkGetProps, Router } from '@reach/router';
+import { Link, LinkGetProps, Location, Router } from '@reach/router';
 
 import { experience } from '../../appSettings.json';
-import { authProvider } from '../../services/authProvider';
 import { admin, errors, header } from '../../terms.en-us.json';
 import { deleteFrom } from '../../utilities/arrays';
 import { wait } from '../../utilities/promises';
 import { RoutedFC } from '../../utilities/routing';
-import { routes } from '../routes';
+import { routes, shouldAuthenticateRoute } from '../routes';
+import { Authenticated } from './admin/Authenticated';
 import {
     IMessageContext,
     MessageContext,
@@ -92,68 +91,74 @@ export const Frontend: RoutedFC = () => {
           <Snack {...snack} />
         ))}
       </div>
-      <Sidebar.Pushable>
-        <AzureAD provider={authProvider}>
-          <Sidebar
-            as={Menu}
-            animation='push'
-            icon='labeled'
-            onHide={() => setSidebarOpen(false)}
-            vertical
-            visible={sidebarOpen}
-            width='very thin'
-          >
-            <Menu.Item
-              onClick={() => setSidebarOpen(false)}
-              as={Link}
-              to={routes.home}
-              getProps={setActiveWhenCurrent(link => link.isCurrent)}
-            >
-              <Icon name='home' />
-              {admin.home.header}
-            </Menu.Item>
-            <Menu.Item
-              onClick={() => setSidebarOpen(false)}
-              as={Link}
-              to={routes.transfers}
-              getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
-            >
-              <Icon name='sync' />
-              {admin.transfers.header}
-            </Menu.Item>
-            <Menu.Item
-              onClick={() => setSidebarOpen(false)}
-              as={Link}
-              to={routes.newTransfer}
-              getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
-            >
-              <Icon name='send' />
-              {admin.newTransfer.header}
-            </Menu.Item>
-          </Sidebar>
-        </AzureAD>
-        <Sidebar.Pusher className='full height app' dimmed={sidebarOpen}>
-          <Sidebar.Pushable>
-            <Menu borderless size='massive' inverted>
-              <AzureAD provider={authProvider}>
-                <Menu.Item icon='bars' onClick={() => setSidebarOpen(true)} />
-              </AzureAD>
-              <Menu.Item header fitted='horizontally' content={header.header} />
-            </Menu>
-            <Container>
-              <Suspense fallback={<Loader active size='massive' />}>
-                <Router>
-                  <Home path={routes.home} authenticated />
-                  <Transfers path={routes.transfers} authenticated />
-                  <NewTransfer path={routes.newTransfer} authenticated />
-                  <Transfer path={`${routes.transfer}:encodedTransferToken`} />
-                  <Error path={routes.error} default message={errors.notFound} />
-                </Router>
-              </Suspense>
-            </Container>
-          </Sidebar.Pushable>
-        </Sidebar.Pusher>
-      </Sidebar.Pushable>
+      <Location>
+        {({ location }) => (
+          <Authenticated forceLogin={shouldAuthenticateRoute(location.pathname)}>
+            <Sidebar.Pushable>
+              <Authenticated>
+                <Sidebar
+                  as={Menu}
+                  animation='push'
+                  icon='labeled'
+                  onHide={() => setSidebarOpen(false)}
+                  vertical
+                  visible={sidebarOpen}
+                  width='very thin'
+                >
+                  <Menu.Item
+                    onClick={() => setSidebarOpen(false)}
+                    as={Link}
+                    to={routes.home}
+                    getProps={setActiveWhenCurrent(link => link.isCurrent)}
+                  >
+                    <Icon name='home' />
+                    {admin.home.header}
+                  </Menu.Item>
+                  <Menu.Item
+                    onClick={() => setSidebarOpen(false)}
+                    as={Link}
+                    to={routes.transfers}
+                    getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
+                  >
+                    <Icon name='sync' />
+                    {admin.transfers.header}
+                  </Menu.Item>
+                  <Menu.Item
+                    onClick={() => setSidebarOpen(false)}
+                    as={Link}
+                    to={routes.newTransfer}
+                    getProps={setActiveWhenCurrent(link => link.isPartiallyCurrent)}
+                  >
+                    <Icon name='send' />
+                    {admin.newTransfer.header}
+                  </Menu.Item>
+                </Sidebar>
+              </Authenticated>
+              <Sidebar.Pusher className='full height app' dimmed={sidebarOpen}>
+                <Sidebar.Pushable>
+                  <Menu borderless size='massive' inverted>
+                    <Authenticated>
+                      <Menu.Item icon='bars' onClick={() => setSidebarOpen(true)} />
+                    </Authenticated>
+                    <Menu.Item header fitted='horizontally' content={header.header} />
+                  </Menu>
+                  <Container>
+                    <Suspense fallback={<Loader active size='massive' />}>
+                      <Router>
+                        <Home path={routes.home} authenticated />
+                        <Transfers path={routes.transfers} authenticated />
+                        <NewTransfer path={routes.newTransfer} authenticated />
+                        <Transfer path={`${routes.transfer}:encodedTransferToken`} />
+                        <Error path={routes.error} default message={errors.notFound} />
+                      </Router>
+                    </Suspense>
+                  </Container>
+                </Sidebar.Pushable>
+              </Sidebar.Pusher>
+            </Sidebar.Pushable>
+          </Authenticated>
+        )}
+      </Location>
     </MessageContext.Provider>
   );
 };

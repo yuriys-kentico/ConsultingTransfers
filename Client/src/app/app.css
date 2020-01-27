@@ -146,8 +146,7 @@ table .basic.icon.button {
   padding: 20px;
   border-width: 2px;
   border-radius: 2px;
-  border-color: #eeeeee;
-  background-color: #fafafa;
+  border-color: #e2e2e2;
   color: #bdbdbd;
 }
 
@@ -164,49 +163,56 @@ table .basic.icon.button {
   border-color: #21ba45;
 }
 
-.editor .view {
-  font-family: Roboto, sans-serif;
-  min-height: 5em;
-  height: initial;
+.editor .public-DraftStyleDefault-block {
+  margin: 0.1em;
 }
 
-.editor .view:not(.disabled) {
-  border: 2px #eeeeee solid;
-}
-
-.editor .view:hover {
-  border-color: #cacbcd;
-}
-
-.editor .toolbar {
-  border: none;
+.editor .megadraft-editor .megadraft-block {
   padding: 0;
-  margin: 0;
 }
 
-.editor .toolbar .rdw-option-wrapper {
-  border: none;
-  opacity: 0.7;
+.editor .megadraft-editor .paragraph + .paragraph {
+  margin-top: 1em;
 }
 
-.editor .toolbar .rdw-option-active {
-  opacity: 1;
-  box-shadow: none;
+.editor .megadraft-editor .public-DraftStyleDefault-ol,
+.editor .megadraft-editor .public-DraftStyleDefault-ul {
+  line-height: 1.5em;
+  padding-left: 1em;
 }
 
-.editor .toolbar .rdw-option-wrapper:hover {
-  opacity: 0.9;
-  box-shadow: none;
+.editor .megadraft-editor .DraftEditor-root,
+.editor .megadraft-editor .toolbar {
+  line-height: 1.5em;
 }
 
-.editor .toolbar .rdw-link-modal-input {
-  height: initial !important;
-  margin-top: 5px !important;
-  border-radius: 2px;
-  border: 1px solid #f1f1f1;
-  height: 25px !important;
-  margin-bottom: 15px !important;
-  padding: 0 5px !important;
+.editor .megadraft-editor .toolbar__wrapper {
+  background: #6c6c6f;
+}
+
+.editor .megadraft-editor .toolbar__arrow {
+  border-color: #6c6c6f transparent transparent;
+}
+
+.editor .megadraft-editor .toolbar__item--separator {
+  border-right: 1px solid #cacbcd;
+}
+
+.editor .megadraft-editor blockquote {
+  margin: 12px 0 1em 0;
+}
+
+.editor .megadraft-editor h3 {
+  margin: 1em 0 0.5em 0;
+}
+
+.editor .megadraft-editor .toolbar__input-button {
+  padding: 0 0.5em;
+}
+
+.editor .megadraft-editor .toolbar__input {
+  background-color: white;
+  color: rgba(0, 0, 0, 0.87);
 }
 
 .ui.menu .header.item:only-child {
@@ -285,4 +291,17 @@ ol.ui.list ol,
 
 .ui.loading.form:before {
   background: #eff0f1aa !important;
+}
+
+.ui.loading.segment:before {
+  background: #eff0f1cc !important;
+}
+
+.ui.disabled.segment * {
+  color: #a2a2a2;
+}
+
+.ui.disabled.segment {
+  opacity: initial !important;
+  color: initial !important;
 }

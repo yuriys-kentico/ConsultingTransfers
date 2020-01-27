@@ -69,8 +69,8 @@ export const Debug: FC = () => {
       {ready && transfer && (
         <>
           <Divider />
-          <Segment>
-            <Header as='h2' content={'Info:'} />
+          <Segment basic>
+            <Header as='h2' content='Info:' />
             <List>
               <List.Item>
                 <Label horizontal content={'Customer:'} />
@@ -86,7 +86,7 @@ export const Debug: FC = () => {
               </List.Item>
             </List>
           </Segment>
-          <Segment>
+          <Segment basic>
             <Header as='h2' content='Files:' />
             <Table unstackable singleLine basic='very' compact>
               <Table.Body>

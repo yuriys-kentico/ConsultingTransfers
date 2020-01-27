@@ -58,7 +58,10 @@
         },
         "template": {
           "label": "Template Kontent item",
-          "options": [{ "text": "Support | Filesystem and database", "value": "support___filesystem_and_database" }]
+          "options": [
+            { "text": "Support | Filesystem and database", "value": "support___filesystem_and_database" },
+            { "text": "Consulting | PQA Questionnaire", "value": "consulting___pqa_questionnaire" }
+          ]
         },
         "region": {
           "label": "Region",
@@ -88,9 +91,8 @@
   "transfer": {
     "header": "Transfer",
     "fields": {
-      "markCompleted": "Mark complete",
-      "markIncomplete": "Mark incomplete",
-      "confirmMarkIncomplete": "Do you want to mark this field incomplete?",
+      "markCompleted": "Complete?",
+      "markIncomplete": "Completed!",
       "markingCompleted": "Marking field completed...",
       "markingIncomplete": "Marking field incomplete...",
       "markedCompleted": "Field has been marked completed!",
@@ -113,7 +115,9 @@
       "downloadSelectedFiles": "Download selected files"
     },
     "confirm": {
-      "suspend": "Do you want to suspend transfer {0}? This will invalidate its URL but the files will remain for 1 month. If the transfer is resumed, the files will be accessible and won't be deleted after 1 month."
+      "suspend": "Do you want to suspend transfer {0}? This will invalidate its URL but the files will remain for 1 month. If the transfer is resumed, the files will be accessible and won't be deleted after 1 month.",
+      "yes": "Yes",
+      "no": "No"
     },
     "invalid": {
       "header": "Transfer not available",

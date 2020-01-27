@@ -9,8 +9,9 @@ namespace KenticoKontent.Models.Delivery
 {
     public class Field : IInlineContentItemsResolver<Field>
     {
-        public const string upload_file = nameof(upload_file);
+        public const string heading = nameof(heading);
         public const string write_text = nameof(write_text);
+        public const string upload_file = nameof(upload_file);
         public const string download_asset = nameof(download_asset);
 
         public ContentItemSystemAttributes System { get; set; } = null!;

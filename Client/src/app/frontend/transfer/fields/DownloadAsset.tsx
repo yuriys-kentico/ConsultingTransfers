@@ -2,9 +2,9 @@ import React, { FC } from 'react';
 import { Card, Header, Icon, Label, SemanticICONS } from 'semantic-ui-react';
 
 import { getSizeText } from '../../../../utilities/numbers';
-import { IFieldHolderProps } from '../FieldHolder';
+import { IFieldProps } from '../FieldHolder';
 
-export const DownloadAsset: FC<IFieldHolderProps> = ({ assets }) => {
+export const DownloadAsset: FC<IFieldProps> = ({ headingBlock, commentBlock, assets }) => {
   const getIconName = (type: string): SemanticICONS => {
     switch (type) {
       case 'text/plain':
@@ -47,18 +47,22 @@ export const DownloadAsset: FC<IFieldHolderProps> = ({ assets }) => {
   };
 
   return (
-    <Card.Group>
-      {assets &&
-        assets.map((asset, index) => (
-          <Card key={index} href={asset.url} centered>
-            <Card.Content textAlign='center'>
-              <Icon name={getIconName(asset.type)} size='huge' />
-              <Header as='h5' sub content={asset.name} />
-              <Label content={getSizeLabel(asset.size)} icon='save' size='tiny' />
-              <Card.Description>{asset.description}</Card.Description>
-            </Card.Content>
-          </Card>
-        ))}
-    </Card.Group>
+    <>
+      {headingBlock()}
+      {commentBlock()}
+      <Card.Group>
+        {assets &&
+          assets.map((asset, index) => (
+            <Card key={index} href={asset.url} centered>
+              <Card.Content textAlign='center'>
+                <Icon name={getIconName(asset.type)} size='huge' />
+                <Header as='h5' sub content={asset.name} />
+                <Label content={getSizeLabel(asset.size)} icon='save' size='tiny' />
+                <Card.Description>{asset.description}</Card.Description>
+              </Card.Content>
+            </Card>
+          ))}
+      </Card.Group>
+    </>
   );
 };
