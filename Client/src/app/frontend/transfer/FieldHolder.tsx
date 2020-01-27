@@ -1,4 +1,4 @@
-import React, { FC, ReactNode, useCallback, useContext, useState } from 'react';
+import React, { FC, memo, ReactNode, useCallback, useContext, useState } from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
 import { useDependency } from '../../../services/dependencyContainer';
@@ -17,7 +17,7 @@ export interface IFieldProps extends IField {
   setFieldCanBeCompleted: (completed: boolean) => void;
 }
 
-export const FieldHolder: FC<IField> = props => {
+export const FieldHolder: FC<IField> = memo(props => {
   const { name, codename, comment, completed, type } = props;
 
   const { showInfo, showSuccess } = useContext(MessageContext);
@@ -110,4 +110,4 @@ export const FieldHolder: FC<IField> = props => {
       />
     </Segment>
   );
-};
+});
