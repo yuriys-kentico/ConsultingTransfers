@@ -40,9 +40,11 @@ namespace Functions.Tests.Transfers
             Transfer transfer
             )
         {
+            var (_, _, _, _, localization) = createTransferRequest;
+
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
             mockCoreContext.SetupRegion(region);
-            mockCoreContext.SetupLocalization(createTransferRequest.Localization);
+            mockCoreContext.SetupLocalization(localization);
             mockTransfersService.SetupCreateTransfer(transfer);
 
             var response = await mockFunction.Run(createTransferRequest, headers, region);
@@ -59,9 +61,11 @@ namespace Functions.Tests.Transfers
             Transfer transfer
             )
         {
+            var (_, _, _, _, localization) = createTransferRequest;
+
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
             mockCoreContext.SetupRegion(region);
-            mockCoreContext.SetupLocalization(createTransferRequest.Localization);
+            mockCoreContext.SetupLocalization(localization);
             mockTransfersService.SetupCreateTransfer(transfer);
 
             var response = await mockFunction.Run(createTransferRequest, headers, region);

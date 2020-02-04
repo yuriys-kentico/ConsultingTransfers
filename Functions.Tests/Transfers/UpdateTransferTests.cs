@@ -36,8 +36,10 @@ namespace Functions.Tests.Transfers
             IAccessTokenResult accessTokenResult
             )
         {
+            var (_, _, _, _, localization) = updateTransferRequest;
+
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
-            mockCoreContext.SetupLocalization(updateTransferRequest.Localization);
+            mockCoreContext.SetupLocalization(localization);
             mockTransfersService.SetupUpdateTransfer();
 
             var response = await mockFunction.Run(updateTransferRequest, headers);
@@ -52,8 +54,10 @@ namespace Functions.Tests.Transfers
             IAccessTokenResult accessTokenResult
             )
         {
+            var (_, _, _, _, localization) = updateTransferRequest;
+
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
-            mockCoreContext.SetupLocalization(updateTransferRequest.Localization);
+            mockCoreContext.SetupLocalization(localization);
             mockTransfersService.SetupUpdateTransfer();
 
             var response = await mockFunction.Run(updateTransferRequest, headers);
