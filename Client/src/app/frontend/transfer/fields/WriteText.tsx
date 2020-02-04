@@ -32,6 +32,7 @@ export const WriteText: FC<IFieldProps> = ({
   const [editorState, setEditorState] = useState(editorStateFromRaw(null));
 
   const stateStream = useRef(new Subject<ContentState>());
+  const initialText = useRef('');
 
   const transferFilesService = useDependency(ITransferFilesService);
   transferFilesService.messageContext = useContext(MessageContext);
@@ -48,8 +49,9 @@ export const WriteText: FC<IFieldProps> = ({
         text && setEditorState(editorStateFromRaw(markdownToDraft(text)));
         setReady(true);
 
-        if (text !== '') {
+        if (text && text !== '') {
           setFieldCanBeCompleted(true);
+          initialText.current = text;
         }
       };
 
@@ -70,7 +72,7 @@ export const WriteText: FC<IFieldProps> = ({
       next: async (contentState: ContentState) => {
         const content = draftToMarkdown(convertToRaw(contentState));
 
-        if (content !== '') {
+        if (content !== initialText.current) {
           setFieldReady(false);
 
           const file = transferFilesService.getFile(content, name, 'md', 'text/plain');
@@ -79,7 +81,7 @@ export const WriteText: FC<IFieldProps> = ({
 
           setFieldReady(true);
           setFieldCanBeCompleted(true);
-        } else {
+        } else if (content === '') {
           setFieldCanBeCompleted(false);
         }
       }

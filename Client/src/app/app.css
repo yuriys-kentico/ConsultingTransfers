@@ -181,6 +181,15 @@ table .basic.icon.button {
   padding-left: 1em;
 }
 
+.editor .megadraft-editor .DraftEditor-root {
+  border-left: 2px #e2e2e2;
+  padding: 1em;
+}
+
+.editor:not(.disabled) .megadraft-editor .DraftEditor-root {
+  border-left-style: solid;
+}
+
 .editor .megadraft-editor .DraftEditor-root,
 .editor .megadraft-editor .toolbar {
   line-height: 1.5em;
