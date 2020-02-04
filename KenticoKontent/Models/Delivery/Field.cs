@@ -14,7 +14,7 @@ namespace KenticoKontent.Models.Delivery
         public const string upload_file = nameof(upload_file);
         public const string download_asset = nameof(download_asset);
 
-        public ContentItemSystemAttributes System { get; set; } = null!;
+        public ContentItemSystemAttributes System { get; set; } = default!;
 
         public string? FieldDetailsName { get; set; }
 

@@ -34,7 +34,7 @@ namespace AzureStorage.Models
 
         public DateTime DeleteWhen { get; set; }
 
-        public string TransferToken { get; set; } = "";
+        public string TransferToken { get; set; } = string.Empty;
 
         public ICollection<string> CompletedFields { get; } = new HashSet<string>();
 

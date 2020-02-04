@@ -20,18 +20,20 @@ namespace Authorization
         private readonly ConfigurationManager<OpenIdConnectConfiguration> configManager;
         private readonly TokenValidationParameters tokenValidationParameters;
 
+        private static string AuthorizationMetadataAddress => CoreHelper.GetSetting<string>("Authorization", "MetadataAddress");
+
+        private static string AuthorizationAudiences => CoreHelper.GetSetting<string>("Authorization", "Audiences");
+
+        private static string AuthorizationIssuer => CoreHelper.GetSetting<string>("Authorization", "Issuer");
+
         public AccessTokenValidator()
         {
-            var metadataAddress = CoreHelper.GetSetting<string>("Authorization", "MetadataAddress");
-            var audiences = CoreHelper.GetSetting<string>("Authorization", "Audiences");
-            var issuer = CoreHelper.GetSetting<string>("Authorization", "Issuer");
-
-            configManager = new ConfigurationManager<OpenIdConnectConfiguration>(metadataAddress, new OpenIdConnectConfigurationRetriever());
+            configManager = new ConfigurationManager<OpenIdConnectConfiguration>(AuthorizationMetadataAddress, new OpenIdConnectConfigurationRetriever());
 
             tokenValidationParameters = new TokenValidationParameters
             {
-                ValidAudiences = audiences?.Split(';'),
-                ValidIssuer = issuer,
+                ValidAudiences = AuthorizationAudiences?.Split(';'),
+                ValidIssuer = AuthorizationIssuer,
                 ValidateIssuerSigningKey = true
             };
         }

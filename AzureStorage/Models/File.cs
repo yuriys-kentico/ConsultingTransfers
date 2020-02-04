@@ -4,9 +4,9 @@ namespace AzureStorage.Models
 {
     public class File
     {
-        public string Url { get; set; } = null!;
+        public string Url { get; set; } = default!;
 
-        public string Name { get; set; } = null!;
+        public string Name { get; set; } = default!;
 
         public long SizeBytes { get; set; }
 

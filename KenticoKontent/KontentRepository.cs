@@ -28,6 +28,14 @@ namespace KenticoKontent
         private readonly HttpClient httpClient;
         private readonly ICoreContext coreContext;
 
+        private string RegionProjectId => CoreHelper.GetSetting<string>(coreContext.Region, "ProjectId");
+
+        private string RegionDeliveryApiSecureAccessKey => CoreHelper.GetSetting<string>(coreContext.Region, "DeliveryApiSecureAccessKey");
+
+        private string RegionContentManagementApiKey => CoreHelper.GetSetting<string>(coreContext.Region, "ContentManagementApiKey");
+
+        private static int KenticoKontentPublishLanguageVariantRetry => CoreHelper.GetSetting<int>("KenticoKontent", "PublishLanguageVariantRetry");
+
         public KontentRepository(
             HttpClient httpClient,
             ICoreContext coreContext
@@ -50,15 +58,15 @@ namespace KenticoKontent
             return await GetDeliveryClient()
                 .GetItemAsync<T>(
                     getKontentItemParameters.Codename,
-                    new LanguageParameter(coreContext.Localization ?? coreContext.DefaultLocalization)
+                    new LanguageParameter(coreContext.Localization)
                     );
         }
 
         private IDeliveryClient GetDeliveryClient()
             => DeliveryClientBuilder
                 .WithOptions(builder => builder
-                    .WithProjectId(coreContext.ProjectId)
-                    .UseProductionApi(coreContext.DeliveryApiSecureAccessKey)
+                    .WithProjectId(RegionProjectId)
+                    .UseProductionApi(RegionDeliveryApiSecureAccessKey)
                     .Build())
                 .WithInlineContentItemsResolver(new Field())
                 .WithTypeProvider(new KenticoKontentTypeProvider())
@@ -83,9 +91,9 @@ namespace KenticoKontent
 
             await PublishLanguageVariant(getKontentItemParameters);
 
-            TransferItem? transferItem = null;
-            var retryAttempts = CoreHelper.GetSetting<int>("KenticoKontent", "PublishLanguageVariantRetry");
+            TransferItem? transferItem = default;
 
+            var retryAttempts = KenticoKontentPublishLanguageVariantRetry;
             while (retryAttempts > 0)
             {
                 try
@@ -94,28 +102,26 @@ namespace KenticoKontent
                 }
                 catch { }
 
-                if (transferItem != null)
+                if (transferItem != default)
                 {
                     return transferItem;
                 }
-                else
-                {
-                    await Task.Delay(1000);
-                    retryAttempts--;
-                }
+
+                await Task.Delay(1000);
+                retryAttempts--;
             }
 
             throw new Exception($"Published language variant {contentItemResponse.Codename} but could not get it from Delivery.");
         }
 
-        private string ConfigureClient(string endpoint = "")
+        private string ConfigureClient(string? endpoint = default)
         {
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                 "bearer",
-                coreContext.ContentManagementApiKey
+                RegionContentManagementApiKey
             );
 
-            var projectId = coreContext.ProjectId;
+            var projectId = RegionProjectId;
 
             return $@"https://manage.kontent.ai/v2/projects/{projectId}/items{endpoint}";
         }
@@ -144,7 +150,7 @@ namespace KenticoKontent
         {
             var (codename, variant) = upsertLanguageVariantParameters;
 
-            var requestUri = ConfigureClient($"/codename/{codename}/variants/codename/{coreContext.Localization ?? coreContext.DefaultLocalization}");
+            var requestUri = ConfigureClient($"/codename/{codename}/variants/codename/{coreContext.Localization}");
 
             await PutAsJsonAsync(requestUri, variant);
         }
@@ -183,11 +189,11 @@ namespace KenticoKontent
             {
                 var fieldHtmlBuilder = new StringBuilder();
 
-                if (fields != null)
+                if (fields != default)
                 {
                     foreach (var field in fields)
                     {
-                        AbstractComponent? component = null;
+                        AbstractComponent? component = default;
 
                         switch (field.Type)
                         {
@@ -208,7 +214,7 @@ namespace KenticoKontent
                                 break;
                         }
 
-                        if (component != null)
+                        if (component != default)
                         {
                             fieldHtmlBuilder.Append($"<object type=\"application/kenticocloud\" data-type=\"component\" data-id=\"{component.Id}\"></object>");
 
@@ -227,16 +233,16 @@ namespace KenticoKontent
 
         public async Task PublishLanguageVariant(GetKontentParameters getKontentItemParameters)
         {
-            var requestUri = ConfigureClient($"/codename/{getKontentItemParameters.Codename}/variants/codename/{coreContext.Localization ?? coreContext.DefaultLocalization}/publish");
+            var requestUri = ConfigureClient($"/codename/{getKontentItemParameters.Codename}/variants/codename/{coreContext.Localization}/publish");
 
-            await PutAsJsonAsync(requestUri, null);
+            await PutAsJsonAsync(requestUri);
         }
 
         public async Task UnpublishLanguageVariant(GetKontentParameters getKontentItemParameters)
         {
-            var requestUri = ConfigureClient($"/codename/{getKontentItemParameters.Codename}/variants/codename/{coreContext.Localization ?? coreContext.DefaultLocalization}/unpublish");
+            var requestUri = ConfigureClient($"/codename/{getKontentItemParameters.Codename}/variants/codename/{coreContext.Localization}/unpublish");
 
-            await PutAsJsonAsync(requestUri, null);
+            await PutAsJsonAsync(requestUri);
         }
 
         public T ResolveItem<T>(T kontentItem, object replacementsObject, params string[] propertyNames) where T : notnull
@@ -291,7 +297,7 @@ namespace KenticoKontent
             return response;
         }
 
-        private async Task<HttpResponseMessage> PutAsJsonAsync(string requestUri, object? value)
+        private async Task<HttpResponseMessage> PutAsJsonAsync(string requestUri, object? value = default)
         {
             var response = await httpClient.PutAsync(requestUri, value, new JsonMediaTypeFormatter()
             {

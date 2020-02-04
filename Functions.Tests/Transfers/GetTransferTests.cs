@@ -181,7 +181,7 @@ namespace Functions.Tests.Transfers
 
         internal static IEnumerable<TestCaseData> UnauthorizedRequests()
         {
-            accessTokenResult = null;
+            accessTokenResult = default;
 
             yield return GetTestCaseWhen("Token is invalid, body is valid and client is requesting");
 

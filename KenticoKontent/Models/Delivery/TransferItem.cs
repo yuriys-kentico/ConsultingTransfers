@@ -13,7 +13,7 @@ namespace KenticoKontent.Models.Delivery
     {
         public const string Codename = "transfer";
 
-        public ContentItemSystemAttributes System { get; set; } = null!;
+        public ContentItemSystemAttributes System { get; set; } = default!;
 
         public string? Info { get; set; }
 
@@ -36,7 +36,7 @@ namespace KenticoKontent.Models.Delivery
 
             foreach (var field in fields)
             {
-                field.Completed = completedFields == null
+                field.Completed = completedFields == default
                     ? false
                     : completedFields.Any(fieldName => field.Codename == fieldName);
             }

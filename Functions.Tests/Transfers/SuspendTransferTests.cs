@@ -128,7 +128,7 @@ namespace Functions.Tests.Transfers
 
             yield return GetTestCaseWhen("Token is expired and client is requesting");
 
-            accessTokenResult = null;
+            accessTokenResult = default;
 
             yield return GetTestCaseWhen("Token is invalid and client is requesting");
         }

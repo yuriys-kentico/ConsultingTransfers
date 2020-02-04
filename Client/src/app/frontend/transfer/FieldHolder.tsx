@@ -1,6 +1,7 @@
 import React, { FC, memo, ReactNode, useCallback, useContext, useState } from 'react';
 import { Checkbox, Divider, Header, Loader, Segment } from 'semantic-ui-react';
 
+import { kenticoKontent } from '../../../appSettings.json';
 import { useDependency } from '../../../services/dependencyContainer';
 import { IFieldComponentRepository } from '../../../services/FieldComponentRepository';
 import { IField } from '../../../services/models/IField';
@@ -43,7 +44,7 @@ export const FieldHolder: FC<IField> = memo(props => {
             transferToken,
             field: codename,
             type: 'fieldComplete',
-            messageItemCodename: 'field_updated'
+            messageItemCodename: kenticoKontent.updateTransferMessageItemCodename
           });
 
           await transfersService.getTransfer({ transferToken });

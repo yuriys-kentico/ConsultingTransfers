@@ -15,6 +15,8 @@ namespace KenticoKontent
 
         private const string WebhookSignatureHeaderName = "X-Kc-Signature";
 
+        public string RegionWebhookSecret => CoreHelper.GetSetting<string>(coreContext.Region, "WebhookSecret");
+
         public WebhookValidator(ICoreContext coreContext)
         {
             this.coreContext = coreContext;
@@ -24,15 +26,13 @@ namespace KenticoKontent
         {
             headers.TryGetValue(WebhookSignatureHeaderName, out var signatureFromRequest);
 
-            var generatedSignature = GetHashForWebhook(body, coreContext.WebhookSecret);
+            var generatedSignature = GetHashForWebhook(body, RegionWebhookSecret);
 
             return (generatedSignature == signatureFromRequest, () => CoreHelper.Deserialize<Webhook>(body));
         }
 
-        private static string GetHashForWebhook(string content, string? secret)
+        private static string GetHashForWebhook(string content, string secret)
         {
-            secret = secret ?? throw new ArgumentNullException(nameof(secret));
-
             var safeUTF8 = new UTF8Encoding(false, true);
             byte[] keyBytes = safeUTF8.GetBytes(secret);
             byte[] messageBytes = safeUTF8.GetBytes(content);

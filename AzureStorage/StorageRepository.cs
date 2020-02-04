@@ -22,6 +22,14 @@ namespace AzureStorage
         private readonly IEncryptionService encryptionService;
         private readonly ICoreContext coreContext;
 
+        private static double AzureStorageSasExpirationHours => CoreHelper.GetSetting<double>("AzureStorage", "Sas", "ExpirationHours");
+
+        private string RegionFileEndpointStorage => CoreHelper.GetSetting<string>(coreContext.Region, "FileEndpoint", "Storage");
+
+        private string RegionFileEndpoint => CoreHelper.GetSetting<string>(coreContext.Region, "FileEndpoint");
+
+        private string StorageConnectionString => CoreHelper.GetSetting<string>(coreContext.Region);
+
         public static SharedAccessBlobPolicy PublicSharedAccessBlobPolicy => new SharedAccessBlobPolicy
         {
             Permissions = SharedAccessBlobPermissions.Read
@@ -29,9 +37,7 @@ namespace AzureStorage
                     | SharedAccessBlobPermissions.Delete
                     | SharedAccessBlobPermissions.List,
             SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
-            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(
-                CoreHelper.GetSetting<double>("AzureStorage", "Sas", "ExpirationHours")
-                )
+            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(AzureStorageSasExpirationHours)
         };
 
         public static SharedAccessAccountPolicy AdminSharedAccessAccountPolicy => new SharedAccessAccountPolicy
@@ -45,9 +51,7 @@ namespace AzureStorage
             ResourceTypes = SharedAccessAccountResourceTypes.Container
                     | SharedAccessAccountResourceTypes.Object,
             SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
-            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(
-                CoreHelper.GetSetting<double>("AzureStorage", "Sas", "ExpirationHours")
-                ),
+            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(AzureStorageSasExpirationHours),
             Protocols = SharedAccessProtocol.HttpsOnly
         };
 
@@ -75,21 +79,14 @@ namespace AzureStorage
         {
             var container = GetContainerReference(getContainerParameters);
 
-            static string getBlobItemName(string prefix)
-            {
-                var parts = prefix.Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-                return parts[^1];
-            }
-
             IDictionary<string, File> files = new Dictionary<string, File>();
 
-            BlobContinuationToken? continuationToken = null;
+            BlobContinuationToken? continuationToken = default;
 
             do
             {
                 BlobResultSegment resultSegment = await container
-                    .ListBlobsSegmentedAsync(string.Empty, true, BlobListingDetails.None, null, continuationToken, null, null);
+                    .ListBlobsSegmentedAsync(string.Empty, true, BlobListingDetails.None, default, continuationToken, default, default);
 
                 foreach (var blobItem in resultSegment.Results)
                 {
@@ -97,8 +94,8 @@ namespace AzureStorage
                     {
                         files.Add(cloudBlob.Name, new File
                         {
-                            Url = cloudBlob.Uri + cloudBlob.GetSharedAccessSignature(PublicSharedAccessBlobPolicy),
-                            Name = getBlobItemName(cloudBlob.Name),
+                            Url = ReplaceFileEndpoint(cloudBlob.Uri + cloudBlob.GetSharedAccessSignature(PublicSharedAccessBlobPolicy)),
+                            Name = cloudBlob.Name.Split('/', StringSplitOptions.RemoveEmptyEntries)[^1],
                             SizeBytes = cloudBlob.Properties.Length,
                             Created = cloudBlob.Properties.Created,
                             Modified = cloudBlob.Properties.LastModified
@@ -107,7 +104,7 @@ namespace AzureStorage
                 }
 
                 continuationToken = resultSegment.ContinuationToken;
-            } while (continuationToken != null);
+            } while (continuationToken != default);
 
             return files;
         }
@@ -126,15 +123,25 @@ namespace AzureStorage
         {
             var container = GetContainerReference(getContainerParameters);
 
-            return container.Uri + GetStorageAccount().GetSharedAccessSignature(AdminSharedAccessAccountPolicy);
+            var originalUrl = container.Uri + GetStorageAccount().GetSharedAccessSignature(AdminSharedAccessAccountPolicy);
+
+            return ReplaceFileEndpoint(originalUrl);
         }
 
         public string GetPublicContainerUrl(GetContainerParameters getContainerParameters)
         {
             var container = GetContainerReference(getContainerParameters);
 
-            // The policy is saved to the container's shared access policies.
-            return container.Uri + container.GetSharedAccessSignature(PublicSharedAccessBlobPolicy);
+            var originalUrl = container.Uri + container.GetSharedAccessSignature(PublicSharedAccessBlobPolicy);
+
+            return ReplaceFileEndpoint(originalUrl);
+        }
+
+        private string ReplaceFileEndpoint(string originalUrl)
+        {
+            return new StringBuilder(originalUrl)
+                .Replace(RegionFileEndpointStorage, RegionFileEndpoint)
+                .ToString();
         }
 
         public TransferToken DecryptTransferToken(string transferToken)
@@ -154,7 +161,7 @@ namespace AzureStorage
 
             var (region, _, localization) = token;
 
-            coreContext.Region ??= region;
+            coreContext.Region = region;
             coreContext.Localization ??= localization;
 
             return token;
@@ -162,9 +169,6 @@ namespace AzureStorage
 
         public string EncryptTransferToken(TransferToken transferToken)
         {
-            transferToken.Region ??= coreContext.Region;
-            transferToken.Localization ??= coreContext.Localization;
-
             var transferTokenString = CoreHelper.Serialize(transferToken);
             return encryptionService.Encrypt(transferTokenString);
         }
@@ -173,14 +177,14 @@ namespace AzureStorage
         {
             var blobClient = GetStorageAccount().CreateCloudBlobClient();
 
-            BlobContinuationToken? continuationToken = null;
+            BlobContinuationToken? continuationToken = default;
 
             var containers = new List<Container>();
 
             do
             {
                 var resultSegment = await blobClient
-                    .ListContainersSegmentedAsync(null, ContainerListingDetails.Metadata, null, continuationToken, null, null);
+                    .ListContainersSegmentedAsync(default, ContainerListingDetails.Metadata, default, continuationToken, default, default);
 
                 foreach (var container in resultSegment.Results)
                 {
@@ -193,7 +197,7 @@ namespace AzureStorage
                 }
 
                 continuationToken = resultSegment.ContinuationToken;
-            } while (continuationToken != null);
+            } while (continuationToken != default);
 
             return containers;
         }
@@ -218,6 +222,6 @@ namespace AzureStorage
         }
 
         private CloudStorageAccount GetStorageAccount()
-            => CloudStorageAccount.Parse(CoreHelper.GetSetting<string>(coreContext.Region));
+            => CloudStorageAccount.Parse(StorageConnectionString);
     }
 }

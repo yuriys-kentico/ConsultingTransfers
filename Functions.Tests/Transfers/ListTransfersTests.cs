@@ -43,7 +43,7 @@ namespace Functions.Tests.Transfers
             mockCoreContext.SetupRegion(specificRegion);
             mockCoreContext.SetupRegions(specificRegion);
 
-            var response = await mockFunction.Run(null, headers, specificRegion);
+            var response = await mockFunction.Run(default, headers, specificRegion);
 
             Assert.That(response, Is.InstanceOf<OkObjectResult>());
         }
@@ -58,7 +58,7 @@ namespace Functions.Tests.Transfers
         {
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
 
-            var response = await mockFunction.Run(null, headers, specificRegion);
+            var response = await mockFunction.Run(default, headers, specificRegion);
 
             switch (accessTokenResult)
             {
@@ -86,7 +86,7 @@ namespace Functions.Tests.Transfers
 
             yield return GetTestCaseWhen("Token is valid and client is requesting");
 
-            region = "";
+            region = string.Empty;
 
             yield return GetTestCaseWhen("Token is valid, region is empty, and client is requesting");
         }
@@ -102,7 +102,7 @@ namespace Functions.Tests.Transfers
             yield return GetTestCaseWhen("Token is expired and client is requesting");
 
             region = "zz";
-            accessTokenResult = null;
+            accessTokenResult = default;
 
             yield return GetTestCaseWhen("Token is invalid and client is requesting");
         }

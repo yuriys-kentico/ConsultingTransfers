@@ -11,7 +11,7 @@ namespace KenticoKontent.Models.Delivery
     {
         public const string Codename = "template";
 
-        public ContentItemSystemAttributes System { get; set; } = null!;
+        public ContentItemSystemAttributes System { get; set; } = default!;
 
         public string? Message { get; set; }
 

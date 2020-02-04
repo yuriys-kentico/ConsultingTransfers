@@ -8,7 +8,7 @@ namespace KenticoKontent.Models.Delivery
     {
         public const string Codename = "teams_message";
 
-        public ContentItemSystemAttributes System { get; set; } = null!;
+        public ContentItemSystemAttributes System { get; set; } = default!;
 
         public string? CardJSON { get; set; }
 

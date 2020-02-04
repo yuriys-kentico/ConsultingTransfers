@@ -31,9 +31,11 @@ namespace Transfers.Models
 
         public string? Template { get; set; }
 
+        private static string ClientTransferUrl => CoreHelper.GetSetting<string>("Client", "TransferUrl");
+
         public static string GetUrl(string? transferToken)
         {
-            return $"{CoreHelper.GetSetting<string>("Client", "TransferUrl")}{HttpUtility.UrlEncode(transferToken)}";
+            return $"{ClientTransferUrl}{HttpUtility.UrlEncode(transferToken)}";
         }
     }
 }

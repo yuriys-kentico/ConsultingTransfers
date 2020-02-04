@@ -17,7 +17,7 @@ namespace KenticoKontent.Models.ContentManagement
         {
             var message = Message;
 
-            if (ValidationErrors != null && ValidationErrors.Any())
+            if (ValidationErrors != default && ValidationErrors.Any())
             {
                 message += string.Join(", ", ValidationErrors.Select(error => $"{error.Path}: {error.Message}"));
             }

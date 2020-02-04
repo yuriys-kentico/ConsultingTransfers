@@ -12,14 +12,14 @@ namespace Core
             var variable = Environment.GetEnvironmentVariable(key, EnvironmentVariableTarget.Process);
             var setting = Convert.ChangeType(variable, typeof(T));
 
-            return (T)(setting ?? throw new ArgumentException($"Setting '{string.Join(", ", settingParts)}' not found."));
+            return (T)(setting ?? throw new ArgumentException($"Setting '{key}' not found."));
         }
 
         public static TValue Deserialize<TValue>(string json)
         {
-            return json != null
+            return json != default
                 ? JsonConvert.DeserializeObject<TValue>(json)
-                : default;
+                : throw new ArgumentNullException(json);
         }
 
         public static string Serialize<TValue>(TValue value) where TValue : notnull

@@ -60,7 +60,7 @@ namespace Functions.Transfers
 
                         List<Transfer> transfers = new List<Transfer>();
 
-                        if (regions == null)
+                        if (regions == default)
                         {
                             throw new ArgumentNullException(nameof(regions));
                         }
