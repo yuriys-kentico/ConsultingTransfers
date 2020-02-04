@@ -41,7 +41,7 @@ namespace Functions.Transfers
                 [HttpTrigger(
                     AuthorizationLevel.Function,
                     "post",
-                    Route = transfers + "/list/{specificRegion:alpha:length(2)?}"
+                    Route = Routes.ListTransfers
                 )] HttpRequest request,
                 IDictionary<string, string> headers,
                 string specificRegion

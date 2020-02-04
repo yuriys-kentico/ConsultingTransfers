@@ -37,7 +37,7 @@ namespace Functions.Transfers
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "post",
-                Route = transfers + "/suspend"
+                Route = Routes.SuspendTransfer
             )] GetTransferRequest getTransferRequest,
             IDictionary<string, string> headers
             )

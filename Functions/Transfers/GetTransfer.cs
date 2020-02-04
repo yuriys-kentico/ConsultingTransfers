@@ -37,7 +37,7 @@ namespace Functions.Transfers
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "post",
-                Route = transfers + "/get"
+                Route = Routes.GetTransfer
             )] GetTransferRequest getTransferRequest,
             IDictionary<string, string> headers
             )

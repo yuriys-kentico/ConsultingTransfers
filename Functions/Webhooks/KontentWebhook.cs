@@ -40,7 +40,7 @@ namespace Functions.Webhooks
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "post",
-                Route = "webhook/{region:alpha:length(2)}"
+                Route = Routes.KontentWebhook
             )] string body,
             IDictionary<string, string> headers,
             string region

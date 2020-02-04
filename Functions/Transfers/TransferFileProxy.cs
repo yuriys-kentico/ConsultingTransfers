@@ -46,7 +46,7 @@ namespace Functions.Transfers
                 [HttpTrigger(
                     AuthorizationLevel.Anonymous,
                     "put", "get",
-                    Route = transfers + "/{region:alpha:length(2)}/{*storagePath}"
+                    Route = Routes.TransferFileProxy
                 )] HttpRequest request,
                 string region,
                 string storagePath

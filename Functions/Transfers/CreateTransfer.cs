@@ -42,7 +42,7 @@ namespace Functions.Transfers
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "post",
-                Route = transfers + "/create/{region:alpha:length(2)}"
+                Route = Routes.CreateTransfer
             )] CreateTransferRequest createTransferRequest,
             IDictionary<string, string> headers,
             string region

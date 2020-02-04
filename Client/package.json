@@ -27,7 +27,7 @@
     "react-helmet": "^5.2.1",
     "react-scripts": "^3.3.0",
     "rxjs": "^6.5.3",
-    "semantic-ui-react": "^0.88.1",
+    "semantic-ui-react": "^0.88.2",
     "streamsaver": "^2.0.3",
     "tslint": "^5.20.1",
     "typed-inject": "^2.1.1",

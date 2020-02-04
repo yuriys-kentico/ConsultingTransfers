@@ -26,16 +26,6 @@ namespace Authorization.Models
 
     public class ValidAccessTokenResult : IAccessTokenResult
     {
-        public ClaimsPrincipal? Principal { get; }
-
-        internal ValidAccessTokenResult(ClaimsPrincipal? principal)
-        {
-            Principal = principal;
-        }
-
-        // Required for tests
-        internal ValidAccessTokenResult()
-        {
-        }
+        public ClaimsPrincipal? Principal { get; internal set; }
     }
 }

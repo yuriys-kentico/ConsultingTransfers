@@ -53,7 +53,10 @@ namespace Authorization
                     var result = new JwtSecurityTokenHandler()
                         .ValidateToken(accessTokenValue, tokenValidationParameters, out _);
 
-                    return new ValidAccessTokenResult(result);
+                    return new ValidAccessTokenResult
+                    {
+                        Principal = result
+                    };
                 }
 
                 return new NoAccessTokenResult();

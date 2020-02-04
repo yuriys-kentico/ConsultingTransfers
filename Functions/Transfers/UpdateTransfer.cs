@@ -42,7 +42,7 @@ namespace Functions.Transfers
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "post",
-                Route = transfers + "/update"
+                Route = Routes.UpdateTransfer
             )] UpdateTransferRequest updateTransferRequest,
             IDictionary<string, string> headers
             )
