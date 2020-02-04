@@ -1,14 +1,23 @@
-﻿using System;
+﻿using Core;
+
+using System;
 
 namespace AzureStorage.Models
 {
     public class TransferToken
     {
-        public string? Region { get; set; }
+        private readonly ICoreContext coreContext;
 
-        public string? Codename { get; set; }
+        public string? Region { private get; set; }
 
-        public string? Localization { get; set; }
+        public string? Codename { private get; set; }
+
+        public string? Localization { private get; set; }
+
+        public TransferToken(ICoreContext coreContext)
+        {
+            this.coreContext = coreContext;
+        }
 
         public void Deconstruct(
             out string region,
@@ -16,9 +25,9 @@ namespace AzureStorage.Models
             out string localization
             )
         {
-            region = Region ?? throw new ArgumentNullException(nameof(Region));
+            region = Region ?? coreContext.Region ?? throw new ArgumentNullException(nameof(Region));
             codename = Codename ?? throw new ArgumentNullException(nameof(Codename));
-            localization = Localization ?? throw new ArgumentNullException(nameof(Localization));
+            localization = Localization ?? coreContext.Localization ?? throw new ArgumentNullException(nameof(Localization));
         }
     }
 }

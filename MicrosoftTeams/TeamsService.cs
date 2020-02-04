@@ -11,6 +11,8 @@ namespace MicrosoftTeams
     {
         private readonly HttpClient httpClient;
 
+        public static string MicrosoftTeamsDefaultChannel => CoreHelper.GetSetting<string>("MicrosoftTeams", "Default", "Channel");
+
         public TeamsService(HttpClient httpClient)
         {
             this.httpClient = httpClient;
@@ -20,7 +22,7 @@ namespace MicrosoftTeams
         {
             var (channel, card) = postMessageParameters;
 
-            channel ??= CoreHelper.GetSetting<string>("MicrosoftTeams", "Default", "Channel");
+            channel ??= MicrosoftTeamsDefaultChannel;
             var requestUri = CoreHelper.GetSetting<string>("MicrosoftTeams", "Channel", channel ?? "");
 
             var content = new StringContent(CoreHelper.Serialize(card));

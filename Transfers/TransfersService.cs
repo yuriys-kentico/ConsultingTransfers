@@ -47,7 +47,7 @@ namespace Transfers
         {
             var (name, customer, requester, templateItemCodename) = createTransferParameters;
 
-            TemplateItem? templateItem = null;
+            TemplateItem? templateItem = default;
 
             if (!string.IsNullOrWhiteSpace(templateItemCodename))
             {
@@ -72,7 +72,7 @@ namespace Transfers
 
             container.DeleteWhen = DateTime.MaxValue;
 
-            container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
+            container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken(coreContext)
             {
                 Codename = transferItem.System.Codename,
                 Localization = transferItem.System.Language
@@ -80,9 +80,9 @@ namespace Transfers
 
             await container.Update();
 
-            TemplateItem? resolvedTemplateItem = null;
+            TemplateItem? resolvedTemplateItem = default;
 
-            if (!string.IsNullOrWhiteSpace(templateItemCodename) && templateItem != null)
+            if (!string.IsNullOrWhiteSpace(templateItemCodename) && templateItem != default)
             {
                 resolvedTemplateItem = kontentRepository.ResolveItem(templateItem, new
                 {
@@ -116,7 +116,7 @@ namespace Transfers
                 Codename = codename
             });
 
-            if (transferItem == null)
+            if (transferItem == default)
             {
                 return null;
             }
@@ -161,7 +161,7 @@ namespace Transfers
                         ContainerName = storageRepository.GetSafeContainerName(codename)
                     })
                 },
-                _ => throw new ArgumentException()
+                _ => throw new ArgumentException($"Combination of files ({files}), fields ({fields}), containerUrl ({containerUrl}), and accessTokenResult ({accessTokenResult?.GetType().Name}) is not valid.")
             };
         }
 
@@ -181,7 +181,7 @@ namespace Transfers
             switch (type)
             {
                 case UpdateType.FieldComplete:
-                    if (field != null)
+                    if (field != default)
                     {
                         container.CompletedFields.Add(field);
                     }
@@ -190,15 +190,12 @@ namespace Transfers
                     break;
 
                 case UpdateType.FieldIncomplete:
-                    if (field != null)
+                    if (field != default)
                     {
                         container.CompletedFields.Remove(field);
                     }
 
                     await container.Update();
-                    return;
-
-                default:
                     return;
             }
 
@@ -267,7 +264,7 @@ namespace Transfers
                 Codename = codename
             };
 
-            if (kontentRepository.GetKontentItem<Transfer>(getKontentItemParameters) != null)
+            if (kontentRepository.GetKontentItem<Transfer>(getKontentItemParameters) != default)
             {
                 await kontentRepository.UnpublishLanguageVariant(getKontentItemParameters);
             }

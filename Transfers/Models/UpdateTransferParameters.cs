@@ -11,13 +11,13 @@ namespace Transfers.Models
 
     public class UpdateTransferParameters
     {
-        public string? TransferToken { get; set; }
+        public string? TransferToken { private get; set; }
 
-        public string? Field { get; set; }
+        public string? Field { private get; set; }
 
-        public UpdateType Type { get; set; }
+        public UpdateType Type { private get; set; }
 
-        public string? MessageItemCodename { get; set; }
+        public string? MessageItemCodename { private get; set; }
 
         public void Deconstruct(
             out string transferToken,
@@ -26,7 +26,7 @@ namespace Transfers.Models
             out string? messageItemCodename
             )
         {
-            transferToken = TransferToken ?? throw new ArgumentNullException(nameof(transferToken));
+            transferToken = TransferToken ?? throw new ArgumentNullException(nameof(TransferToken));
             field = Field;
             type = Type;
             messageItemCodename = MessageItemCodename;

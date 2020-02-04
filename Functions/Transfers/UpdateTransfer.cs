@@ -57,7 +57,10 @@ namespace Functions.Transfers
                     case NoAccessTokenResult _:
                         var (transferToken, field, type, messageItemCodename, localization) = updateTransferRequest;
 
-                        coreContext.Localization = localization;
+                        if (localization != null)
+                        {
+                            coreContext.Localization = localization;
+                        }
 
                         var updateType = Enum.Parse<UpdateType>(type ?? "", true);
 

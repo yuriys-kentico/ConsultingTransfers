@@ -6,22 +6,24 @@ namespace Core
 {
     public class CoreContext : ICoreContext
     {
-        public string Region { get; set; } = "";
+        private string? region;
+        private string? localization;
 
-        public string? Localization { get; set; }
+        public string Region
+        {
+            get => region ?? throw new ArgumentNullException(nameof(Region));
+            set => region = Regions.Contains(value)
+                ? value
+                : throw new ArgumentOutOfRangeException($"Region '{value}' not valid.");
+        }
 
         public IEnumerable<string> Regions
-            => CoreHelper.GetSetting<string>(nameof(Regions))?.Split(';', StringSplitOptions.RemoveEmptyEntries)
-            ?? Enumerable.Empty<string>();
+            => CoreHelper.GetSetting<string>(nameof(Regions)).Split(';', StringSplitOptions.RemoveEmptyEntries);
 
-        public string DefaultLocalization => CoreHelper.GetSetting<string>(Region, "Default", nameof(Localization));
-
-        public string ProjectId => CoreHelper.GetSetting<string>(Region, nameof(ProjectId));
-
-        public string DeliveryApiSecureAccessKey => CoreHelper.GetSetting<string>(Region, nameof(DeliveryApiSecureAccessKey));
-
-        public string ContentManagementApiKey => CoreHelper.GetSetting<string>(Region, nameof(ContentManagementApiKey));
-
-        public string WebhookSecret => CoreHelper.GetSetting<string>(Region, nameof(WebhookSecret));
+        public string Localization
+        {
+            get => localization ?? CoreHelper.GetSetting<string>(Region, "Default", nameof(Localization));
+            set => localization = value;
+        }
     }
 }

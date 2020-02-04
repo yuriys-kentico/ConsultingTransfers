@@ -3,6 +3,7 @@
 using Moq;
 
 using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using Transfers;
@@ -25,20 +26,14 @@ namespace Functions.Tests.Mocks
             Transfer transfer
             )
         {
-            mockTransfersService.Setup(mock => mock.GetTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                getTransferParameters.ContainerUrl == true
-                && getTransferParameters.Fields == true
-                && getTransferParameters.Files == false
-                && accessTokenResult is ValidAccessTokenResult
-                || getTransferParameters.ContainerUrl == true
-                && getTransferParameters.Fields == true
-                && getTransferParameters.Files == false
-                && accessTokenResult is NoAccessTokenResult
-                || getTransferParameters.ContainerUrl == false
-                && getTransferParameters.Fields == false
-                && getTransferParameters.Files == true
-                && accessTokenResult is ValidAccessTokenResult
-            )))
+            mockTransfersService
+                .Setup(mock => mock
+                    .GetTransfer(
+                        It.Is<GetTransferParameters>(
+                            getTransferParameters => GetValidGetTransferParameters(getTransferParameters, accessTokenResult)
+                        )
+                    )
+                )
                 .ReturnsAsync(transfer);
         }
 
@@ -56,11 +51,11 @@ namespace Functions.Tests.Mocks
             )
         {
             mockTransfersService.Setup(mock => mock.SuspendTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                string.IsNullOrEmpty(getTransferParameters.TransferToken))))
+                GetValidGetTransferParameters(getTransferParameters))))
                 .Throws<Exception>();
 
             mockTransfersService.Setup(mock => mock.SuspendTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                !string.IsNullOrEmpty(getTransferParameters.TransferToken))))
+                !GetValidGetTransferParameters(getTransferParameters))))
                 .Returns(Task.CompletedTask);
         }
 
@@ -69,11 +64,11 @@ namespace Functions.Tests.Mocks
             )
         {
             mockTransfersService.Setup(mock => mock.ResumeTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                string.IsNullOrEmpty(getTransferParameters.TransferToken))))
+                GetValidGetTransferParameters(getTransferParameters))))
                 .Throws<Exception>();
 
             mockTransfersService.Setup(mock => mock.ResumeTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                !string.IsNullOrEmpty(getTransferParameters.TransferToken))))
+                !GetValidGetTransferParameters(getTransferParameters))))
                 .Returns(Task.CompletedTask);
         }
 
@@ -82,11 +77,11 @@ namespace Functions.Tests.Mocks
             )
         {
             mockTransfersService.Setup(mock => mock.UpdateTransfer(It.Is<UpdateTransferParameters>(updateTransferParameters =>
-                string.IsNullOrEmpty(updateTransferParameters.TransferToken))))
+                GetValidUpdateTransferParameters(updateTransferParameters))))
                 .Throws<Exception>();
 
             mockTransfersService.Setup(mock => mock.UpdateTransfer(It.Is<UpdateTransferParameters>(updateTransferParameters =>
-                !string.IsNullOrEmpty(updateTransferParameters.TransferToken))))
+                !GetValidUpdateTransferParameters(updateTransferParameters))))
                 .Returns(Task.CompletedTask);
         }
 
@@ -96,13 +91,57 @@ namespace Functions.Tests.Mocks
             )
         {
             mockTransfersService.Setup(mock => mock.CreateTransfer(It.Is<CreateTransferParameters>(createTransferParameters =>
-                string.IsNullOrEmpty(createTransferParameters.Name)
-                || string.IsNullOrEmpty(createTransferParameters.Customer)
-                || string.IsNullOrEmpty(createTransferParameters.Requester))))
+                GetValidCreateTransferParameters(createTransferParameters))))
                 .Throws<Exception>();
 
             mockTransfersService.Setup(mock => mock.CreateTransfer(It.IsAny<CreateTransferParameters>()))
                 .ReturnsAsync(transfer);
+        }
+
+        private static bool GetValidGetTransferParameters(
+            GetTransferParameters getTransferParameters,
+            IAccessTokenResult accessTokenResult
+            )
+        {
+            var (_, files, fields, containerUrl, _) = getTransferParameters;
+
+            return (files, fields, containerUrl, accessTokenResult)
+            switch
+            {
+                (false, true, true, _) when accessTokenResult is NoAccessTokenResult => true,
+                (false, true, true, _) when accessTokenResult is ValidAccessTokenResult => true,
+                (true, false, false, _) when accessTokenResult is ValidAccessTokenResult => true,
+                _ => false
+            };
+        }
+
+        private static bool GetValidGetTransferParameters(
+            GetTransferParameters getTransferParameters
+            )
+        {
+            var (transferToken, _, _, _, _) = getTransferParameters;
+
+            return string.IsNullOrEmpty(transferToken);
+        }
+
+        private static bool GetValidUpdateTransferParameters(
+            UpdateTransferParameters updateTransferParameters
+            )
+        {
+            var (transferToken, _, _, _) = updateTransferParameters;
+
+            return string.IsNullOrEmpty(transferToken);
+        }
+
+        private static bool GetValidCreateTransferParameters(
+            CreateTransferParameters createTransferParameters
+            )
+        {
+            var (name, customer, requester, _) = createTransferParameters;
+
+            return string.IsNullOrEmpty(name)
+                || string.IsNullOrEmpty(customer)
+                || string.IsNullOrEmpty(requester);
         }
     }
 }

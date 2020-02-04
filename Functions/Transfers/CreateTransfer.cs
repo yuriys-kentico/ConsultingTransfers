@@ -59,7 +59,10 @@ namespace Functions.Transfers
                     case ValidAccessTokenResult _:
                         var (name, customer, requester, template, localization) = createTransferRequest;
 
-                        coreContext.Localization = localization;
+                        if (localization != null)
+                        {
+                            coreContext.Localization = localization;
+                        }
 
                         var transfer = await transfersService.CreateTransfer(new CreateTransferParameters
                         {

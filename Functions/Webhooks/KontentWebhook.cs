@@ -40,7 +40,7 @@ namespace Functions.Webhooks
             [HttpTrigger(
                 AuthorizationLevel.Function,
                 "post",
-                Route = webhook + "/{region:alpha:length(2)}"
+                Route = "webhook/{region:alpha:length(2)}"
             )] string body,
             IDictionary<string, string> headers,
             string region
@@ -73,7 +73,7 @@ namespace Functions.Webhooks
                                             ContainerName = storageRepository.GetSafeContainerName(item.Codename)
                                         });
 
-                                        container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
+                                        container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken(coreContext)
                                         {
                                             Codename = item.Codename,
                                             Localization = item.Language

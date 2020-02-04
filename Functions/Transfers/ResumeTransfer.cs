@@ -49,9 +49,11 @@ namespace Functions.Transfers
                 switch (AccessTokenResult)
                 {
                     case ValidAccessTokenResult _:
+                        var (transferToken, _, _, _) = getTransferRequest;
+
                         await transfersService.ResumeTransfer(new GetTransferParameters
                         {
-                            TransferToken = getTransferRequest.TransferToken
+                            TransferToken = transferToken
                         });
 
                         return LogOk();
