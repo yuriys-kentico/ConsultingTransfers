@@ -12,7 +12,6 @@ namespace Functions
         private readonly ILogger logger;
 
         protected const string transfers = nameof(transfers);
-        protected const string webhook = nameof(webhook);
 
         public IAccessTokenResult? AccessTokenResult { get; protected set; }
 
@@ -57,6 +56,15 @@ namespace Functions
                 ValidAccessTokenResult _ => new InternalServerErrorMessageResult(exception.Message),
                 _ => new NotFoundResult(),
             };
+        }
+
+        protected IActionResult LogBadRequest(Exception exception)
+        {
+            var message = exception.Message;
+
+            logger.LogError(exception, "Error request: {message}", message);
+
+            return new BadRequestObjectResult(exception.Message);
         }
     }
 }
