@@ -32,11 +32,12 @@ namespace Functions.Tests.Transfers
         public async Task Should_Return200_When_ValidRequest(
             GetTransferRequest getTransferRequest,
             IDictionary<string, string> headers,
-            IAccessTokenResult accessTokenResult
+            IAccessTokenResult accessTokenResult,
+            bool throws
             )
         {
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
-            mockTransfersService.SetupSuspendTransfer();
+            mockTransfersService.SetupSuspendTransfer(throws);
 
             var response = await mockFunction.Run(getTransferRequest, headers);
 
@@ -47,11 +48,12 @@ namespace Functions.Tests.Transfers
         public async Task Should_Return500Or404_When_InvalidRequest(
             GetTransferRequest getTransferRequest,
             IDictionary<string, string> headers,
-            IAccessTokenResult accessTokenResult
+            IAccessTokenResult accessTokenResult,
+            bool throws
             )
         {
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
-            mockTransfersService.SetupSuspendTransfer();
+            mockTransfersService.SetupSuspendTransfer(throws);
 
             var response = await mockFunction.Run(getTransferRequest, headers);
 
@@ -71,7 +73,8 @@ namespace Functions.Tests.Transfers
         public async Task Should_Return401Or404_When_UnauthorizedRequest(
             GetTransferRequest getTransferRequest,
             IDictionary<string, string> headers,
-            IAccessTokenResult accessTokenResult
+            IAccessTokenResult accessTokenResult,
+            bool throws
             )
         {
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
@@ -100,6 +103,7 @@ namespace Functions.Tests.Transfers
 
         private static IDictionary<string, string> headers;
         private static IAccessTokenResult accessTokenResult;
+        private static bool throws;
 
         internal static IEnumerable<TestCaseData> ValidRequests()
         {
@@ -114,6 +118,7 @@ namespace Functions.Tests.Transfers
             {
             };
             accessTokenResult = new Mock<ValidAccessTokenResult>().Object;
+            throws = true;
 
             yield return GetTestCaseWhen("Token is valid, body is missing transferToken and client is requesting");
         }
@@ -135,7 +140,7 @@ namespace Functions.Tests.Transfers
 
         private static TestCaseData GetTestCaseWhen(string name)
         {
-            return new TestCaseData(getTransferRequest, headers, accessTokenResult)
+            return new TestCaseData(getTransferRequest, headers, accessTokenResult, throws)
                 .SetName(name);
         }
     }

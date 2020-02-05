@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Functions.Models
+﻿namespace Functions.Models
 {
     public class GetTransferRequest
     {
@@ -13,13 +11,13 @@ namespace Functions.Models
         public bool ContainerUrl { private get; set; }
 
         internal void Deconstruct(
-            out string transferToken,
+            out string? transferToken,
             out bool files,
             out bool fields,
             out bool containerUrl
             )
         {
-            transferToken = TransferToken ?? throw new ArgumentNullException(nameof(transferToken));
+            transferToken = TransferToken;
             files = Files;
             fields = Fields;
             containerUrl = ContainerUrl;

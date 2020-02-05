@@ -37,7 +37,8 @@ namespace Functions.Tests.Transfers
             string region,
             IDictionary<string, string> headers,
             IAccessTokenResult accessTokenResult,
-            Transfer transfer
+            Transfer transfer,
+            bool throws
             )
         {
             var (_, _, _, _, localization) = createTransferRequest;
@@ -45,7 +46,7 @@ namespace Functions.Tests.Transfers
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
             mockCoreContext.SetupRegion(region);
             mockCoreContext.SetupLocalization(localization);
-            mockTransfersService.SetupCreateTransfer(transfer);
+            mockTransfersService.SetupCreateTransfer(transfer, throws);
 
             var response = await mockFunction.Run(createTransferRequest, headers, region);
 
@@ -58,7 +59,8 @@ namespace Functions.Tests.Transfers
             string region,
             IDictionary<string, string> headers,
             IAccessTokenResult accessTokenResult,
-            Transfer transfer
+            Transfer transfer,
+            bool throws
             )
         {
             var (_, _, _, _, localization) = createTransferRequest;
@@ -66,7 +68,7 @@ namespace Functions.Tests.Transfers
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
             mockCoreContext.SetupRegion(region);
             mockCoreContext.SetupLocalization(localization);
-            mockTransfersService.SetupCreateTransfer(transfer);
+            mockTransfersService.SetupCreateTransfer(transfer, throws);
 
             var response = await mockFunction.Run(createTransferRequest, headers, region);
 
@@ -88,7 +90,8 @@ namespace Functions.Tests.Transfers
             string region,
             IDictionary<string, string> headers,
             IAccessTokenResult accessTokenResult,
-            Transfer transfer
+            Transfer transfer,
+            bool throws
             )
         {
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
@@ -123,6 +126,7 @@ namespace Functions.Tests.Transfers
         private static IDictionary<string, string> headers;
         private static IAccessTokenResult accessTokenResult;
         private static Transfer transfer;
+        private static bool throws;
 
         internal static IEnumerable<TestCaseData> ValidRequests()
         {
@@ -149,6 +153,7 @@ namespace Functions.Tests.Transfers
                 Template = "template"
             };
             accessTokenResult = new Mock<ValidAccessTokenResult>().Object;
+            throws = true;
 
             yield return GetTestCaseWhen("Token is valid, body is missing name and client is requesting");
 
@@ -212,7 +217,7 @@ namespace Functions.Tests.Transfers
 
         private static TestCaseData GetTestCaseWhen(string name)
         {
-            return new TestCaseData(createTransferRequest, region, headers, accessTokenResult, transfer)
+            return new TestCaseData(createTransferRequest, region, headers, accessTokenResult, transfer, throws)
                 .SetName(name);
         }
     }

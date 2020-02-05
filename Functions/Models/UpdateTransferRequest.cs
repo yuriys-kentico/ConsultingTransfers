@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Functions.Models
+﻿namespace Functions.Models
 {
     public class UpdateTransferRequest
     {
@@ -15,16 +13,16 @@ namespace Functions.Models
         public string? Localization { private get; set; }
 
         public void Deconstruct(
-            out string transferToken,
+            out string? transferToken,
             out string? field,
-            out string type,
+            out string? type,
             out string? messageItemCodename,
             out string? localization
             )
         {
-            transferToken = TransferToken ?? throw new ArgumentNullException(nameof(TransferToken));
+            transferToken = TransferToken;
             field = Field;
-            type = Type ?? throw new ArgumentNullException(nameof(Type));
+            type = Type;
             messageItemCodename = MessageItemCodename;
             localization = Localization;
         }

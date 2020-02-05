@@ -47,55 +47,72 @@ namespace Functions.Tests.Mocks
         }
 
         internal static void SetupSuspendTransfer(
-            this Mock<ITransfersService> mockTransfersService
+            this Mock<ITransfersService> mockTransfersService,
+            bool throws = false
             )
         {
-            mockTransfersService.Setup(mock => mock.SuspendTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                GetValidGetTransferParameters(getTransferParameters))))
-                .Throws<Exception>();
+            var setup = mockTransfersService.Setup(mock => mock.SuspendTransfer(It.IsAny<GetTransferParameters>()));
 
-            mockTransfersService.Setup(mock => mock.SuspendTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                !GetValidGetTransferParameters(getTransferParameters))))
-                .Returns(Task.CompletedTask);
+            if (throws)
+            {
+                setup.Throws<Exception>();
+            }
+            else
+            {
+                setup.Returns(Task.CompletedTask);
+            }
         }
 
         internal static void SetupResumeTransfer(
-            this Mock<ITransfersService> mockTransfersService
+            this Mock<ITransfersService> mockTransfersService,
+            bool throws = false
             )
         {
-            mockTransfersService.Setup(mock => mock.ResumeTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                GetValidGetTransferParameters(getTransferParameters))))
-                .Throws<Exception>();
+            var setup = mockTransfersService.Setup(mock => mock.ResumeTransfer(It.IsAny<GetTransferParameters>()));
 
-            mockTransfersService.Setup(mock => mock.ResumeTransfer(It.Is<GetTransferParameters>(getTransferParameters =>
-                !GetValidGetTransferParameters(getTransferParameters))))
-                .Returns(Task.CompletedTask);
+            if (throws)
+            {
+                setup.Throws<Exception>();
+            }
+            else
+            {
+                setup.Returns(Task.CompletedTask);
+            }
         }
 
         internal static void SetupUpdateTransfer(
-            this Mock<ITransfersService> mockTransfersService
+            this Mock<ITransfersService> mockTransfersService,
+            bool throws = false
             )
         {
-            mockTransfersService.Setup(mock => mock.UpdateTransfer(It.Is<UpdateTransferParameters>(updateTransferParameters =>
-                GetValidUpdateTransferParameters(updateTransferParameters))))
-                .Throws<Exception>();
+            var setup = mockTransfersService.Setup(mock => mock.UpdateTransfer(It.IsAny<UpdateTransferParameters>()));
 
-            mockTransfersService.Setup(mock => mock.UpdateTransfer(It.Is<UpdateTransferParameters>(updateTransferParameters =>
-                !GetValidUpdateTransferParameters(updateTransferParameters))))
-                .Returns(Task.CompletedTask);
+            if (throws)
+            {
+                setup.Throws<Exception>();
+            }
+            else
+            {
+                setup.Returns(Task.CompletedTask);
+            }
         }
 
         internal static void SetupCreateTransfer(
             this Mock<ITransfersService> mockTransfersService,
-            Transfer transfer
+            Transfer transfer,
+            bool throws = false
             )
         {
-            mockTransfersService.Setup(mock => mock.CreateTransfer(It.Is<CreateTransferParameters>(createTransferParameters =>
-                GetValidCreateTransferParameters(createTransferParameters))))
-                .Throws<Exception>();
+            var setup = mockTransfersService.Setup(mock => mock.CreateTransfer(It.IsAny<CreateTransferParameters>()));
 
-            mockTransfersService.Setup(mock => mock.CreateTransfer(It.IsAny<CreateTransferParameters>()))
-                .ReturnsAsync(transfer);
+            if (throws)
+            {
+                setup.Throws<Exception>();
+            }
+            else
+            {
+                setup.ReturnsAsync(transfer);
+            }
         }
 
         private static bool GetValidGetTransferParameters(
@@ -113,35 +130,6 @@ namespace Functions.Tests.Mocks
                 (true, false, false, _) when accessTokenResult is ValidAccessTokenResult => true,
                 _ => false
             };
-        }
-
-        private static bool GetValidGetTransferParameters(
-            GetTransferParameters getTransferParameters
-            )
-        {
-            var (transferToken, _, _, _, _) = getTransferParameters;
-
-            return string.IsNullOrEmpty(transferToken);
-        }
-
-        private static bool GetValidUpdateTransferParameters(
-            UpdateTransferParameters updateTransferParameters
-            )
-        {
-            var (transferToken, _, _, _) = updateTransferParameters;
-
-            return string.IsNullOrEmpty(transferToken);
-        }
-
-        private static bool GetValidCreateTransferParameters(
-            CreateTransferParameters createTransferParameters
-            )
-        {
-            var (name, customer, requester, _) = createTransferParameters;
-
-            return string.IsNullOrEmpty(name)
-                || string.IsNullOrEmpty(customer)
-                || string.IsNullOrEmpty(requester);
         }
     }
 }
