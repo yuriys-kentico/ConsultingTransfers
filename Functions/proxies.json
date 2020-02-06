@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json.schemastore.org/proxies",
+  "proxies": {
+    "ClientProxyRoot": {
+      "matchCondition": {
+        "route": "/",
+        "methods": [ "GET" ]
+      },
+      "backendUri": "https://%AzureStorage%/",
+      "responseOverrides": {
+        "response.headers.Strict-Transport-Security": "%Proxy:Strict-Transport-Security%",
+        "response.headers.X-Content-Type-Options": "%Proxy:X-Content-Type-Options%",
+        "response.headers.X-XSS-Protection": "%Proxy:X-XSS-Protection%",
+        "response.headers.X-Frame-Options": "%Proxy:X-Frame-Options%",
+        "response.headers.Content-Security-Policy": "%Proxy:Content-Security-Policy%",
+        "response.headers.Upgrade-Insecure-Requests": "%Proxy:Upgrade-Insecure-Requests%",
+        "response.headers.Referrer-Policy": "%Proxy:Referrer-Policy%",
+        "response.headers.Feature-Policy": "%Proxy:Feature-Policy%"
+      }
+    },
+    "ClientProxyFiles": {
+      "matchCondition": {
+        "route": "/{route}",
+        "methods": [ "GET" ]
+      },
+      "backendUri": "https://%AzureStorage%/{route}",
+      "responseOverrides": {
+        "response.headers.Strict-Transport-Security": "%Proxy:Strict-Transport-Security%",
+        "response.headers.X-Content-Type-Options": "%Proxy:X-Content-Type-Options%",
+        "response.headers.X-XSS-Protection": "%Proxy:X-XSS-Protection%",
+        "response.headers.X-Frame-Options": "%Proxy:X-Frame-Options%",
+        "response.headers.Content-Security-Policy": "%Proxy:Content-Security-Policy%",
+        "response.headers.Upgrade-Insecure-Requests": "%Proxy:Upgrade-Insecure-Requests%",
+        "response.headers.Referrer-Policy": "%Proxy:Referrer-Policy%",
+        "response.headers.Feature-Policy": "%Proxy:Feature-Policy%"
+      }
+    },
+    "ClientProxyStatic": {
+      "matchCondition": {
+        "route": "/static/{*route}",
+        "methods": [ "GET" ]
+      },
+      "backendUri": "https://%AzureStorage%/static/{route}",
+      "responseOverrides": {
+        "response.headers.Strict-Transport-Security": "%Proxy:Strict-Transport-Security%",
+        "response.headers.X-Content-Type-Options": "%Proxy:X-Content-Type-Options%",
+        "response.headers.X-XSS-Protection": "%Proxy:X-XSS-Protection%",
+        "response.headers.X-Frame-Options": "%Proxy:X-Frame-Options%",
+        "response.headers.Content-Security-Policy": "%Proxy:Content-Security-Policy%",
+        "response.headers.Upgrade-Insecure-Requests": "%Proxy:Upgrade-Insecure-Requests%",
+        "response.headers.Referrer-Policy": "%Proxy:Referrer-Policy%",
+        "response.headers.Feature-Policy": "%Proxy:Feature-Policy%"
+      }
+    },
+    "ClientProxyTransfer": {
+      "matchCondition": {
+        "route": "/transfer/{*route}",
+        "methods": [ "GET" ]
+      },
+      "backendUri": "https://%AzureStorage%/transfer/{route}",
+      "responseOverrides": {
+        "response.headers.Strict-Transport-Security": "%Proxy:Strict-Transport-Security%",
+        "response.headers.X-Content-Type-Options": "%Proxy:X-Content-Type-Options%",
+        "response.headers.X-XSS-Protection": "%Proxy:X-XSS-Protection%",
+        "response.headers.X-Frame-Options": "%Proxy:X-Frame-Options%",
+        "response.headers.Content-Security-Policy": "%Proxy:Content-Security-Policy%",
+        "response.headers.Upgrade-Insecure-Requests": "%Proxy:Upgrade-Insecure-Requests%",
+        "response.headers.Referrer-Policy": "%Proxy:Referrer-Policy%",
+        "response.headers.Feature-Policy": "%Proxy:Feature-Policy%"
+      }
+    },
+    "ClientProxyTransfers": {
+      "matchCondition": {
+        "route": "/transfers/{route}",
+        "methods": [ "GET" ]
+      },
+      "backendUri": "https://%AzureStorage%/transfers/{route}",
+      "responseOverrides": {
+        "response.headers.Strict-Transport-Security": "%Proxy:Strict-Transport-Security%",
+        "response.headers.X-Content-Type-Options": "%Proxy:X-Content-Type-Options%",
+        "response.headers.X-XSS-Protection": "%Proxy:X-XSS-Protection%",
+        "response.headers.X-Frame-Options": "%Proxy:X-Frame-Options%",
+        "response.headers.Content-Security-Policy": "%Proxy:Content-Security-Policy%",
+        "response.headers.Upgrade-Insecure-Requests": "%Proxy:Upgrade-Insecure-Requests%",
+        "response.headers.Referrer-Policy": "%Proxy:Referrer-Policy%",
+        "response.headers.Feature-Policy": "%Proxy:Feature-Policy%"
+      }
+    },
+    "ClientProxyDetails": {
+      "matchCondition": {
+        "route": "/details/{*route}",
+        "methods": [ "GET" ]
+      },
+      "backendUri": "https://%AzureStorage%/details/{route}",
+      "responseOverrides": {
+        "response.headers.Strict-Transport-Security": "%Proxy:Strict-Transport-Security%",
+        "response.headers.X-Content-Type-Options": "%Proxy:X-Content-Type-Options%",
+        "response.headers.X-XSS-Protection": "%Proxy:X-XSS-Protection%",
+        "response.headers.X-Frame-Options": "%Proxy:X-Frame-Options%",
+        "response.headers.Content-Security-Policy": "%Proxy:Content-Security-Policy%",
+        "response.headers.Upgrade-Insecure-Requests": "%Proxy:Upgrade-Insecure-Requests%",
+        "response.headers.Referrer-Policy": "%Proxy:Referrer-Policy%",
+        "response.headers.Feature-Policy": "%Proxy:Feature-Policy%"
+      }
+    },
+    "ClientProxyError": {
+      "matchCondition": {
+        "route": "/error/{*route}",
+        "methods": [ "GET" ]
+      },
+      "backendUri": "https://%AzureStorage%/error/{route}",
+      "responseOverrides": {
+        "response.headers.Strict-Transport-Security": "%Proxy:Strict-Transport-Security%",
+        "response.headers.X-Content-Type-Options": "%Proxy:X-Content-Type-Options%",
+        "response.headers.X-XSS-Protection": "%Proxy:X-XSS-Protection%",
+        "response.headers.X-Frame-Options": "%Proxy:X-Frame-Options%",
+        "response.headers.Content-Security-Policy": "%Proxy:Content-Security-Policy%",
+        "response.headers.Upgrade-Insecure-Requests": "%Proxy:Upgrade-Insecure-Requests%",
+        "response.headers.Referrer-Policy": "%Proxy:Referrer-Policy%",
+        "response.headers.Feature-Policy": "%Proxy:Feature-Policy%"
+      }
+    }
+  }
+}

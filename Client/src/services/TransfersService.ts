@@ -28,14 +28,13 @@ export class TransfersService {
 
   async listTransfers(listTransfersRequest: IListTransfersRequest) {
     const { showError } = this.messageContext;
-    const { region, detailsKey } = listTransfersRequest;
+    const { region } = listTransfersRequest;
     const specificRegion = region ? region : '';
 
     try {
-      const response = await Axios.post<ITransfer[]>(
-        `${listTransfers.endpoint}/${specificRegion}`,
-        null,
-        await this.getAuthorizationHeaders(listTransfers.key, detailsKey)
+      const response = await this.post<ITransfer[]>(
+        { endpoint: `${listTransfers.endpoint}/${specificRegion}`, key: listTransfers.key },
+        null
       );
 
       if (response.data) {
@@ -53,11 +52,7 @@ export class TransfersService {
     getTransferRequest.fields = true;
 
     const getTransferLoop = async () => {
-      const response = await Axios.post<ITransfer>(
-        getTransfer.endpoint,
-        getTransferRequest,
-        await this.getAuthorizationHeaders(getTransfer.key)
-      );
+      const response = await this.post<ITransfer>(getTransfer, getTransferRequest);
 
       if (response.data) {
         response.data.transferToken = getTransferRequest.transferToken;
@@ -84,11 +79,7 @@ export class TransfersService {
     const { showError } = this.messageContext;
 
     try {
-      await Axios.post(
-        updateTransfer.endpoint,
-        updateTransferRequest,
-        await this.getAuthorizationHeaders(updateTransfer.key)
-      );
+      await this.post(updateTransfer, updateTransferRequest);
     } catch (error) {
       showError(error);
     }
@@ -98,11 +89,7 @@ export class TransfersService {
     const { showError } = this.messageContext;
 
     try {
-      await Axios.post(
-        suspendTransfer.endpoint,
-        getTransferRequest,
-        await this.getAuthorizationHeaders(suspendTransfer.key)
-      );
+      await this.post(suspendTransfer, getTransferRequest);
     } catch (error) {
       showError(error);
     }
@@ -112,11 +99,7 @@ export class TransfersService {
     const { showError } = this.messageContext;
 
     try {
-      await Axios.post(
-        resumeTransfer.endpoint,
-        getTransferRequest,
-        await this.getAuthorizationHeaders(resumeTransfer.key)
-      );
+      await this.post(resumeTransfer, getTransferRequest);
     } catch (error) {
       showError(error);
     }
@@ -126,10 +109,9 @@ export class TransfersService {
     const { showError } = this.messageContext;
 
     try {
-      const response = await Axios.post<ITransfer>(
-        `${createTransfer.endpoint}/${createTransferRequest.region}`,
-        createTransferRequest,
-        await this.getAuthorizationHeaders(createTransfer.key)
+      const response = await this.post<ITransfer>(
+        { endpoint: `${createTransfer.endpoint}/${createTransferRequest.region}`, key: createTransfer.key },
+        createTransferRequest
       );
 
       if (response.data) {
@@ -140,8 +122,16 @@ export class TransfersService {
     }
   }
 
-  private async getAuthorizationHeaders(key: string, detailsKey?: string) {
-    let bearerToken = detailsKey;
+  private async post<T>(endpoint: { endpoint: string; key: string }, body: any) {
+    return await Axios.post<T>(
+      `${process.env.REACT_APP_BackendHost}${endpoint.endpoint}`,
+      body,
+      await this.getAuthorizationHeaders(endpoint.key)
+    );
+  }
+
+  private async getAuthorizationHeaders(key: string) {
+    let bearerToken;
 
     if (authProvider.authenticationState === AuthenticationState.Authenticated) {
       bearerToken = (await authProvider.getAccessToken()).accessToken;
