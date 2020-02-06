@@ -2,7 +2,20 @@
   "version": "2.0",
   "extensions": {
     "http": {
-      "routePrefix": ""
+      "routePrefix": "",
+      "hsts": {
+        "isEnabled": true,
+        "maxAge": "365",
+        "includeSubDomains": true
+      },
+      "customHeaders": {
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "Content-Security-Policy": "default-src 'self' https: data:; script-src https: 'self' 'unsafe-inline'",
+        "Upgrade-Insecure-Requests": "1",
+        "Referrer-Policy": "same-origin",
+        "Feature-Policy": "payment 'self'; geolocation 'self'"
+      }
     }
   },
   "logging": {
