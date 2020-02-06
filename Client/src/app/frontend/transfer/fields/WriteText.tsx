@@ -59,11 +59,11 @@ export const WriteText: FC<IFieldProps> = ({
         transferFilesService.readFileAsText(fieldFiles[0]).then(blobString => {
           updateEditorState(blobString);
         });
+
+        setLoaded(true);
       } else {
         updateEditorState(defaultText);
       }
-
-      setLoaded(true);
     }
   }, [defaultText, files, name, transferFilesService, loaded, setFieldCanBeCompleted]);
 

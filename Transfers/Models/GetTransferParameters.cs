@@ -21,14 +21,14 @@ namespace Transfers.Models
             out bool files,
             out bool fields,
             out bool containerUrl,
-            out IAccessTokenResult accessTokenResult
+            out IAccessTokenResult? accessTokenResult
             )
         {
             transferToken = TransferToken ?? throw new ArgumentNullException(nameof(TransferToken));
             files = Files;
             fields = Fields;
             containerUrl = ContainerUrl;
-            accessTokenResult = AccessTokenResult ?? throw new ArgumentNullException(nameof(AccessTokenResult));
+            accessTokenResult = AccessTokenResult;
         }
     }
 }
