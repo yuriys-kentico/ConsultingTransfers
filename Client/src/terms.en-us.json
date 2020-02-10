@@ -128,7 +128,8 @@
     "uploadingFiles": "Uploading {0}...",
     "finishedUploading": "Finished uploading {0}.",
     "downloadingFile": "Downloading {0}...",
-    "abortDownload": "User navigated away.",
+    "abortDownload": "Download cancelled.",
+    "abortUpload": "Upload cancelled.",
     "finishedDownloading": "Finished downloading {0}."
   }
 }

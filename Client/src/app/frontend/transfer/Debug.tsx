@@ -61,7 +61,7 @@ export const Debug: FC = () => {
   //     }
   //   }, totalTime / totalUpdates);
 
-  //   showInfoUntil(`test ${totalTime}`, wait(totalTime), updater);
+  //   showInfoUntil(`test ${totalTime}`, wait(totalTime), () => clearInterval(interval), updater);
   // };
 
   return (

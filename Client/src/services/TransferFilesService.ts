@@ -1,6 +1,7 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { createWriteStream } from 'streamsaver';
 
+import { AbortController, AbortSignalLike } from '@azure/abort-controller';
 import { TransferProgressEvent } from '@azure/core-http';
 import { BlobClient, BlockBlobClient, ContainerClient } from '@azure/storage-blob';
 
@@ -86,7 +87,7 @@ export class TransferFilesService {
   }
 
   async uploadFiles(files: File | File[], directory: string, silent?: boolean) {
-    const { showInfoUntil, showError, showSuccess } = this.messageContext;
+    const { showInfoUntil, showError, showWarning, showSuccess } = this.messageContext;
 
     const filesToUpload = ensureArray(files);
 
@@ -98,9 +99,16 @@ export class TransferFilesService {
       for (const file of filesToUpload) {
         const blockBlobClient = this.containerClient.getBlockBlobClient(`${safeDirectory}/${file.name}`);
         const progressSubject = new Subject<IUpdateMessage>();
-        const uploadPromise = this.getUploadPromise(file, blockBlobClient, progressSubject);
+        const abortController = new AbortController();
+        const uploadPromise = this.getUploadPromise(file, blockBlobClient, progressSubject, abortController.signal);
 
-        !silent && showInfoUntil(format(services.uploadingFiles, file.name), uploadPromise, progressSubject);
+        !silent &&
+          showInfoUntil(
+            format(services.uploadingFiles, file.name),
+            uploadPromise,
+            () => abortController.abort(),
+            progressSubject
+          );
 
         promises.push(uploadPromise);
       }
@@ -111,14 +119,18 @@ export class TransferFilesService {
 
       !silent && showSuccess(format(services.finishedUploading, fileNames));
     } catch (error) {
-      showError(error);
+      if (error.name === 'AbortError') {
+        showWarning(services.abortUpload);
+      } else {
+        showError(error);
+      }
     }
 
     await this.listFiles();
   }
 
   async downloadFiles(files: IFile | IFile[]) {
-    const { showInfoUntil, showError, showSuccess } = this.messageContext;
+    const { showInfoUntil, showError, showWarning, showSuccess } = this.messageContext;
 
     const filesToDownload = ensureArray(files);
 
@@ -128,12 +140,23 @@ export class TransferFilesService {
       for (const file of filesToDownload) {
         const blobClient = this.containerClient.getBlobClient(file.path);
         const progressSubject = new Subject<IUpdateMessage>();
-        const downloadPromise = this.getDownloadPromise(blobClient, progressSubject, file.sizeBytes);
+        const abortController = new AbortController();
+        const downloadPromise = this.getDownloadPromise(
+          blobClient,
+          progressSubject,
+          file.sizeBytes,
+          abortController.signal
+        );
 
         const response = await downloadPromise;
 
         if (response.blobBody) {
-          showInfoUntil(format(services.downloadingFile, file.name), response.blobBody, progressSubject);
+          showInfoUntil(
+            format(services.downloadingFile, file.name),
+            response.blobBody,
+            () => abortController.abort(),
+            progressSubject
+          );
 
           promises[file.name] = response.blobBody;
         }
@@ -160,7 +183,11 @@ export class TransferFilesService {
 
       showSuccess(format(services.finishedDownloading, filesToDownload.map(blob => blob.name).join(', ')));
     } catch (error) {
-      showError(error);
+      if (error.name === 'AbortError') {
+        showWarning(services.abortDownload);
+      } else {
+        showError(error);
+      }
     }
   }
 
@@ -201,19 +228,31 @@ export class TransferFilesService {
     return files.filter(file => file.field.name === fieldName);
   }
 
-  private getUploadPromise(file: File, blockBlobClient: BlockBlobClient, progressSubject: Subject<IUpdateMessage>) {
+  private getUploadPromise(
+    file: File,
+    blockBlobClient: BlockBlobClient,
+    progressSubject: Subject<IUpdateMessage>,
+    abortSignal?: AbortSignalLike
+  ) {
     return blockBlobClient
       .uploadBrowserData(file, {
         blockSize: azureStorage.blockSize * 1024 * 1024,
         concurrency: azureStorage.concurrency,
-        onProgress: this.updateProgress(progressSubject, file.size)
+        onProgress: this.updateProgress(progressSubject, file.size),
+        abortSignal: abortSignal
       })
       .then(() => wait(1000));
   }
 
-  private getDownloadPromise(blobClient: BlobClient, progressSubject: Subject<IUpdateMessage>, sizeBytes: number) {
+  private getDownloadPromise(
+    blobClient: BlobClient,
+    progressSubject: Subject<IUpdateMessage>,
+    sizeBytes: number,
+    abortSignal?: AbortSignalLike
+  ) {
     return blobClient.download(undefined, undefined, {
-      onProgress: this.updateProgress(progressSubject, sizeBytes)
+      onProgress: this.updateProgress(progressSubject, sizeBytes),
+      abortSignal: abortSignal
     });
   }
 

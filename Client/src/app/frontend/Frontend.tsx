@@ -3,7 +3,6 @@ import { Container, Icon, Loader, Menu, Sidebar } from 'semantic-ui-react';
 
 import { Link, LinkGetProps, Location, Router } from '@reach/router';
 
-import { experience } from '../../appSettings.json';
 import { admin, errors, header } from '../../terms.en-us.json';
 import { deleteFrom } from '../../utilities/arrays';
 import { wait } from '../../utilities/promises';
@@ -31,42 +30,33 @@ const setActiveWhenCurrent = (linkIsCurrent: (link: LinkGetProps) => boolean) =>
 });
 
 export const Frontend: RoutedFC = () => {
-  const { snackTimeout } = experience;
-
   const showSuccess: ShowInfoHandler = (text, timeout) => showInfo(text, timeout, 'success');
 
-  const showInfo: ShowInfoHandler = useCallback(
-    (text, timeout, type = 'info') => {
-      showSnack(
-        text,
-        type,
-        snack => setSnacks(snacks => [...snacks, snack]),
-        wait(timeout || snackTimeout),
-        snack => setSnacks(snacks => deleteFrom(snack, snacks))
-      );
-    },
-    [snackTimeout]
-  );
+  const showInfo: ShowInfoHandler = useCallback((text, timeout, type = 'info') => {
+    showSnack(
+      text,
+      type,
+      snack => setSnacks(snacks => [...snacks, snack]),
+      wait(timeout || 0),
+      snack => setSnacks(snacks => deleteFrom(snack, snacks))
+    );
+  }, []);
 
-  const showInfoUntil: ShowInfoUntilHandler = useCallback(
-    (text, isComplete, update?) => {
-      showSnack(
-        text,
-        'update',
-        snack => setSnacks(snacks => [...snacks, snack]),
-        isComplete.then(() => wait(snackTimeout)),
-        snack => setSnacks(snacks => deleteFrom(snack, snacks)),
-        update
-      );
-    },
-    [snackTimeout]
-  );
+  const showInfoUntil: ShowInfoUntilHandler = useCallback((text, isComplete, abort, update?) => {
+    showSnack(
+      text,
+      'update',
+      snack => setSnacks(snacks => [...snacks, snack]),
+      isComplete,
+      snack => setSnacks(snacks => deleteFrom(snack, snacks)),
+      abort,
+      update
+    );
+  }, []);
 
-  const showWarning: ShowErrorHandler = useCallback(
-    (error, timeout) => {
-      console.warn(error);
-
-      const text = (error.body && error.body.message) || error.message;
+  const showWarning: ShowInfoHandler = useCallback(
+    (text, timeout) => {
+      console.warn(text);
 
       showInfo(text, timeout, 'warning');
     },

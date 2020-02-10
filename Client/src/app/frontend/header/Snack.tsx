@@ -1,12 +1,12 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
-import { Message, Progress, Segment } from 'semantic-ui-react';
+import { Divider, Message, Progress, Segment } from 'semantic-ui-react';
 
 import { header } from '../../../terms.en-us.json';
 import { getSizeText, toRounded } from '../../../utilities/numbers';
 import { format } from '../../../utilities/strings';
 import { ISnack, IUpdateMessage, SnackType } from './snacks';
 
-export const Snack: FC<ISnack> = ({ type, content, update }) => {
+export const Snack: FC<ISnack> = ({ type, content, abort, update }) => {
   const startStamp = useRef(Date.now());
 
   const [progress, setProgress] = useState<IUpdateMessage>({ current: 0, total: 0 });
@@ -76,14 +76,16 @@ export const Snack: FC<ISnack> = ({ type, content, update }) => {
           const percent = toRounded((current / total) * 100);
 
           return (
-            <Message floating compact size='big' info>
+            <Message floating compact size='big' info onDismiss={abort}>
               {content}
+              <Divider fitted hidden />
+              <Divider fitted hidden />
               {update && <Progress percent={percent} content={updateContent} progress indicating autoSuccess />}
             </Message>
           );
       }
     },
-    [content, duration, progress, update]
+    [content, duration, progress, abort, update]
   );
 
   return <Segment basic>{getMessage(type)}</Segment>;

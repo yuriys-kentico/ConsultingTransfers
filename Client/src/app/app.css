@@ -313,3 +313,7 @@ ol.ui.list ol,
   opacity: initial !important;
   color: initial !important;
 }
+
+.ui.big.message .ui.tiny.icon {
+  padding: 0.5em;
+}
