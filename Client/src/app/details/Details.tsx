@@ -22,14 +22,13 @@ declare const CustomElement: ICustomElement;
 
 interface IDetailsValue {
   customer: string;
-  requester: string;
 }
 
 interface IDetailsProps {
   region: string;
 }
 
-const defaultDetailsValue: IDetailsValue = { customer: '', requester: '' };
+const defaultDetailsValue: IDetailsValue = { customer: '' };
 
 const getUrl = (path: string) => {
   return `${window.location.protocol}//${window.location.host}${path}`;
@@ -43,7 +42,6 @@ export const Details: AuthenticatedRoutedFC<IDetailsProps> = authenticatedPopup(
   const [ready, setReady] = useState(false);
   const [available, setAvailable] = useState(false);
   const [customer, setCustomer] = useState('');
-  const [requester, setRequester] = useState('');
   const [enabled, setEnabled] = useState(false);
   const [transferToken, setTransferToken] = useState('');
   const [codename, setCodename] = useState('');
@@ -61,7 +59,6 @@ export const Details: AuthenticatedRoutedFC<IDetailsProps> = authenticatedPopup(
 
       setAvailable(true);
       setCustomer(elementValue.customer || '');
-      setRequester(elementValue.requester || '');
       setEnabledAndListTransfers(!element.disabled);
 
       CustomElement.onDisabledChanged(disabled => setEnabledAndListTransfers(!disabled));
@@ -102,9 +99,9 @@ export const Details: AuthenticatedRoutedFC<IDetailsProps> = authenticatedPopup(
 
   useEffect(() => {
     if (available && enabled) {
-      CustomElement.setValue(JSON.stringify({ customer, requester }));
+      CustomElement.setValue(JSON.stringify({ customer }));
     }
-  }, [available, enabled, customer, requester]);
+  }, [available, enabled, customer]);
 
   return (
     <div className={`custom element ${enabled ? '' : 'disabled'}`} ref={customElementRef}>
@@ -123,23 +120,6 @@ export const Details: AuthenticatedRoutedFC<IDetailsProps> = authenticatedPopup(
                 fluid
                 value={customer}
                 onChange={event => setCustomer(event.target.value)}
-                placeholder={details.placeholder}
-                disabled={!enabled}
-              />
-            </div>
-          </div>
-          <div className='text element'>
-            <div className='pane'>
-              <label className='label'>{details.requester.header}</label>
-              <div className='guidelines'>
-                <p>{details.requester.guidelines}</p>
-              </div>
-              <Input
-                className='input'
-                size='big'
-                fluid
-                value={requester}
-                onChange={event => setRequester(event.target.value)}
                 placeholder={details.placeholder}
                 disabled={!enabled}
               />

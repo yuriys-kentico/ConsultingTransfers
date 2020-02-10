@@ -17,7 +17,6 @@ export const NewTransfer: AuthenticatedRoutedFC = authenticated(() => {
 
   const [name, setName] = useState('');
   const [customer, setCustomer] = useState('');
-  const [requester, setRequester] = useState('');
   const [template, setTemplate] = useState(fields.template.options[0].value);
   const [region, setRegion] = useState(fields.region.options[0].value);
 
@@ -32,28 +31,27 @@ export const NewTransfer: AuthenticatedRoutedFC = authenticated(() => {
 
   useEffect(() => {
     if (transfer) {
-      if (name && customer && requester) {
+      if (name && customer) {
         setModalOpen(true);
       }
 
       setName('');
       setCustomer('');
-      setRequester('');
     }
-  }, [transfer, customer, name, requester]);
+  }, [transfer, customer, name]);
 
   const createTransfer = useCallback(async () => {
-    if (name === '' || customer === '' || requester === '') {
+    if (name === '' || customer === '') {
       setError(true);
-    } else if (name && customer && requester) {
+    } else if (name && customer) {
       setError(false);
       setReady(false);
 
-      await transfersService.createTransfer({ name, customer, requester, template, region });
+      await transfersService.createTransfer({ name, customer, template, region });
 
       setReady(true);
     }
-  }, [customer, name, region, requester, template, transfersService]);
+  }, [customer, name, region, template, transfersService]);
 
   return (
     <Segment basic>
@@ -79,15 +77,6 @@ export const NewTransfer: AuthenticatedRoutedFC = authenticated(() => {
           autoComplete='organization'
           onChange={event => setCustomer(event.target.value)}
           error={error && customer === '' && { content: fields.customer.invalid, pointing: 'below' }}
-        />
-        <Form.Input
-          label={fields.requester.label}
-          placeholder={fields.requester.placeholder}
-          required
-          value={requester}
-          autoComplete='name'
-          onChange={event => setRequester(event.target.value)}
-          error={error && requester === '' && { content: fields.requester.invalid, pointing: 'below' }}
         />
         <Form.Select
           label={fields.template.label}

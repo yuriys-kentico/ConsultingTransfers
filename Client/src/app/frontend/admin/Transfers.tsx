@@ -77,7 +77,6 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
               <Table.HeaderCell>{table.headings.region}</Table.HeaderCell>
               <Table.HeaderCell>{table.headings.transfer}</Table.HeaderCell>
               <Table.HeaderCell>{table.headings.customer}</Table.HeaderCell>
-              <Table.HeaderCell>{table.headings.requester}</Table.HeaderCell>
               <Table.HeaderCell></Table.HeaderCell>
             </Table.Row>
           </Table.Header>
@@ -87,7 +86,6 @@ export const Transfers: AuthenticatedRoutedFC = authenticated(() => {
                 <Table.Cell>{transfer.region.toUpperCase()}</Table.Cell>
                 <Table.Cell>{transfer.name}</Table.Cell>
                 <Table.Cell>{transfer.customer}</Table.Cell>
-                <Table.Cell>{transfer.requester}</Table.Cell>
                 <Table.Cell textAlign='right'>
                   <Tooltip label={transferTerms.tooltips.edit}>
                     <Button icon='edit' color='blue' circular as={Link} to={getTransferUrl(transfer.transferToken)} />

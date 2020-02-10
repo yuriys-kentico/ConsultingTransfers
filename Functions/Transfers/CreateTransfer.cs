@@ -57,7 +57,7 @@ namespace Functions.Transfers
                 switch (AccessTokenResult)
                 {
                     case ValidAccessTokenResult _:
-                        var (name, customer, requester, template, localization) = createTransferRequest;
+                        var (name, customer, template, localization) = createTransferRequest;
 
                         if (localization != null)
                         {
@@ -68,7 +68,6 @@ namespace Functions.Transfers
                         {
                             Name = name,
                             Customer = customer,
-                            Requester = requester,
                             TemplateItemCodename = template
                         });
 

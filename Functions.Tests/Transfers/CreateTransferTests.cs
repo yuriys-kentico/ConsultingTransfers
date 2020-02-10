@@ -41,7 +41,7 @@ namespace Functions.Tests.Transfers
             bool throws
             )
         {
-            var (_, _, _, _, localization) = createTransferRequest;
+            var (_, _, _, localization) = createTransferRequest;
 
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
             mockCoreContext.SetupRegion(region);
@@ -63,7 +63,7 @@ namespace Functions.Tests.Transfers
             bool throws
             )
         {
-            var (_, _, _, _, localization) = createTransferRequest;
+            var (_, _, _, localization) = createTransferRequest;
 
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
             mockCoreContext.SetupRegion(region);
@@ -118,7 +118,6 @@ namespace Functions.Tests.Transfers
         {
             Name = "name",
             Customer = "customer",
-            Requester = "requester",
             Template = "template"
         };
 
@@ -137,8 +136,7 @@ namespace Functions.Tests.Transfers
             createTransferRequest = new CreateTransferRequest
             {
                 Name = "name",
-                Customer = "customer",
-                Requester = "requester"
+                Customer = "customer"
             };
 
             yield return GetTestCaseWhen("Token is valid, body is missing template and client is requesting");
@@ -149,7 +147,6 @@ namespace Functions.Tests.Transfers
             createTransferRequest = new CreateTransferRequest
             {
                 Customer = "customer",
-                Requester = "requester",
                 Template = "template"
             };
             accessTokenResult = new Mock<ValidAccessTokenResult>().Object;
@@ -160,7 +157,6 @@ namespace Functions.Tests.Transfers
             createTransferRequest = new CreateTransferRequest
             {
                 Name = "name",
-                Requester = "requester",
                 Template = "template"
             };
 
@@ -168,17 +164,7 @@ namespace Functions.Tests.Transfers
 
             createTransferRequest = new CreateTransferRequest
             {
-                Name = "name",
                 Customer = "customer",
-                Template = "template"
-            };
-
-            yield return GetTestCaseWhen("Token is valid, body is missing requester and client is requesting");
-
-            createTransferRequest = new CreateTransferRequest
-            {
-                Customer = "customer",
-                Requester = "requester",
                 Template = "template"
             };
             accessTokenResult = new Mock<NoAccessTokenResult>().Object;
@@ -188,20 +174,10 @@ namespace Functions.Tests.Transfers
             createTransferRequest = new CreateTransferRequest
             {
                 Name = "name",
-                Requester = "requester",
                 Template = "template"
             };
 
             yield return GetTestCaseWhen("Token is invalid, body is missing customer and client is requesting");
-
-            createTransferRequest = new CreateTransferRequest
-            {
-                Name = "name",
-                Customer = "customer",
-                Template = "template"
-            };
-
-            yield return GetTestCaseWhen("Token is invalid, body is missing requester and client is requesting");
         }
 
         internal static IEnumerable<TestCaseData> UnauthorizedRequests()

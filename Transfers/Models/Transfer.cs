@@ -19,8 +19,6 @@ namespace Transfers.Models
 
         public string? Customer { get; set; }
 
-        public string? Requester { get; set; }
-
         public string? ContainerUrl { get; set; }
 
         public string? TransferToken { get; set; }

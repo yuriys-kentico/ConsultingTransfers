@@ -8,20 +8,16 @@ namespace Transfers.Models
 
         public string? Customer { private get; set; }
 
-        public string? Requester { private get; set; }
-
         public string? TemplateItemCodename { private get; set; }
 
         public void Deconstruct(
             out string name,
             out string customer,
-            out string requester,
             out string? templateItemCodename
             )
         {
             name = Name ?? throw new ArgumentNullException(nameof(Name));
             customer = Customer ?? throw new ArgumentNullException(nameof(Customer));
-            requester = Requester ?? throw new ArgumentNullException(nameof(Requester));
             templateItemCodename = TemplateItemCodename;
         }
     }

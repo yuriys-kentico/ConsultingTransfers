@@ -5,7 +5,6 @@ export interface ITransfer {
   name: string;
   codename?: string;
   customer: string;
-  requester: string;
   containerUrl: string;
   transferToken: string;
   fields: IField[];

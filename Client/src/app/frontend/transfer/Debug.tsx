@@ -77,10 +77,6 @@ export const Debug: FC = () => {
                 {transfer.customer}
               </List.Item>
               <List.Item>
-                <Label horizontal content={'Requester:'} />
-                {transfer.requester}
-              </List.Item>
-              <List.Item>
                 <Label horizontal content={'Container name:'} />
                 {transferFilesService.containerClient.containerName}
               </List.Item>

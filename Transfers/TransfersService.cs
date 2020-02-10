@@ -1,4 +1,4 @@
-﻿using Authorization.Models;
+using Authorization.Models;
 
 using AzureStorage;
 using AzureStorage.Models;
@@ -45,7 +45,7 @@ namespace Transfers
 
         public async Task<Transfer> CreateTransfer(CreateTransferParameters createTransferParameters)
         {
-            var (name, customer, requester, templateItemCodename) = createTransferParameters;
+            var (name, customer, templateItemCodename) = createTransferParameters;
 
             TemplateItem? templateItem = default;
 
@@ -61,7 +61,6 @@ namespace Transfers
             {
                 Name = name,
                 Customer = customer,
-                Requester = requester,
                 Fields = templateItem?.GetFields(),
             });
 
@@ -97,7 +96,6 @@ namespace Transfers
                 Region = coreContext.Region,
                 Name = transferItem.System.Name,
                 Customer = transferItem.GetInfo().Customer,
-                Requester = transferItem.GetInfo().Requester,
                 TransferToken = container.TransferToken,
                 Template = resolvedTemplateItem?.Message
             };
@@ -136,7 +134,6 @@ namespace Transfers
                     Region = coreContext.Region,
                     Name = transferItem.System.Name,
                     Customer = transferItem.GetInfo().Customer,
-                    Requester = transferItem.GetInfo().Requester,
                     ContainerUrl = storageRepository.GetPublicContainerUrl(getContainerParameters),
                     Fields = transferItem.GetFields(container.CompletedFields)
                 },
@@ -146,7 +143,6 @@ namespace Transfers
                     Name = transferItem.System.Name,
                     Codename = transferItem.System.Codename,
                     Customer = transferItem.GetInfo().Customer,
-                    Requester = transferItem.GetInfo().Requester,
                     ContainerUrl = storageRepository.GetAdminContainerUrl(getContainerParameters),
                     Fields = transferItem.GetFields(container.CompletedFields)
                 },
@@ -155,7 +151,6 @@ namespace Transfers
                     Region = region,
                     Name = transferItem.System.Name,
                     Customer = transferItem.GetInfo().Customer,
-                    Requester = transferItem.GetInfo().Requester,
                     Files = await storageRepository.GetContainerFiles(new GetContainerParameters
                     {
                         ContainerName = storageRepository.GetSafeContainerName(codename)
@@ -214,7 +209,7 @@ namespace Transfers
                 TransferRegion = coreContext.Region.ToUpper(),
                 TransferName = transferItem.System.Name,
                 TransferCustomer = transferItem.GetInfo().Customer,
-                TransferRequester = transferItem.GetInfo().Requester,
+                TransferUrl = $"{settings.Client.TransferUrl}{HttpUtility.UrlEncode(transferToken)}",
                 TransferUrl = Transfer.GetUrl(transferToken),
                 TransfersUrl = CoreHelper.GetSetting<string>("Client", "TransfersUrl"),
                 Field = transferItem.GetFields(container.CompletedFields)
@@ -305,7 +300,6 @@ namespace Transfers
                         Name = transferItem.System.Name,
                         Codename = transferItem.System.Codename,
                         Customer = transferItem.GetInfo().Customer,
-                        Requester = transferItem.GetInfo().Requester,
                         TransferToken = container.TransferToken
                     });
                 }

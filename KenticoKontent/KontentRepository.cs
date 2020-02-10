@@ -1,4 +1,4 @@
-﻿using Core;
+using Core;
 
 using Kentico.Kontent.Delivery;
 
@@ -128,7 +128,7 @@ namespace KenticoKontent
 
         private async Task<ContentItemResponse> AddContentItem(CreateTransferItemParameters createTransferItemParameters)
         {
-            var (name, _, _, _) = createTransferItemParameters;
+            var (name, _, _) = createTransferItemParameters;
 
             var requestUri = ConfigureClient();
 
@@ -157,7 +157,7 @@ namespace KenticoKontent
 
         private static LanguageVariant GetNewTransferLanguageVariant(CreateTransferItemParameters createTransferItemParameters)
         {
-            var (_, customer, requester, fields) = createTransferItemParameters;
+            var (_, customer, fields) = createTransferItemParameters;
 
             var variant = new LanguageVariant
             {
@@ -171,8 +171,7 @@ namespace KenticoKontent
                         },
                         Value = CoreHelper.Serialize(new
                         {
-                            customer,
-                            requester
+                            customer
                         })
                     },
                     new RichTextElement
