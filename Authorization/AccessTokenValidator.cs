@@ -2,6 +2,7 @@
 
 using Core;
 
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -14,37 +15,35 @@ namespace Authorization
 {
     public class AccessTokenValidator : IAccessTokenValidator
     {
-        private const string Authorization = nameof(Authorization);
-        private const string BearerSpace = "Bearer ";
-
         private readonly ConfigurationManager<OpenIdConnectConfiguration> configManager;
         private readonly TokenValidationParameters tokenValidationParameters;
 
-        private static string AuthorizationMetadataAddress => CoreHelper.GetSetting<string>("Authorization", "MetadataAddress");
-
-        private static string AuthorizationAudiences => CoreHelper.GetSetting<string>("Authorization", "Audiences");
-
-        private static string AuthorizationIssuer => CoreHelper.GetSetting<string>("Authorization", "Issuer");
-
-        public AccessTokenValidator()
+        public AccessTokenValidator(
+                Settings settings
+            )
         {
-            configManager = new ConfigurationManager<OpenIdConnectConfiguration>(AuthorizationMetadataAddress, new OpenIdConnectConfigurationRetriever());
+            configManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                settings.Authorization.MetadataAddress,
+                new OpenIdConnectConfigurationRetriever()
+                );
 
             tokenValidationParameters = new TokenValidationParameters
             {
-                ValidAudiences = AuthorizationAudiences?.Split(';'),
-                ValidIssuer = AuthorizationIssuer,
+                ValidAudiences = settings.Authorization.Audiences?.Split(';'),
+                ValidIssuer = settings.Authorization.Issuer,
                 ValidateIssuerSigningKey = true
             };
         }
 
         public async Task<IAccessTokenResult> ValidateToken(IDictionary<string, string> headers)
         {
+            const string bearerSpace = "Bearer ";
+
             try
             {
-                if (headers.TryGetValue(Authorization, out var accessToken) && accessToken.StartsWith(BearerSpace))
+                if (headers.TryGetValue("Authorization", out var accessToken) && accessToken.StartsWith(bearerSpace))
                 {
-                    var accessTokenValue = accessToken.Substring(BearerSpace.Length);
+                    var accessTokenValue = accessToken.Substring(bearerSpace.Length);
 
                     var config = await configManager.GetConfigurationAsync();
 
@@ -52,6 +51,8 @@ namespace Authorization
 
                     var result = new JwtSecurityTokenHandler()
                         .ValidateToken(accessTokenValue, tokenValidationParameters, out _);
+
+                    IdentityModelEventSource.ShowPII = true;
 
                     return new ValidAccessTokenResult
                     {

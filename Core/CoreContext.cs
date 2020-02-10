@@ -1,29 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Core
 {
     public class CoreContext : ICoreContext
     {
-        private string? region;
+        private readonly Settings settings;
+
+        private Region? region;
         private string? localization;
 
-        public string Region
+        public Region Region
         {
             get => region ?? throw new ArgumentNullException(nameof(Region));
-            set => region = Regions.Contains(value)
-                ? value
-                : throw new ArgumentOutOfRangeException($"Region '{value}' not valid.");
+            private set => region = value;
         }
 
-        public IEnumerable<string> Regions
-            => CoreHelper.GetSetting<string>(nameof(Regions)).Split(';', StringSplitOptions.RemoveEmptyEntries);
+        public IEnumerable<string> Regions => settings.Regions.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
         public string Localization
         {
-            get => localization ?? CoreHelper.GetSetting<string>(Region, "Default", nameof(Localization));
+            get => localization ?? Region.DefaultLocalization;
             set => localization = value;
+        }
+
+        public CoreContext(
+            Settings settings
+            )
+        {
+            this.settings = settings;
+        }
+
+        public Region SetRegion(string region)
+        {
+            return region switch
+            {
+                "us" => Region = settings.Us,
+                "eu" => Region = settings.Eu,
+                _ => throw new ArgumentOutOfRangeException($"Region '{region}' not valid."),
+            };
         }
     }
 }

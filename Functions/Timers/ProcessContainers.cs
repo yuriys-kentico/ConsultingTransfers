@@ -36,14 +36,14 @@ namespace Functions.Timers
             [TimerTrigger(
                 "0 0 */6 * * *",
                 UseMonitor = false
-            )]TimerInfo myTimer
+            )]TimerInfo timer
             )
         {
             try
             {
                 foreach (var region in coreContext.Regions)
                 {
-                    coreContext.Region = region;
+                    coreContext.SetRegion(region);
 
                     var containers = await storageRepository.ListContainers();
 

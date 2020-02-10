@@ -25,7 +25,7 @@ namespace AzureStorage.Models
             out string localization
             )
         {
-            region = Region ?? coreContext.Region ?? throw new ArgumentNullException(nameof(Region));
+            region = Region ?? coreContext.Region.Name ?? throw new ArgumentNullException(nameof(Region));
             codename = Codename ?? throw new ArgumentNullException(nameof(Codename));
             localization = Localization ?? coreContext.Localization ?? throw new ArgumentNullException(nameof(Localization));
         }

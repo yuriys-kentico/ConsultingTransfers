@@ -1,11 +1,8 @@
 using AzureStorage.Models;
 
-using Core;
-
 using KenticoKontent.Models;
 
 using System.Collections.Generic;
-using System.Web;
 
 namespace Transfers.Models
 {
@@ -28,12 +25,5 @@ namespace Transfers.Models
         public IDictionary<string, File>? Files { get; set; }
 
         public string? Template { get; set; }
-
-        private static string ClientTransferUrl => CoreHelper.GetSetting<string>("Client", "TransferUrl");
-
-        public static string GetUrl(string? transferToken)
-        {
-            return $"{ClientTransferUrl}{HttpUtility.UrlEncode(transferToken)}";
-        }
     }
 }

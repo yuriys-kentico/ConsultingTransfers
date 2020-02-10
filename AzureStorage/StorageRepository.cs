@@ -17,30 +17,24 @@ namespace AzureStorage
 {
     public class StorageRepository : IStorageRepository
     {
+        private readonly Settings settings;
+
         private readonly string dollarWeb = "$web";
 
         private readonly IEncryptionService encryptionService;
         private readonly ICoreContext coreContext;
 
-        private static double AzureStorageSasExpirationHours => CoreHelper.GetSetting<double>("AzureStorage", "Sas", "ExpirationHours");
-
-        private string RegionFileEndpointStorage => CoreHelper.GetSetting<string>(coreContext.Region, "FileEndpoint", "Storage");
-
-        private string RegionFileEndpoint => CoreHelper.GetSetting<string>(coreContext.Region, "FileEndpoint");
-
-        private string StorageConnectionString => CoreHelper.GetSetting<string>(coreContext.Region);
-
-        public static SharedAccessBlobPolicy PublicSharedAccessBlobPolicy => new SharedAccessBlobPolicy
+        public SharedAccessBlobPolicy PublicSharedAccessBlobPolicy => new SharedAccessBlobPolicy
         {
             Permissions = SharedAccessBlobPermissions.Read
                     | SharedAccessBlobPermissions.Write
                     | SharedAccessBlobPermissions.Delete
                     | SharedAccessBlobPermissions.List,
             SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
-            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(AzureStorageSasExpirationHours)
+            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(settings.AzureStorage.Sas.ExpirationHours)
         };
 
-        public static SharedAccessAccountPolicy AdminSharedAccessAccountPolicy => new SharedAccessAccountPolicy
+        public SharedAccessAccountPolicy AdminSharedAccessAccountPolicy => new SharedAccessAccountPolicy
         {
             Permissions = SharedAccessAccountPermissions.Read
                     | SharedAccessAccountPermissions.Write
@@ -51,17 +45,19 @@ namespace AzureStorage
             ResourceTypes = SharedAccessAccountResourceTypes.Container
                     | SharedAccessAccountResourceTypes.Object,
             SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
-            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(AzureStorageSasExpirationHours),
+            SharedAccessExpiryTime = DateTime.UtcNow.AddHours(settings.AzureStorage.Sas.ExpirationHours),
             Protocols = SharedAccessProtocol.HttpsOnly
         };
 
         public StorageRepository(
             IEncryptionService encryptionService,
-            ICoreContext coreContext
+            ICoreContext coreContext,
+            Settings settings
             )
         {
             this.encryptionService = encryptionService;
             this.coreContext = coreContext;
+            this.settings = settings;
         }
 
         public async Task<Container> GetContainer(GetContainerParameters getContainerParameters)
@@ -140,7 +136,7 @@ namespace AzureStorage
         private string ReplaceFileEndpoint(string originalUrl)
         {
             return new StringBuilder(originalUrl)
-                .Replace(RegionFileEndpointStorage, RegionFileEndpoint)
+                .Replace(coreContext.Region.StorageEndpoint, coreContext.Region.FileEndpoint)
                 .ToString();
         }
 
@@ -161,7 +157,7 @@ namespace AzureStorage
 
             var (region, _, localization) = token;
 
-            coreContext.Region = region;
+            coreContext.SetRegion(region);
             coreContext.Localization ??= localization;
 
             return token;
@@ -222,6 +218,6 @@ namespace AzureStorage
         }
 
         private CloudStorageAccount GetStorageAccount()
-            => CloudStorageAccount.Parse(StorageConnectionString);
+            => CloudStorageAccount.Parse(coreContext.Region.StorageConnectionString);
     }
 }

@@ -1,4 +1,4 @@
-using Core;
+﻿using Core;
 
 using Kentico.Kontent.Delivery;
 
@@ -27,22 +27,17 @@ namespace KenticoKontent
     {
         private readonly HttpClient httpClient;
         private readonly ICoreContext coreContext;
-
-        private string RegionProjectId => CoreHelper.GetSetting<string>(coreContext.Region, "ProjectId");
-
-        private string RegionDeliveryApiSecureAccessKey => CoreHelper.GetSetting<string>(coreContext.Region, "DeliveryApiSecureAccessKey");
-
-        private string RegionContentManagementApiKey => CoreHelper.GetSetting<string>(coreContext.Region, "ContentManagementApiKey");
-
-        private static int KenticoKontentPublishLanguageVariantRetry => CoreHelper.GetSetting<int>("KenticoKontent", "PublishLanguageVariantRetry");
+        private readonly Settings settings;
 
         public KontentRepository(
             HttpClient httpClient,
-            ICoreContext coreContext
+            ICoreContext coreContext,
+            Settings settings
             )
         {
             this.httpClient = httpClient;
             this.coreContext = coreContext;
+            this.settings = settings;
         }
 
         public async Task<IEnumerable<TransferItem>> GetTransfers()
@@ -65,8 +60,8 @@ namespace KenticoKontent
         private IDeliveryClient GetDeliveryClient()
             => DeliveryClientBuilder
                 .WithOptions(builder => builder
-                    .WithProjectId(RegionProjectId)
-                    .UseProductionApi(RegionDeliveryApiSecureAccessKey)
+                    .WithProjectId(coreContext.Region.ProjectId)
+                    .UseProductionApi(coreContext.Region.DeliveryApiSecureAccessKey)
                     .Build())
                 .WithInlineContentItemsResolver(new Field())
                 .WithTypeProvider(new KenticoKontentTypeProvider())
@@ -93,7 +88,7 @@ namespace KenticoKontent
 
             TransferItem? transferItem = default;
 
-            var retryAttempts = KenticoKontentPublishLanguageVariantRetry;
+            var retryAttempts = settings.KenticoKontent.PublishLanguageVariantRetry;
             while (retryAttempts > 0)
             {
                 try
@@ -118,10 +113,10 @@ namespace KenticoKontent
         {
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                 "bearer",
-                RegionContentManagementApiKey
+                coreContext.Region.ContentManagementApiKey
             );
 
-            var projectId = RegionProjectId;
+            var projectId = coreContext.Region.ProjectId;
 
             return $@"https://manage.kontent.ai/v2/projects/{projectId}/items{endpoint}";
         }

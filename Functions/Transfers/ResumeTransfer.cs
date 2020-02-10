@@ -5,7 +5,6 @@ using Functions.Models;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 using System;
@@ -35,7 +34,6 @@ namespace Functions.Transfers
         [FunctionName(nameof(ResumeTransfer))]
         public async Task<IActionResult> Run(
             [HttpTrigger(
-                AuthorizationLevel.Function,
                 "post",
                 Route = Routes.ResumeTransfer
             )] GetTransferRequest getTransferRequest,

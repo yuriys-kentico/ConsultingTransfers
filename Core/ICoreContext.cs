@@ -4,10 +4,12 @@ namespace Core
 {
     public interface ICoreContext
     {
-        string Region { get; set; }
+        Region Region { get; }
 
         IEnumerable<string> Regions { get; }
 
         string Localization { get; set; }
+
+        Region SetRegion(string region);
     }
 }

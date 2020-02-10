@@ -11,6 +11,7 @@ using Functions;
 using KenticoKontent;
 
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using MicrosoftTeams;
@@ -28,10 +29,19 @@ namespace Functions
     {
         public override void Configure(IFunctionsHostBuilder functionsHostBuilder)
         {
+            var configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build();
+
+            var settings = new Settings();
+
+            ConfigurationBinder.Bind(configuration, settings);
+
             functionsHostBuilder.Services
                 .AddHttpClient<ITeamsService, TeamsService>();
 
             functionsHostBuilder.Services
+                .AddSingleton(_ => settings)
                 .AddSingleton<ICoreContext, CoreContext>()
                 .AddSingleton<IEncryptionService, EncryptionService>()
                 .AddSingleton<IStorageRepository, StorageRepository>()
@@ -39,8 +49,6 @@ namespace Functions
                 .AddTransient<IAccessTokenValidator, AccessTokenValidator>()
                 .AddTransient<IWebhookValidator, WebhookValidator>()
                 .AddHttpClient<IKontentRepository, KontentRepository>();
-
-            //IdentityModelEventSource.ShowPII = true;
         }
     }
 }

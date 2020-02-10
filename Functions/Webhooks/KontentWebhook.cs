@@ -8,7 +8,6 @@ using KenticoKontent.Models.Delivery;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 using System;
@@ -38,7 +37,6 @@ namespace Functions.Webhooks
         [FunctionName(nameof(KontentWebhook))]
         public async Task<IActionResult> Run(
             [HttpTrigger(
-                AuthorizationLevel.Function,
                 "post",
                 Route = Routes.KontentWebhook
             )] string body,
@@ -48,7 +46,7 @@ namespace Functions.Webhooks
         {
             try
             {
-                coreContext.Region = region;
+                coreContext.SetRegion(region);
 
                 var (valid, getWebhook) = webhookValidator.ValidateWebhook(body, headers, region);
 

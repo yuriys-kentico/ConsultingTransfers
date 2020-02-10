@@ -6,7 +6,6 @@ using Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 using System;
@@ -39,7 +38,6 @@ namespace Functions.Transfers
         [FunctionName(nameof(ListTransfers))]
         public async Task<IActionResult> Run(
                 [HttpTrigger(
-                    AuthorizationLevel.Function,
                     "post",
                     Route = Routes.ListTransfers
                 )] HttpRequest request,
@@ -67,7 +65,7 @@ namespace Functions.Transfers
 
                         foreach (var region in regions)
                         {
-                            coreContext.Region = region;
+                            coreContext.SetRegion(region);
 
                             transfers.AddRange(await transfersService.ListTransfers());
                         }

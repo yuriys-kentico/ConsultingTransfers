@@ -10,11 +10,18 @@ namespace Encryption
 {
     public class EncryptionService : IEncryptionService
     {
+        private readonly Settings settings;
+
         private static int KeySizeBytes => 16;
 
         private static int DerivationIterations => 1000;
 
-        private static string TokenSecret => CoreHelper.GetSetting<string>("TokenSecret");
+        public EncryptionService(
+            Settings settings
+            )
+        {
+            this.settings = settings;
+        }
 
         public string Encrypt(string? source)
         {
@@ -38,7 +45,7 @@ namespace Encryption
             var sourceBytes = Encoding.UTF8.GetBytes(source);
 
             using var symmetricKey = new RijndaelManaged();
-            using var password = new Rfc2898DeriveBytes(TokenSecret, saltStringBytes, DerivationIterations);
+            using var password = new Rfc2898DeriveBytes(settings.TokenSecret, saltStringBytes, DerivationIterations);
 
             symmetricKey.BlockSize = KeySizeBytes * 8;
 
@@ -81,7 +88,7 @@ namespace Encryption
                 .ToArray();
 
             using var symmetricKey = new RijndaelManaged();
-            using var password = new Rfc2898DeriveBytes(TokenSecret, saltStringBytes, DerivationIterations);
+            using var password = new Rfc2898DeriveBytes(settings.TokenSecret, saltStringBytes, DerivationIterations);
 
             symmetricKey.BlockSize = KeySizeBytes * 8;
 

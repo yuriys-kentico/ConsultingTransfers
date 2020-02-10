@@ -1,4 +1,4 @@
-using Authorization.Models;
+﻿using Authorization.Models;
 
 using AzureStorage;
 using AzureStorage.Models;
@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 
 using Transfers.Models;
 
@@ -29,18 +30,21 @@ namespace Transfers
         private readonly IKontentRepository kontentRepository;
         private readonly ITeamsService teamsService;
         private readonly ICoreContext coreContext;
+        private readonly Settings settings;
 
         public TransfersService(
             IKontentRepository kontentRepository,
             IStorageRepository storageRepository,
             ITeamsService teamsService,
-            ICoreContext coreContext
+            ICoreContext coreContext,
+            Settings settings
             )
         {
             this.kontentRepository = kontentRepository;
             this.storageRepository = storageRepository;
             this.teamsService = teamsService;
             this.coreContext = coreContext;
+            this.settings = settings;
         }
 
         public async Task<Transfer> CreateTransfer(CreateTransferParameters createTransferParameters)
@@ -86,14 +90,14 @@ namespace Transfers
                 resolvedTemplateItem = kontentRepository.ResolveItem(templateItem, new
                 {
                     TransferName = transferItem.System.Name,
-                    TransferUrl = Transfer.GetUrl(container.TransferToken)
+                    TransferUrl = $"{settings.Client.TransferUrl}{HttpUtility.UrlEncode(container.TransferToken)}",
                 },
                 nameof(TemplateItem.Message));
             }
 
             return new Transfer
             {
-                Region = coreContext.Region,
+                Region = coreContext.Region.Name,
                 Name = transferItem.System.Name,
                 Customer = transferItem.GetInfo().Customer,
                 TransferToken = container.TransferToken,
@@ -106,7 +110,7 @@ namespace Transfers
             var (transferToken, files, fields, containerUrl, accessTokenResult) = getTransferParameters;
             var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
 
-            coreContext.Region = region;
+            coreContext.SetRegion(region);
             coreContext.Localization = localization;
 
             var transferItem = await kontentRepository.GetKontentItem<TransferItem>(new GetKontentParameters
@@ -131,7 +135,7 @@ namespace Transfers
             {
                 (false, true, true, _) when accessTokenResult is NoAccessTokenResult => new Transfer
                 {
-                    Region = coreContext.Region,
+                    Region = coreContext.Region.Name,
                     Name = transferItem.System.Name,
                     Customer = transferItem.GetInfo().Customer,
                     ContainerUrl = storageRepository.GetPublicContainerUrl(getContainerParameters),
@@ -139,7 +143,7 @@ namespace Transfers
                 },
                 (false, true, true, _) when accessTokenResult is ValidAccessTokenResult => new Transfer
                 {
-                    Region = coreContext.Region,
+                    Region = coreContext.Region.Name,
                     Name = transferItem.System.Name,
                     Codename = transferItem.System.Codename,
                     Customer = transferItem.GetInfo().Customer,
@@ -165,7 +169,7 @@ namespace Transfers
             var (transferToken, field, type, messageItemCodename) = updateTransferParameters;
             var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
 
-            coreContext.Region = region;
+            coreContext.SetRegion(region);
             coreContext.Localization = localization;
 
             var container = await storageRepository.GetContainer(new GetContainerParameters
@@ -206,12 +210,11 @@ namespace Transfers
 
             var resolvedTeamsMessageItem = kontentRepository.ResolveItem(teamsMessageItem, new
             {
-                TransferRegion = coreContext.Region.ToUpper(),
+                TransferRegion = coreContext.Region.Name.ToUpper(),
                 TransferName = transferItem.System.Name,
                 TransferCustomer = transferItem.GetInfo().Customer,
                 TransferUrl = $"{settings.Client.TransferUrl}{HttpUtility.UrlEncode(transferToken)}",
-                TransferUrl = Transfer.GetUrl(transferToken),
-                TransfersUrl = CoreHelper.GetSetting<string>("Client", "TransfersUrl"),
+                settings.Client.TransfersUrl,
                 Field = transferItem.GetFields(container.CompletedFields)
                     .Single(completedField => completedField.Codename == field).Name,
             }, nameof(TeamsMessageItem.CardJSON));
@@ -251,7 +254,7 @@ namespace Transfers
             var (transferToken, _, _, _, _) = getTransferParameters;
             var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
 
-            coreContext.Region = region;
+            coreContext.SetRegion(region);
             coreContext.Localization = localization;
 
             var getKontentItemParameters = new GetKontentParameters
@@ -270,7 +273,7 @@ namespace Transfers
             var (transferToken, _, _, _, _) = getTransferParameters;
             var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
 
-            coreContext.Region = region;
+            coreContext.SetRegion(region);
             coreContext.Localization = localization;
 
             await kontentRepository.PublishLanguageVariant(new GetKontentParameters
@@ -296,7 +299,7 @@ namespace Transfers
                 {
                     transfers.Add(new Transfer
                     {
-                        Region = coreContext.Region,
+                        Region = coreContext.Region.Name,
                         Name = transferItem.System.Name,
                         Codename = transferItem.System.Codename,
                         Customer = transferItem.GetInfo().Customer,

@@ -18,7 +18,11 @@ namespace Functions.Tests.Mocks
             string specificRegion
             )
         {
-            mockCoreContext.SetupSet(mock => mock.Region = specificRegion);
+            mockCoreContext.Setup(mock => mock.SetRegion(specificRegion))
+                .Returns(new Region
+                {
+                    Name = specificRegion
+                });
         }
 
         internal static void SetupRegions(

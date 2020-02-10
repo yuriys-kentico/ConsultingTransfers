@@ -9,7 +9,6 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -21,24 +20,20 @@ namespace Functions.Transfers
         private readonly IAccessTokenValidator accessTokenValidator;
         private readonly ICoreContext coreContext;
         private readonly HttpClient httpClient;
-
-        private static IEnumerable<string> AzureStorageAllowedExtensions => CoreHelper.GetSetting<string>("AzureStorage", "AllowedExtensions")
-            .Split(';', StringSplitOptions.RemoveEmptyEntries);
-
-        private string RegionFileEndpointStorage => CoreHelper.GetSetting<string>(coreContext.Region, "FileEndpoint", "Storage");
-
-        private string RegionFileEndpoint => CoreHelper.GetSetting<string>(coreContext.Region, "FileEndpoint");
+        private readonly Settings settings;
 
         public TransferFileProxy(
             ILogger<TransferFileProxy> logger,
             IAccessTokenValidator accessTokenValidator,
             ICoreContext coreContext,
-            HttpClient httpClient
+            HttpClient httpClient,
+            Settings settings
             ) : base(logger)
         {
             this.accessTokenValidator = accessTokenValidator;
             this.coreContext = coreContext;
             this.httpClient = httpClient;
+            this.settings = settings;
         }
 
         [FunctionName(nameof(TransferFileProxy))]
@@ -54,7 +49,7 @@ namespace Functions.Transfers
         {
             try
             {
-                coreContext.Region = region;
+                coreContext.SetRegion(region);
 
                 var requestMessage = GetRequestMessage(request, storagePath);
 
@@ -95,13 +90,15 @@ namespace Functions.Transfers
 
         private Uri GetRequestUri(string storagePath, QueryString queryString)
         {
-            if (storagePath.Contains('.') && AzureStorageAllowedExtensions.Any(extension => storagePath.EndsWith(extension))
+            if (storagePath.Contains('.') && settings.AzureStorage.AllowedExtensions
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Any(extension => storagePath.EndsWith(extension))
                 || !storagePath.Contains('.'))
             {
-                return new Uri($"{RegionFileEndpointStorage}/{storagePath}{queryString}");
+                return new Uri($"{coreContext.Region.StorageEndpoint}/{storagePath}{queryString}");
             }
 
-            throw new ProxyException($"Path '{RegionFileEndpoint}/{storagePath}' is not valid.");
+            throw new ProxyException($"Path '{coreContext.Region.FileEndpoint}/{storagePath}' is not valid.");
         }
 
         private static HttpMethod GetMethod(string method)
@@ -110,7 +107,8 @@ namespace Functions.Transfers
             {
                 _ when HttpMethods.IsPut(method) => HttpMethod.Put,
                 _ when HttpMethods.IsGet(method) => HttpMethod.Get,
-                _ => throw new InvalidOperationException($"Method '{method}' is not PUT or GET.")
+                _ when HttpMethods.IsDelete(method) => HttpMethod.Delete,
+                _ => throw new InvalidOperationException($"Method '{method}' is not valid.")
             };
         }
     }

@@ -10,20 +10,25 @@ namespace MicrosoftTeams
     public class TeamsService : ITeamsService
     {
         private readonly HttpClient httpClient;
+        private readonly Settings settings;
 
-        public static string MicrosoftTeamsDefaultChannel => CoreHelper.GetSetting<string>("MicrosoftTeams", "Default", "Channel");
-
-        public TeamsService(HttpClient httpClient)
+        public TeamsService(
+            HttpClient httpClient,
+            Settings settings
+            )
         {
             this.httpClient = httpClient;
+            this.settings = settings;
         }
 
         public async Task PostMessage(PostMessageParameters postMessageParameters)
         {
             var (channel, card) = postMessageParameters;
 
-            channel ??= MicrosoftTeamsDefaultChannel;
-            var requestUri = CoreHelper.GetSetting<string>("MicrosoftTeams", "Channel", channel ?? "");
+            string requestUri = channel switch
+            {
+                _ => settings.MicrosoftTeams.Channels.Transfers,
+            };
 
             var content = new StringContent(CoreHelper.Serialize(card));
             var response = await httpClient.PostAsync(requestUri, content);

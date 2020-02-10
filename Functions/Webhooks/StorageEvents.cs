@@ -8,22 +8,20 @@ using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Extensions.Logging;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Functions.Webhooks
 {
     public class StorageEvents : BaseFunction
     {
-        private static string AzureStorageEventsTopicSubstring => CoreHelper.GetSetting<string>("AzureStorage", "Events", "TopicSubstring");
-
-        private static IEnumerable<string> AzureStorageAllowedExtensions => CoreHelper.GetSetting<string>("AzureStorage", "AllowedExtensions")
-            .Split(';', StringSplitOptions.RemoveEmptyEntries);
+        private readonly Settings settings;
 
         public StorageEvents(
-            ILogger<StorageEvents> logger
+            ILogger<StorageEvents> logger,
+            Settings settings
             ) : base(logger)
         {
+            this.settings = settings;
         }
 
         [FunctionName(nameof(StorageEvents))]
@@ -33,7 +31,7 @@ namespace Functions.Webhooks
         {
             try
             {
-                if (!eventGridEvent.Topic.Contains(AzureStorageEventsTopicSubstring))
+                if (!eventGridEvent.Topic.Contains(settings.AzureStorage.Events.TopicSubstring))
                 {
                     return;
                 }
@@ -42,7 +40,9 @@ namespace Functions.Webhooks
                 {
                     case BlobEventTypes.MicrosoftStorageBlobCreated:
                         if (eventGridEvent.Data is StorageBlobCreatedEventData data
-                            && !AzureStorageAllowedExtensions.Any(extension => data.Url.EndsWith(extension)))
+                            && !settings.AzureStorage.AllowedExtensions
+                                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                                .Any(extension => data.Url.EndsWith(extension)))
                         {
                             LogOkObject(data);
                         }
