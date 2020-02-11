@@ -170,7 +170,7 @@ export class TransferFilesService {
         const readableStream = new Response(stream).body;
 
         if (readableStream) {
-          const fileStream = createWriteStream(fileName);
+          const fileStream = createWriteStream(fileName, { size: stream.size });
           const downloadStream = readableStream.pipeTo(fileStream);
 
           window.onunload = () => {
