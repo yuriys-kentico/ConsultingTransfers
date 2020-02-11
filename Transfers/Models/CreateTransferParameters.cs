@@ -4,11 +4,11 @@ namespace Transfers.Models
 {
     public class CreateTransferParameters
     {
-        public string? Name { private get; set; }
+        public string? Name { get; set; }
 
-        public string? Customer { private get; set; }
+        public string? Customer { get; set; }
 
-        public string? TemplateItemCodename { private get; set; }
+        public string? TemplateItemCodename { get; set; }
 
         public void Deconstruct(
             out string name,

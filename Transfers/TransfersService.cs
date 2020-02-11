@@ -75,10 +75,11 @@ namespace Transfers
 
             container.DeleteWhen = DateTime.MaxValue;
 
-            container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken(coreContext)
+            container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
             {
                 Codename = transferItem.System.Codename,
-                Localization = transferItem.System.Language
+                Localization = transferItem.System.Language,
+                Region = coreContext.Region.Name
             });
 
             await container.Update();
@@ -108,10 +109,7 @@ namespace Transfers
         public async Task<Transfer?> GetTransfer(GetTransferParameters getTransferParameters)
         {
             var (transferToken, files, fields, containerUrl, accessTokenResult) = getTransferParameters;
-            var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
-
-            coreContext.SetRegion(region);
-            coreContext.Localization = localization;
+            var (region, codename, _) = storageRepository.DecryptTransferToken(transferToken);
 
             var transferItem = await kontentRepository.GetKontentItem<TransferItem>(new GetKontentParameters
             {
@@ -168,9 +166,6 @@ namespace Transfers
         {
             var (transferToken, field, type, messageItemCodename) = updateTransferParameters;
             var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
-
-            coreContext.SetRegion(region);
-            coreContext.Localization = localization;
 
             var container = await storageRepository.GetContainer(new GetContainerParameters
             {
@@ -252,10 +247,7 @@ namespace Transfers
         public async Task SuspendTransfer(GetTransferParameters getTransferParameters)
         {
             var (transferToken, _, _, _, _) = getTransferParameters;
-            var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
-
-            coreContext.SetRegion(region);
-            coreContext.Localization = localization;
+            var (_, codename, _) = storageRepository.DecryptTransferToken(transferToken);
 
             var getKontentItemParameters = new GetKontentParameters
             {
@@ -271,10 +263,7 @@ namespace Transfers
         public async Task ResumeTransfer(GetTransferParameters getTransferParameters)
         {
             var (transferToken, _, _, _, _) = getTransferParameters;
-            var (region, codename, localization) = storageRepository.DecryptTransferToken(transferToken);
-
-            coreContext.SetRegion(region);
-            coreContext.Localization = localization;
+            var (_, codename, _) = storageRepository.DecryptTransferToken(transferToken);
 
             await kontentRepository.PublishLanguageVariant(new GetKontentParameters
             {

@@ -7,9 +7,9 @@ namespace KenticoKontent.Models.Webhook
 {
     public class Webhook
     {
-        public Data? Data { private get; set; }
+        public Data? Data { get; set; }
 
-        public Message? Message { private get; set; }
+        public Message? Message { get; set; }
 
         public void Deconstruct(
             out Data data,
@@ -23,9 +23,9 @@ namespace KenticoKontent.Models.Webhook
 
     public class Data
     {
-        public IEnumerable<Item>? Items { private get; set; }
+        public IEnumerable<Item>? Items { get; set; }
 
-        public IEnumerable<Taxonomy>? Taxonomies { private get; set; }
+        public IEnumerable<Taxonomy>? Taxonomies { get; set; }
 
         public void Deconstruct(
             out IEnumerable<Item> items,

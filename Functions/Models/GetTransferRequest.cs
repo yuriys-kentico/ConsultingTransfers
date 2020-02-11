@@ -2,13 +2,13 @@
 {
     public class GetTransferRequest
     {
-        public string? TransferToken { private get; set; }
+        public string? TransferToken { get; set; }
 
-        public bool Files { private get; set; }
+        public bool Files { get; set; }
 
-        public bool Fields { private get; set; }
+        public bool Fields { get; set; }
 
-        public bool ContainerUrl { private get; set; }
+        public bool ContainerUrl { get; set; }
 
         internal void Deconstruct(
             out string? transferToken,

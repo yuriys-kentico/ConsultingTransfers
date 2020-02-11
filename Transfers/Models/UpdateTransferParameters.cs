@@ -11,13 +11,13 @@ namespace Transfers.Models
 
     public class UpdateTransferParameters
     {
-        public string? TransferToken { private get; set; }
+        public string? TransferToken { get; set; }
 
-        public string? Field { private get; set; }
+        public string? Field { get; set; }
 
-        public UpdateType Type { private get; set; }
+        public UpdateType Type { get; set; }
 
-        public string? MessageItemCodename { private get; set; }
+        public string? MessageItemCodename { get; set; }
 
         public void Deconstruct(
             out string transferToken,

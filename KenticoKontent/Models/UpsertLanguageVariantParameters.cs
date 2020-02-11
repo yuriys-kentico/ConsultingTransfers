@@ -6,9 +6,9 @@ namespace KenticoKontent.Models
 {
     public class UpsertLanguageVariantParameters
     {
-        public string? Codename { private get; set; }
+        public string? Codename { get; set; }
 
-        public LanguageVariant? Variant { private get; set; }
+        public LanguageVariant? Variant { get; set; }
 
         public void Deconstruct(
             out string codename,

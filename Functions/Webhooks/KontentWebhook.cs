@@ -71,7 +71,7 @@ namespace Functions.Webhooks
                                             ContainerName = storageRepository.GetSafeContainerName(item.Codename)
                                         });
 
-                                        container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken(coreContext)
+                                        container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
                                         {
                                             Codename = item.Codename,
                                             Localization = item.Language

@@ -6,15 +6,15 @@ namespace Transfers.Models
 {
     public class GetTransferParameters
     {
-        public string? TransferToken { private get; set; }
+        public string? TransferToken { get; set; }
 
-        public bool Files { private get; set; }
+        public bool Files { get; set; }
 
-        public bool Fields { private get; set; }
+        public bool Fields { get; set; }
 
-        public bool ContainerUrl { private get; set; }
+        public bool ContainerUrl { get; set; }
 
-        public IAccessTokenResult? AccessTokenResult { private get; set; }
+        public IAccessTokenResult? AccessTokenResult { get; set; }
 
         public void Deconstruct(
             out string transferToken,

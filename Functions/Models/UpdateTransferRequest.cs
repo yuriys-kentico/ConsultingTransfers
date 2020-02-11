@@ -2,15 +2,15 @@
 {
     public class UpdateTransferRequest
     {
-        public string? TransferToken { private get; set; }
+        public string? TransferToken { get; set; }
 
-        public string? Field { private get; set; }
+        public string? Field { get; set; }
 
-        public string? Type { private get; set; }
+        public string? Type { get; set; }
 
-        public string? MessageItemCodename { private get; set; }
+        public string? MessageItemCodename { get; set; }
 
-        public string? Localization { private get; set; }
+        public string? Localization { get; set; }
 
         public void Deconstruct(
             out string? transferToken,

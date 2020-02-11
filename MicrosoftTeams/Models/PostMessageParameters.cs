@@ -6,9 +6,9 @@ namespace MicrosoftTeams.Models
 {
     public class PostMessageParameters
     {
-        public string? Channel { private get; set; }
+        public string? Channel { get; set; }
 
-        public O365ConnectorCard? Card { private get; set; }
+        public O365ConnectorCard? Card { get; set; }
 
         public void Deconstruct(
             out string? channel,

@@ -2,7 +2,6 @@
 
 using Core;
 
-using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -51,8 +50,6 @@ namespace Authorization
 
                     var result = new JwtSecurityTokenHandler()
                         .ValidateToken(accessTokenValue, tokenValidationParameters, out _);
-
-                    IdentityModelEventSource.ShowPII = true;
 
                     return new ValidAccessTokenResult
                     {

@@ -5,11 +5,11 @@ namespace KenticoKontent.Models
 {
     public class CreateTransferItemParameters
     {
-        public string? Name { private get; set; }
+        public string? Name { get; set; }
 
-        public string? Customer { private get; set; }
+        public string? Customer { get; set; }
 
-        public IEnumerable<ResolvedField>? Fields { private get; set; }
+        public IEnumerable<ResolvedField>? Fields { get; set; }
 
         public void Deconstruct(
             out string name,
