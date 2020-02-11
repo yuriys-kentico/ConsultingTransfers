@@ -40,7 +40,7 @@ namespace Functions.Transfers
         public async Task<IActionResult> Run(
                 [HttpTrigger(
                     AuthorizationLevel.Anonymous,
-                    "put", "get",
+                    "put", "get", "delete",
                     Route = Routes.TransferFileProxy
                 )] HttpRequest request,
                 string region,
