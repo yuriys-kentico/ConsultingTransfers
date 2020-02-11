@@ -12,7 +12,7 @@ import { MessageContext } from '../header/MessageContext';
 
 export const NewTransfer: AuthenticatedRoutedFC = authenticated(() => {
   const {
-    newTransfer: { header, fields, invalid, modal }
+    newTransfer: { header, fields, invalid, button, modal }
   } = admin;
 
   const [name, setName] = useState('');
@@ -30,15 +30,12 @@ export const NewTransfer: AuthenticatedRoutedFC = authenticated(() => {
   const transfer = useSubscription(transfersService.transfer);
 
   useEffect(() => {
-    if (transfer) {
-      if (name && customer) {
-        setModalOpen(true);
-      }
-
+    if (transfer && name && customer && !modalOpen) {
+      setModalOpen(true);
       setName('');
       setCustomer('');
     }
-  }, [transfer, customer, name]);
+  }, [transfer, customer, name, modalOpen]);
 
   const createTransfer = useCallback(async () => {
     if (name === '' || customer === '') {
@@ -91,7 +88,7 @@ export const NewTransfer: AuthenticatedRoutedFC = authenticated(() => {
           onChange={(_, data) => setRegion(data.value as string)}
         />
         <Message error content={invalid.fields} />
-        <Form.Button>Create transfer</Form.Button>
+        <Form.Button>{button}</Form.Button>
       </Form>
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         {transfer && (

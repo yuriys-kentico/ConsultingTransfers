@@ -8,6 +8,7 @@ import { IField } from '../../../services/models/IField';
 import { ITransfersService } from '../../../services/TransfersService';
 import { transfer as transferTerms } from '../../../terms.en-us.json';
 import { useSubscription } from '../../../utilities/observables';
+import { format } from '../../../utilities/strings';
 import { Tooltip } from '../../shared/Tooltip';
 import { MessageContext } from '../header/MessageContext';
 
@@ -50,7 +51,7 @@ export const FieldHolder: FC<IField> = memo(props => {
           await transfersService.getTransfer({ transferToken });
 
           setReady(true);
-          showSuccess(transferTerms.fields.markedCompleted);
+          showSuccess(format(transferTerms.fields.markedCompleted, name));
         } else {
           showInfo(transferTerms.fields.markingIncomplete);
           setReady(false);
@@ -64,7 +65,7 @@ export const FieldHolder: FC<IField> = memo(props => {
           await transfersService.getTransfer({ transferToken });
 
           setReady(true);
-          showSuccess(transferTerms.fields.markedIncomplete);
+          showSuccess(format(transferTerms.fields.markedIncomplete, name));
         }
       }
     };

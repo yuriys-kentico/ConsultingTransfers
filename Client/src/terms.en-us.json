@@ -58,6 +58,7 @@
           "options": [{ "text": "US", "value": "us" }]
         }
       },
+      "button": "Create transfer",
       "modal": {
         "close": "Close",
         "template": "Copy this into an email"
@@ -85,8 +86,8 @@
       "markIncomplete": "Completed!",
       "markingCompleted": "Marking field completed...",
       "markingIncomplete": "Marking field incomplete...",
-      "markedCompleted": "Field has been marked completed!",
-      "markedIncomplete": "Field has been marked incomplete!",
+      "markedCompleted": "'{0}' completed!",
+      "markedIncomplete": "'{0}' marked incomplete!",
       "uploadFile": {
         "passive": "Drag some files here, or click to select files.",
         "active": "Drop the files here...",
