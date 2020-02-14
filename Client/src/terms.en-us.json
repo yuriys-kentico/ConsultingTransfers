@@ -118,7 +118,12 @@
   "errors": {
     "genericError": "A generic error has occurred.",
     "genericStack": "No error information.",
-    "notFound": "This path does not exist."
+    "notFound": "This path does not exist.",
+    "notSupported": {
+      "header": "This browser ({0}) does not work well with Caddy.",
+      "message": "Please use the latest version of Chrome, Firefox, or Edge.",
+      "unknown": "unknown"
+    }
   },
   "services": {
     "done": "Done.",

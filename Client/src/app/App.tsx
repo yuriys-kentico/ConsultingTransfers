@@ -1,11 +1,11 @@
-import React, { lazy, Suspense } from 'react';
+import { detect } from 'detect-browser';
+import React, { lazy } from 'react';
 import { boundary, useError } from 'react-boundary';
-import { Helmet } from 'react-helmet';
-import { Loader } from 'semantic-ui-react';
 
 import { Router } from '@reach/router';
 
-import { errors, header } from '../terms.en-us.json';
+import { errors } from '../terms.en-us.json';
+import { format } from '../utilities/strings';
 import { routes } from './routes';
 
 const Frontend = lazy(() => import('./frontend/Frontend').then(module => ({ default: module.Frontend })));
@@ -19,18 +19,25 @@ export const App = boundary(() => {
     return <Error stack={`${error && error.stack}${info && info.componentStack}`} />;
   }
 
-  return (
-    <>
-      <Helmet titleTemplate={`%s | ${header.header}`} defaultTitle={header.header}>
-        <meta name='description' content={header.description} />
-      </Helmet>
-      <Suspense fallback={<Loader active size='massive' />}>
+  const browser = detect();
+
+  switch (browser && browser.name) {
+    case 'chrome':
+    case 'firefox':
+    case 'edge-chromium':
+      return (
         <Router>
           <Frontend path='*' />
           <Details path={`${routes.details}:region`} authenticated />
           <Error path={routes.error} default message={errors.notFound} />
         </Router>
-      </Suspense>
-    </>
-  );
+      );
+    default:
+      return (
+        <Error
+          message={format(errors.notSupported.header, browser?.name.toString() || errors.notSupported.unknown)}
+          stack={errors.notSupported.message}
+        />
+      );
+  }
 });

@@ -167,7 +167,7 @@ export class TransferFilesService {
 
         const stream = await promise;
 
-        const readableStream = new Response(stream).body;
+        const readableStream = (stream as any).stream();
 
         if (readableStream) {
           const fileStream = createWriteStream(fileName, { size: stream.size });
