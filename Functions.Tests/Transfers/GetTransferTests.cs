@@ -105,9 +105,9 @@ namespace Functions.Tests.Transfers
             Fields = true
         };
 
-        private static IDictionary<string, string> headers;
-        private static IAccessTokenResult accessTokenResult;
-        private static Transfer transfer;
+        private static IDictionary<string, string>? headers;
+        private static IAccessTokenResult? accessTokenResult;
+        private static Transfer? transfer;
 
         internal static IEnumerable<TestCaseData> ValidTransfers()
         {

@@ -43,7 +43,7 @@ namespace Functions.Tests.Transfers
             mockCoreContext.SetupRegion(specificRegion);
             mockCoreContext.SetupRegions(specificRegion);
 
-            var response = await mockFunction.Run(default, headers, specificRegion);
+            var response = await mockFunction.Run(default!, headers, specificRegion);
 
             Assert.That(response, Is.InstanceOf<OkObjectResult>());
         }
@@ -58,7 +58,7 @@ namespace Functions.Tests.Transfers
         {
             mockAccessTokenValidator.SetupValidateToken(accessTokenResult);
 
-            var response = await mockFunction.Run(default, headers, specificRegion);
+            var response = await mockFunction.Run(default!, headers, specificRegion);
 
             switch (accessTokenResult)
             {
@@ -76,9 +76,9 @@ namespace Functions.Tests.Transfers
     internal static class ListTransfersTestCases
     {
         private static string region = "us";
-        private static IDictionary<string, string> headers;
-        private static IAccessTokenResult accessTokenResult;
-        private static Transfer transfer;
+        private static IDictionary<string, string>? headers;
+        private static IAccessTokenResult? accessTokenResult;
+        private static Transfer? transfer;
 
         internal static IEnumerable<TestCaseData> ValidRequests()
         {

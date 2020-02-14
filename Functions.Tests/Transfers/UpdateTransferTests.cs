@@ -109,8 +109,8 @@ namespace Functions.Tests.Transfers
             Type = "fieldComplete"
         };
 
-        private static IDictionary<string, string> headers;
-        private static IAccessTokenResult accessTokenResult;
+        private static IDictionary<string, string>? headers;
+        private static IAccessTokenResult? accessTokenResult;
         private static bool throws;
 
         internal static IEnumerable<TestCaseData> ValidRequests()

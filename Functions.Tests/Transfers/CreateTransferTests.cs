@@ -122,9 +122,9 @@ namespace Functions.Tests.Transfers
         };
 
         private static string region = "us";
-        private static IDictionary<string, string> headers;
-        private static IAccessTokenResult accessTokenResult;
-        private static Transfer transfer;
+        private static IDictionary<string, string>? headers;
+        private static IAccessTokenResult? accessTokenResult;
+        private static Transfer? transfer;
         private static bool throws;
 
         internal static IEnumerable<TestCaseData> ValidRequests()

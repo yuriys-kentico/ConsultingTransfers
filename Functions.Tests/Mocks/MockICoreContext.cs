@@ -36,10 +36,13 @@ namespace Functions.Tests.Mocks
 
         internal static void SetupLocalization(
             this Mock<ICoreContext> mockCoreContext,
-            string localization
+            string? localization
             )
         {
-            mockCoreContext.SetupSet(mock => mock.Localization = localization);
+            if (localization != default)
+            {
+                mockCoreContext.SetupSet(mock => mock.Localization = localization);
+            }
         }
     }
 }
