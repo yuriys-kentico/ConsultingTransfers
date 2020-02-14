@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Header, Segment } from 'semantic-ui-react';
+import { Container, Divider, Header, Segment } from 'semantic-ui-react';
 
 import { errors } from '../../terms.en-us.json';
 import { RoutedFC } from '../../utilities/routing';
@@ -18,11 +18,14 @@ export const Error: RoutedFC<IErrorProps> = ({ location, message, stack }) => {
   location && location.state && (errorMessage = { ...errorMessage, ...location.state });
 
   return (
-    <Container text>
-      <Segment>
-        <Header content={errorMessage.message} />
-        {errorMessage.stack}
-      </Segment>
-    </Container>
+    <>
+      <Divider hidden />
+      <Container text>
+        <Segment>
+          <Header content={errorMessage.message} />
+          {errorMessage.stack}
+        </Segment>
+      </Container>
+    </>
   );
 };

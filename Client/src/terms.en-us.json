@@ -50,7 +50,7 @@
           "label": "Template Kontent item",
           "options": [
             { "text": "Support | Filesystem and database", "value": "support___filesystem_and_database" },
-            { "text": "Consulting | PQA Questionnaire", "value": "consulting___pqa_questionnaire" }
+            { "text": "Consulting | PQA questionnaire", "value": "consulting___pqa_questionnaire" }
           ]
         },
         "region": {
