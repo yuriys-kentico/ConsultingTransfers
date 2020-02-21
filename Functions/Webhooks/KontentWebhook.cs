@@ -71,11 +71,15 @@ namespace Functions.Webhooks
                                             ContainerName = storageRepository.GetSafeContainerName(item.Codename)
                                         });
 
-                                        container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
+                                        if (string.IsNullOrEmpty(container.TransferToken))
                                         {
-                                            Codename = item.Codename,
-                                            Localization = item.Language
-                                        });
+                                            container.TransferToken = storageRepository.EncryptTransferToken(new TransferToken
+                                            {
+                                                Codename = item.Codename,
+                                                Localization = item.Language,
+                                                Region = coreContext.Region.Name
+                                            });
+                                        }
 
                                         container.DeleteWhen = DateTime.MaxValue;
 
