@@ -14,7 +14,7 @@
     "@types/react-draft-wysiwyg": "^1.13.0",
     "@types/react-helmet": "^5.0.14",
     "@types/use-subscription": "^1.0.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "detect-browser": "^4.8.0",
     "html-to-react": "^1.4.2",
     "markdown-draft-js": "^2.1.1",
